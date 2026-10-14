@@ -1,0 +1,101 @@
+# Render Blueprint for the API (NestJS + Prisma) and its Postgres. This repo is the backend on
+# its own; the web app (Next.js) is deployed separately (e.g. Vercel) and points at this API
+# through NEXT_PUBLIC_API_URL=https://<this service>.onrender.com/api.
+#
+# Dashboard → New → Blueprint → pick this repo. Render creates everything below; you fill in the
+# values marked `sync: false` once (web app URL, platform admin, SMTP, Zoom/Google) in the
+# service's Environment tab.
+
+services:
+  - type: web
+    name: edu-api
+    runtime: node
+    # Free plan: sleeps after 15 min idle (first request then takes ~1 min), 750 h/month, no persistent
+    # disk (uploaded library files are lost on every deploy), no pre-deploy step. Upgrade in place later.
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci && npx prisma generate && npm run build
+    # No pre-deploy step on the free plan: migrations run at start; the first start also creates the platform admin.
+    startCommand: npm run start:migrate
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "4000"
+      - key: TRUST_PROXY
+        value: "1" # Render's proxy, so rate limits see the client's IP
+      - key: DATABASE_URL
+        fromDatabase:
+          name: edu-db
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: FILES_URL_SECRET
+        generateValue: true
+      - key: INTEGRATIONS_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_TTL
+        value: 15m
+      - key: JWT_REFRESH_TTL_DAYS
+        value: "30"
+      - key: JWT_REFRESH_SESSION_TTL_HOURS
+        value: "24"
+      - key: MAX_OWNED_CENTERS
+        value: "3"
+      - key: TRIAL_PLAN_CODE
+        value: BASIC
+      - key: STORAGE_DIR
+        value: storage # ephemeral on the free plan; a paid plan adds a disk at /var/data
+      - key: LIBRARY_MAX_FILE_MB
+        value: "1024"
+      - key: SWAGGER_ENABLED
+        value: "false"
+      # ── fill these in the dashboard ──
+      - key: APP_URL # the web app's public URL (emails link to it)
+        sync: false
+      - key: CORS_ORIGIN # the web app's origin(s), comma-separated
+        sync: false
+      - key: PLATFORM_ADMIN_EMAIL # first start only: creates the platform operator account
+        sync: false
+      - key: PLATFORM_ADMIN_PASSWORD
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_SECURE
+        value: "false"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: ZOOM_CLIENT_ID
+        sync: false
+      - key: ZOOM_CLIENT_SECRET
+        sync: false
+      - key: ZOOM_REDIRECT_URI # https://<this service>.onrender.com/api/integrations/zoom/callback
+        sync: false
+      - key: ZOOM_WEBHOOK_SECRET_TOKEN
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI # https://<this service>.onrender.com/api/integrations/google/callback
+        sync: false
+
+databases:
+  - name: edu-db
+    # Free Postgres expires 30 days after creation and is deleted 14 days later with its data;
+    # upgrade it in place before then.
+    plan: free
+    region: frankfurt
+    postgresMajorVersion: "16"

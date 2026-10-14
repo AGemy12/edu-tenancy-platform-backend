@@ -1,0 +1,659 @@
+// Multi-tenant education platform schema.
+// Every tenant-owned row carries `tenantId`; services always scope queries by it.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────────────────── Enums ─────────────────────────
+
+enum Role {
+  SUPER_ADMIN // platform operator (no tenant)
+  TENANT_ADMIN // owner / admin of a tenant (center or solo teacher)
+  TEACHER
+  STUDENT
+}
+
+/// ACTIVE: normal. SUSPENDED: may sign in and read, but every write is refused (except their own
+/// profile and password). BLOCKED: cannot sign in; open sessions are revoked.
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  BLOCKED
+}
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+/// Whether a library item belongs to one user or to the whole center.
+enum LibraryScope {
+  PERSONAL
+  SHARED
+}
+
+enum AddOnSource {
+  PURCHASE // bought upgrade
+  GRANT // given by the platform (support, promotion)
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum SessionProvider {
+  ZOOM
+  GOOGLE_MEET
+  MANUAL
+}
+
+enum SessionStatus {
+  SCHEDULED
+  LIVE
+  COMPLETED
+  CANCELED
+  MISSED // never started, and the provider could confirm it (Zoom webhooks)
+}
+
+/// How the student attended, as the teacher records it in the session evaluation.
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  DROPPED
+}
+
+enum ExamStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum RateKind {
+  STUDENT_FEE // what a student is charged for an hour of sessions
+  TEACHER_PAY // what the center pays the teacher
+}
+
+enum RateBasis {
+  PER_HOUR
+  PERCENT // TEACHER_PAY only: a share of the fees charged to the session's students
+}
+
+enum IntegrationProvider {
+  ZOOM
+  GOOGLE
+}
+
+/// Detected from the file extension on upload (never trusted from the client).
+enum FileKind {
+  IMAGE
+  PDF
+  DOCUMENT
+  PRESENTATION
+  SPREADSHEET
+  EBOOK
+  VIDEO
+  AUDIO
+  ARCHIVE
+  OTHER
+}
+
+/// Chosen by the teacher to describe how the file is used.
+enum FileCategory {
+  BOOK
+  EXPLANATION
+  WORKSHEET
+  SUMMARY
+  EXAM
+  OTHER
+}
+
+// ───────────────────────── Tenancy ─────────────────────────
+
+model Tenant {
+  id        String       @id @default(uuid())
+  name      String
+  slug      String       @unique
+  status    TenantStatus @default(ACTIVE)
+  timezone  String       @default("Africa/Cairo")
+  currency  String       @default("EGP") // ISO 4217, used for session billing
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  subscription Subscription?
+  billingRates BillingRate[]
+  memberships  Membership[]
+  teachers     Teacher[]
+  students     Student[]
+  courses      Course[]
+  enrollments  Enrollment[]
+  sessions     Session[]
+  exams        Exam[]
+  integrations Integration[]
+  folders      LibraryFolder[]
+  files        LibraryFile[]
+  blobs        StoredBlob[]
+  addOns       StorageAddOn[]
+  schedules    StudentSchedule[]
+}
+
+/// A package in the catalog. Limits are read from here (data, not code), so packages can be
+/// added or re-priced without a deploy.
+model Plan {
+  id                  String   @id @default(uuid())
+  code                String   @unique // FREE, BASIC, PRO, …
+  nameAr              String
+  nameEn              String
+  descriptionAr       String?
+  descriptionEn       String?
+  priceMonthly        Decimal? @db.Decimal(10, 2)
+  currency            String   @default("EGP")
+  isPublic            Boolean  @default(true) // listed on the upgrade screen
+  isActive            Boolean  @default(true)
+  sortOrder           Int      @default(0)
+  maxTeachers         Int
+  maxStudents         Int
+  storagePerTeacherMb Int // personal library quota of each teacher (and the admin)
+  sharedStorageMb     Int // center library quota
+  maxFileMb           Int
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id                 String             @id @default(uuid())
+  tenantId           String             @unique
+  tenant             Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  planId             String
+  plan               Plan               @relation(fields: [planId], references: [id])
+  status             SubscriptionStatus @default(TRIALING)
+  currentPeriodStart DateTime           @default(now())
+  /// null = no end (a package granted for good by the platform).
+  currentPeriodEnd   DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+// ───────────────────────── Users ─────────────────────────
+
+/// One person, one sign-in. What they are in each center is a `Membership`: the same account
+/// can own one center, teach in another and study in a third. `isPlatformAdmin` is the
+/// operator role, outside every center.
+model User {
+  id               String    @id @default(uuid())
+  email            String    @unique // global: users log in with email + password only
+  passwordHash     String
+  fullName         String
+  phone            String?
+  isPlatformAdmin  Boolean   @default(false)
+  lastLoginAt      DateTime?
+  /// The center opened last; where the next sign-in lands.
+  lastMembershipId String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  memberships         Membership[]
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  integrations        Integration[]
+  libraryFolders      LibraryFolder[]
+  libraryFiles        LibraryFile[]
+  storageAddOns       StorageAddOn[]
+  chargedBlobs        StoredBlob[]
+  teachers            Teacher[]
+  students            Student[]
+}
+
+/// A user's place in one center: their role there, the state of that account, and their
+/// personal library allocation. A teacher or student profile hangs off it.
+model Membership {
+  id                String        @id @default(uuid())
+  userId            String
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenantId          String
+  tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  role              Role // TENANT_ADMIN, TEACHER or STUDENT (never SUPER_ADMIN)
+  status            AccountStatus @default(ACTIVE)
+  statusReason      String? // shown to the member, set by whoever suspended or blocked them
+  statusChangedAt   DateTime?
+  statusChangedById String? // the admin or teacher who last changed the status
+  /// Personal library allocation set by the center admin; null = the package default.
+  storageQuotaMb    Int?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  teacher       Teacher?
+  student       Student?
+  refreshTokens RefreshToken[]
+
+  @@unique([userId, tenantId])
+  @@index([tenantId, role])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model RefreshToken {
+  id           String      @id @default(uuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// The center this session is signed into; null for the platform admin console.
+  membershipId String?
+  membership   Membership? @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  tokenHash    String      @unique
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  remember     Boolean     @default(false) // "remember me": long-lived, sliding expiry
+  createdAt    DateTime    @default(now())
+
+  @@index([userId])
+  @@index([membershipId])
+}
+
+// ───────────────────────── Teachers & Students ─────────────────────────
+
+model Teacher {
+  id                     String     @id @default(uuid())
+  tenantId               String
+  tenant                 Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId                 String
+  user                   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  membershipId           String     @unique
+  membership             Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  bio                    String?
+  subjects               String[]   @default([])
+  /// May upload to and organise the center (shared) library.
+  canManageSharedLibrary Boolean    @default(false)
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
+
+  courses      Course[]
+  sessions     Session[]
+  exams        Exam[]
+  students     TeacherStudent[]
+  billingRates BillingRate[]
+  schedules    StudentSchedule[]
+
+  @@unique([userId, tenantId])
+  @@index([tenantId])
+}
+
+model Student {
+  id           String     @id @default(uuid())
+  tenantId     String
+  tenant       Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  membershipId String     @unique
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  grade        String?
+  parentPhone  String?
+  notes        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  teachers     TeacherStudent[]
+  enrollments  Enrollment[]
+  attendances  SessionAttendee[]
+  examResults  ExamResult[]
+  folders      LibraryFolder[]
+  billingRates BillingRate[]
+  schedules    StudentSchedule[]
+
+  @@unique([userId, tenantId])
+  @@index([tenantId])
+}
+
+/// Direct "teacher has students" link, independent of course enrollment.
+model TeacherStudent {
+  teacherId String
+  teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([teacherId, studentId])
+}
+
+// ───────────────────────── Courses ─────────────────────────
+
+model Course {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  teacherId   String
+  teacher     Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  subject     String?
+  level       String?
+  price       Decimal? @db.Decimal(10, 2)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  enrollments  Enrollment[]
+  sessions     Session[]
+  exams        Exam[]
+  billingRates BillingRate[]
+  schedules    StudentSchedule[]
+
+  @@index([tenantId])
+  @@index([teacherId])
+}
+
+model Enrollment {
+  id         String           @id @default(uuid())
+  tenantId   String
+  tenant     Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  courseId   String
+  course     Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  studentId  String
+  student    Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  status     EnrollmentStatus @default(ACTIVE)
+  enrolledAt DateTime         @default(now())
+
+  @@unique([courseId, studentId])
+  @@index([tenantId])
+}
+
+// ───────────────────────── Live sessions ─────────────────────────
+
+model Session {
+  id                String           @id @default(uuid())
+  tenantId          String
+  tenant            Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  teacherId         String
+  teacher           Teacher          @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  courseId          String?
+  course            Course?          @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  title             String
+  description       String?
+  provider          SessionProvider  @default(MANUAL)
+  status            SessionStatus    @default(SCHEDULED)
+  startAt           DateTime
+  endAt             DateTime
+  meetingUrl        String?
+  externalMeetingId String? // Zoom meeting id / Google event id
+  notes             String?
+  startedAt         DateTime? // when it actually went live (provider event or the host pressing start)
+  endedAt           DateTime? // when it actually ended
+  scheduleId        String? // generated from a student's monthly schedule
+  schedule          StudentSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  attendees SessionAttendee[]
+
+  @@index([tenantId, startAt])
+  @@index([teacherId])
+  @@index([status, endAt])
+  @@index([externalMeetingId])
+  @@index([scheduleId])
+}
+
+/// A student's monthly hours with a teacher and the weekly slots they're taught in.
+/// Saving one generates the period's sessions (see schedules/schedule-plan.ts); each session
+/// lasts weeklyMinutes / slots, and generation stops once monthlyMinutes are scheduled.
+model StudentSchedule {
+  id             String          @id @default(uuid())
+  tenantId       String
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  teacherId      String
+  teacher        Teacher         @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId       String?
+  course         Course?         @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  title          String
+  provider       SessionProvider @default(MANUAL)
+  meetingUrl     String? // MANUAL only: reused by every session
+  monthlyMinutes Int
+  weeklyMinutes  Int
+  startDate      DateTime        @db.Date // first day of the period, in the tenant's timezone
+  endDate        DateTime        @db.Date // exclusive: one month after startDate
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  slots    ScheduleSlot[]
+  sessions Session[]
+
+  @@index([tenantId, teacherId])
+  @@index([studentId])
+}
+
+model ScheduleSlot {
+  id         String          @id @default(uuid())
+  scheduleId String
+  schedule   StudentSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  weekday    Int // 0 = Sunday … 6 = Saturday
+  startTime  String // "HH:mm" in the tenant's timezone
+
+  @@index([scheduleId])
+}
+
+/// A student in a session, with the teacher's evaluation once the session is over.
+/// `attended` drives billing and reports: joining marks it, and the evaluation's status overrides it
+/// (PRESENT/LATE = attended, ABSENT = not).
+model SessionAttendee {
+  sessionId   String
+  session     Session           @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  studentId   String
+  student     Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  attended    Boolean           @default(false)
+  joinedAt    DateTime?
+  status      AttendanceStatus? // null until the teacher evaluates the session
+  rating      Int? // 1–10; not given to absent students
+  homework    String? // what the student must do before next time; null = no homework
+  progress    String? // where the lesson stopped (chapter, page, exercise…)
+  comment     String? // the teacher's note to the student
+  evaluatedAt DateTime?
+
+  @@id([sessionId, studentId])
+}
+
+// ───────────────────────── Session billing ─────────────────────────
+
+/// One price on the rate card. Rates are tiered: a teacher's default, overridden for a course,
+/// overridden for one student; the most specific rate in effect when the session starts wins.
+/// Changing a price adds a row with a later `effectiveFrom`, so past sessions keep their price.
+/// Amounts are computed from these rows when read (see billing/billing.ts), never stored.
+model BillingRate {
+  id            String    @id @default(uuid())
+  tenantId      String
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  kind          RateKind
+  basis         RateBasis @default(PER_HOUR)
+  teacherId     String
+  teacher       Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  courseId      String?
+  course        Course?   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  studentId     String? // STUDENT_FEE only
+  student       Student?  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  amount        Decimal   @db.Decimal(10, 2) // money per hour, or a percentage (0..100)
+  effectiveFrom DateTime
+  note          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId, teacherId, kind])
+}
+
+// ───────────────────────── Exams ─────────────────────────
+
+model Exam {
+  id          String     @id @default(uuid())
+  tenantId    String
+  tenant      Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  courseId    String
+  course      Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  teacherId   String
+  teacher     Teacher    @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  month       DateTime // first day of the month this exam belongs to
+  totalMarks  Int        @default(100)
+  status      ExamStatus @default(DRAFT)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  results ExamResult[]
+
+  @@index([tenantId, month])
+  @@index([courseId])
+}
+
+model ExamResult {
+  id        String   @id @default(uuid())
+  examId    String
+  exam      Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  score     Decimal  @db.Decimal(6, 2)
+  feedback  String?
+  gradedAt  DateTime @default(now())
+
+  @@unique([examId, studentId])
+}
+
+// ───────────────────────── Integrations (Zoom / Google) ─────────────────────────
+
+model Integration {
+  id            String              @id @default(uuid())
+  tenantId      String
+  tenant        Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider      IntegrationProvider
+  accessToken   String
+  refreshToken  String?
+  expiresAt     DateTime?
+  scope         String?
+  externalId    String? // provider account/user id
+  externalEmail String? // the connected account's email, shown in settings
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@unique([userId, provider])
+  @@index([tenantId])
+}
+
+// ───────────────────────── Library (teacher files) ─────────────────────────
+
+/// A folder in a user's library. Folders form a tree per owner.
+/// `studentId` is set on a student's folder and on every folder beneath it:
+/// everything inside is visible (read-only) to that student.
+model LibraryFolder {
+  id        String          @id @default(uuid())
+  tenantId  String
+  tenant    Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ownerId   String
+  owner     User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    LibraryFolder?  @relation("FolderTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children  LibraryFolder[] @relation("FolderTree")
+  studentId String?
+  student   Student?        @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  scope     LibraryScope    @default(PERSONAL)
+  name      String
+  color     String? // one of the UI palette keys
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  files LibraryFile[]
+
+  @@index([ownerId, parentId])
+  @@index([studentId])
+  @@index([tenantId, scope])
+}
+
+/// A file as it appears in a library. Sending a file to students or importing a center
+/// file creates more rows pointing at the same `StoredBlob`; the blob goes with its last row.
+/// `ownerId` is the user who owns the row (for SHARED rows: who uploaded it).
+model LibraryFile {
+  id          String         @id @default(uuid())
+  tenantId    String
+  tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ownerId     String
+  owner       User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  scope       LibraryScope   @default(PERSONAL)
+  folderId    String? // null = library root
+  folder      LibraryFolder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  name        String
+  extension   String
+  mimeType    String
+  size        Int // bytes
+  kind        FileKind
+  category    FileCategory   @default(OTHER)
+  description String?
+  starred     Boolean        @default(false)
+  blobId      String
+  blob        StoredBlob     @relation(fields: [blobId], references: [id], onDelete: NoAction)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([ownerId, folderId])
+  @@index([tenantId, scope])
+  @@index([blobId])
+}
+
+/// The bytes on disk (or object storage). Each blob is charged to exactly one quota:
+/// a user's personal quota, or the center library when `chargedToId` is null.
+model StoredBlob {
+  id           String        @id @default(uuid())
+  tenantId     String
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  key          String        @unique
+  thumbnailKey String?
+  size         Int
+  chargedToId  String?
+  chargedTo    User?         @relation(fields: [chargedToId], references: [id], onDelete: SetNull)
+  createdAt    DateTime      @default(now())
+  files        LibraryFile[]
+
+  @@index([tenantId, chargedToId])
+}
+
+/// Extra space on top of the package: purchased upgrades or grants. `userId` null = center library.
+model StorageAddOn {
+  id        String      @id @default(uuid())
+  tenantId  String
+  tenant    Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  extraMb   Int
+  source    AddOnSource
+  note      String?
+  startsAt  DateTime    @default(now())
+  expiresAt DateTime?
+  createdAt DateTime    @default(now())
+
+  @@index([tenantId, userId])
+}

@@ -1,0 +1,27 @@
+# dependencies
+node_modules/
+
+# builds
+dist/
+coverage/
+*.tsbuildinfo
+
+# env (never commit secrets; .env.example documents every variable)
+.env
+.env.*
+!.env.example
+
+# prisma
+prisma/*.db
+src/generated/
+
+# uploaded library files (local storage driver)
+storage/
+
+# logs / OS / editors
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
