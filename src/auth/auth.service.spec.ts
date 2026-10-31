@@ -42,12 +42,13 @@ function setup({ emailTaken = false, user = account() }: { emailTaken?: boolean;
     refreshToken: { updateMany: vi.fn(), create: vi.fn(), findUnique: vi.fn().mockResolvedValue(null), update: vi.fn() },
     tenant: { findUnique: vi.fn().mockResolvedValue(null) },
     membership: { findMany: vi.fn().mockResolvedValue([]) },
+    supportSession: { findUnique: vi.fn().mockResolvedValue(null) },
     $transaction: vi.fn().mockResolvedValue([]),
   };
   const jwt = { signAsync: vi.fn().mockImplementation((payload) => Promise.resolve(`jwt:${payload.sub}:${payload.mid}`)) };
   const config = { getOrThrow: () => 'secret', get: () => undefined };
-  const service = new AuthService(prisma as unknown as PrismaService, jwt as never, config as never, {} as never);
-  return { prisma, service };
+  const service = new AuthService(prisma as unknown as PrismaService, jwt as never, config as never, {} as never, new Proxy({}, { get: () => vi.fn() }) as never);
+  return { prisma, service, jwt };
 }
 
 describe('AuthService.login', () => {
@@ -197,5 +198,43 @@ describe('AuthService.changePassword', () => {
       where: { userId: 'u1', revokedAt: null, tokenHash: { not: sha256('mine') } },
       data: { revokedAt: expect.any(Date) },
     });
+  });
+});
+
+describe('AuthService support sessions', () => {
+  const soon = new Date(Date.now() + 30 * 60_000);
+  const open = { id: 's1', reason: 'Fix the schedule', expiresAt: soon, endedAt: null, actor: { fullName: 'Ops', email: 'ops@x.test', isPlatformAdmin: true } };
+  const user = account({ memberships: [membership('m1', 'TENANT_ADMIN'), membership('m2', 'TEACHER')] });
+
+  it('signs the admin in as the member, scoped to that one center and no longer than the session', async () => {
+    const { prisma, service, jwt } = setup({ user });
+    prisma.supportSession.findUnique.mockResolvedValue(open);
+    const res = await service.issueSupportTokens('u1', 'm1', 's1');
+    expect(jwt.signAsync).toHaveBeenCalledWith({ sub: 'u1', mid: 'm1', sid: 's1' }, expect.anything());
+    expect(res.user.memberships.map((m) => m.id)).toEqual(['m1']);
+    expect(res.user.support).toEqual({ sessionId: 's1', reason: 'Fix the schedule', expiresAt: soon, actor: { fullName: 'Ops', email: 'ops@x.test' } });
+    const stored = prisma.refreshToken.create.mock.calls[0][0].data;
+    expect(stored.supportSessionId).toBe('s1');
+    expect(stored.expiresAt.getTime()).toBeLessThanOrEqual(soon.getTime());
+  });
+
+  it('refuses to start from a session that is closed, over, or whose admin lost the role', async () => {
+    for (const s of [{ ...open, endedAt: new Date() }, { ...open, expiresAt: new Date(Date.now() - 1000) }, { ...open, actor: { ...open.actor, isPlatformAdmin: false } }, null]) {
+      const { prisma, service } = setup({ user });
+      prisma.supportSession.findUnique.mockResolvedValue(s);
+      await expect(service.issueSupportTokens('u1', 'm1', 's1')).rejects.toBeInstanceOf(UnauthorizedException);
+    }
+  });
+
+  it('refreshes a support token only while its session is open', async () => {
+    const stored = { id: 'r1', revokedAt: null, expiresAt: soon, membershipId: 'm1', remember: false, supportSessionId: 's1', user };
+    const { prisma, service, jwt } = setup({ user });
+    prisma.refreshToken.findUnique.mockResolvedValue(stored);
+    prisma.supportSession.findUnique.mockResolvedValue(open);
+    await service.refresh('raw');
+    expect(jwt.signAsync).toHaveBeenLastCalledWith({ sub: 'u1', mid: 'm1', sid: 's1' }, expect.anything());
+
+    prisma.supportSession.findUnique.mockResolvedValue({ ...open, endedAt: new Date() });
+    await expect(service.refresh('raw')).rejects.toMatchObject({ response: { i18n: 'support.sessionEnded' } });
   });
 });

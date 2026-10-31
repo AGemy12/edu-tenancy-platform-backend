@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { TeachersService } from './teachers.service.js';
-import { CreateTeacherDto, UpdateTeacherDto } from './dto/teacher.dto.js';
+import { CreateTeacherDto, MeetingReminderDto, UpdateTeacherDto } from './dto/teacher.dto.js';
 import { SetAccountStatusDto } from '../auth/dto/account-status.dto.js';
 import { CurrentUser, type JwtUser } from '../common/decorators/current-user.decorator.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
@@ -16,14 +16,22 @@ export class TeachersController {
 
   @Get()
   @Roles('TENANT_ADMIN', 'TEACHER', 'STUDENT')
-  list(@CurrentUser('tenantId') tenantId: string) {
-    return this.teachers.list(tenantId);
+  list(@CurrentUser() user: JwtUser) {
+    return this.teachers.list(user);
   }
 
   @Get(':id')
   @Roles('TENANT_ADMIN', 'TEACHER', 'STUDENT')
-  get(@CurrentUser('tenantId') tenantId: string, @Param('id') id: string) {
-    return this.teachers.get(tenantId, id);
+  get(@CurrentUser() user: JwtUser, @Param('id') id: string) {
+    return this.teachers.getFor(user, id);
+  }
+
+  /** Only the teacher can link the account their sessions run on; the admin can ask them to. */
+  @Post(':id/meeting-reminder')
+  @Roles('TENANT_ADMIN')
+  @HttpCode(204)
+  remindMeetingAccount(@CurrentUser() user: JwtUser, @Param('id') id: string, @Body() dto: MeetingReminderDto) {
+    return this.teachers.remindMeetingAccount(user, id, dto.provider);
   }
 
   @Post()

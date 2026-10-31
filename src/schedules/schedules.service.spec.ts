@@ -59,7 +59,7 @@ function setup(over: { student?: object | null; createFails?: boolean } = {}) {
     createMeeting: vi.fn().mockImplementation(() => Promise.resolve({ externalMeetingId: `m${++n}`, joinUrl: `https://zoom.us/j/${n}` })),
   };
   const sessions = { providerFor: vi.fn().mockReturnValue(provider), deleteExternal: vi.fn() };
-  const service = new SchedulesService(prisma as unknown as PrismaService, sessions as unknown as SessionsService);
+  const service = new SchedulesService(prisma as unknown as PrismaService, sessions as unknown as SessionsService, new Proxy({}, { get: () => vi.fn() }) as never);
   return { service, prisma, provider, sessions, tx, created };
 }
 

@@ -15,9 +15,11 @@ import { evaluationRow } from './session-evaluation.js';
 import { ZoomProvider } from './providers/zoom.provider.js';
 import { GoogleMeetProvider } from './providers/google-meet.provider.js';
 import type { MeetingProvider } from './providers/meeting-provider.interface.js';
-import type { SessionProvider } from '../generated/prisma/enums.js';
+import type { SessionProvider, SessionStatus } from '../generated/prisma/enums.js';
+import { RING_MS } from './call-rules.js';
 import {
   EARLY_ENTRY_MIN,
+  afterMeetingEnded,
   canDelete,
   canReschedule,
   entryWindow,
@@ -28,12 +30,17 @@ import {
 } from './session-lifecycle.js';
 import { msg } from '../i18n/i18n.js';
 import { assertFree, lockPeople } from './session-clashes.js';
+import { NotificationEvents } from '../notifications/notification-events.js';
 
 const sessionInclude = {
   teacher: { select: { id: true, userId: true, user: { select: { fullName: true } } } },
   course: { select: { id: true, title: true } },
   _count: { select: { attendees: true } },
 } as const;
+
+/** What starting or ending a meeting needs to know about its session. */
+export const meetingFacts = { id: true, status: true, startedAt: true, endedAt: true, endAt: true } as const;
+type MeetingFacts = { id: string; status: SessionStatus; startedAt: Date | null; endedAt: Date | null; endAt: Date };
 
 const SWEEP_EVERY_MS = 5 * 60_000;
 const PROVIDERS: SessionProvider[] = ['ZOOM', 'GOOGLE_MEET', 'MANUAL'];
@@ -48,6 +55,7 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
     private readonly config: ConfigService,
     private readonly zoom: ZoomProvider,
     private readonly google: GoogleMeetProvider,
+    private readonly events: NotificationEvents,
   ) {}
 
   onModuleInit() {
@@ -159,7 +167,7 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
           });
 
     try {
-      return await this.prisma.$transaction(async (tx) => {
+      const created = await this.prisma.$transaction(async (tx) => {
         await lockPeople(tx, people);
         await assertFree(tx, tenantId, people, { startAt, endAt });
         return tx.session.create({
@@ -179,6 +187,8 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
           include: sessionInclude,
         });
       });
+      void this.events.sessionScheduled(created.id, user.id);
+      return created;
     } catch (err) {
       // Don't leave an orphan meeting on the teacher's account.
       if (meeting.externalMeetingId && dto.provider !== 'MANUAL') {
@@ -227,17 +237,20 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
       });
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const updated = await this.prisma.$transaction(async (tx) => {
       if (people) {
         await lockPeople(tx, people);
         await assertFree(tx, session.tenantId, people, { startAt, endAt }, id);
       }
       return tx.session.update({
         where: { id },
-        data: { ...dto, startAt: retimed ? startAt : undefined, endAt: retimed ? endAt : undefined },
+        // A new time gets its own "starting soon" reminder.
+        data: { ...dto, startAt: retimed ? startAt : undefined, endAt: retimed ? endAt : undefined, ...(retimed && { reminderSentAt: null }) },
         include: sessionInclude,
       });
     });
+    if (retimed) void this.events.sessionRescheduled(id, user.id);
+    return updated;
   }
 
   /**
@@ -262,12 +275,7 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
     const url = hostUrl ?? session.meetingUrl;
     if (!url) throw new BadRequestException(msg('sessions.noMeetingLink'));
 
-    if (session.status === 'SCHEDULED') {
-      await this.prisma.session.update({
-        where: { id },
-        data: { status: 'LIVE', startedAt: session.startedAt ?? new Date() },
-      });
-    }
+    await this.meetingStarted(session, new Date(), user.id);
     return { url };
   }
 
@@ -280,7 +288,8 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
     }
     return this.prisma.session.update({
       where: { id },
-      data: { status: 'COMPLETED', endedAt: session.status === 'LIVE' ? new Date() : session.endedAt },
+      // A live session whose meeting dropped ended when it dropped, not when the host closed it.
+      data: { status: 'COMPLETED', endedAt: session.status === 'LIVE' ? (session.endedAt ?? new Date()) : session.endedAt },
       include: sessionInclude,
     });
   }
@@ -291,7 +300,9 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
     if (session.externalMeetingId && session.provider !== 'MANUAL') {
       await this.deleteExternal(session.provider, session.teacher.userId, session.externalMeetingId);
     }
-    return this.prisma.session.update({ where: { id }, data: { status: 'CANCELED' }, include: sessionInclude });
+    const canceled = await this.prisma.session.update({ where: { id }, data: { status: 'CANCELED' }, include: sessionInclude });
+    void this.events.sessionCanceled(id, user.id);
+    return canceled;
   }
 
   /**
@@ -377,6 +388,7 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
         }),
       ),
     );
+    void this.events.sessionEvaluated(id, ids, user.id);
     return this.get(user, id);
   }
 
@@ -384,21 +396,39 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
 
   async providerStarted(provider: SessionProvider, externalMeetingId: string, at: Date) {
     const session = await this.findByMeeting(provider, externalMeetingId);
-    if (!session) return;
-    // A meeting reported as started after we gave up on it (MISSED) did happen after all.
-    if (session.status !== 'SCHEDULED' && session.status !== 'MISSED') return;
-    await this.prisma.session.update({
-      where: { id: session.id },
-      data: { status: 'LIVE', startedAt: session.startedAt ?? at },
-    });
+    if (session) await this.meetingStarted(session, at, null);
   }
 
   async providerEnded(provider: SessionProvider, externalMeetingId: string, startedAt: Date | null, endedAt: Date) {
     const session = await this.findByMeeting(provider, externalMeetingId);
-    if (!session || session.status === 'CANCELED') return;
+    if (session) await this.meetingEnded(session, startedAt, endedAt);
+  }
+
+  /**
+   * A meeting of the session went live: its own, or a call's from the chat. `actorId` is who
+   * opened it (null when the provider told us).
+   */
+  async meetingStarted(session: MeetingFacts, at: Date, actorId: string | null) {
+    if (session.status === 'LIVE') {
+      // Back after a drop.
+      if (session.endedAt) await this.prisma.session.update({ where: { id: session.id }, data: { endedAt: null } });
+      return;
+    }
+    // A meeting reported as started after we gave up on it (MISSED) did happen after all.
+    if (session.status !== 'SCHEDULED' && session.status !== 'MISSED') return;
     await this.prisma.session.update({
       where: { id: session.id },
-      data: { status: 'COMPLETED', startedAt: session.startedAt ?? startedAt ?? undefined, endedAt },
+      data: { status: 'LIVE', startedAt: session.startedAt ?? at, endedAt: null },
+    });
+    if (session.status === 'SCHEDULED') void this.events.sessionLive(session.id, actorId);
+  }
+
+  /** A meeting of the session ended: the class is over, or (before the planned end) it dropped. */
+  async meetingEnded(session: MeetingFacts, startedAt: Date | null, endedAt: Date) {
+    if (session.status === 'CANCELED') return;
+    await this.prisma.session.update({
+      where: { id: session.id },
+      data: { status: afterMeetingEnded(session, endedAt), startedAt: session.startedAt ?? startedAt ?? undefined, endedAt },
     });
   }
 
@@ -418,10 +448,15 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
 
   /** Closes sessions whose time has passed without a start or end (runs every few minutes). */
   async closeOverdue(now = new Date()) {
-    const { liveEndedBefore, unstartedEndedBefore } = overdueCutoffs(now);
+    const { liveEndedBefore, unstartedEndedBefore, droppedEndedBefore } = overdueCutoffs(now);
     try {
       await this.prisma.session.updateMany({
         where: { status: 'LIVE', endAt: { lt: liveEndedBefore } },
+        data: { status: 'COMPLETED' },
+      });
+      // Dropped and never called back into: over (it ended when it dropped).
+      await this.prisma.session.updateMany({
+        where: { status: 'LIVE', endedAt: { not: null }, endAt: { lt: droppedEndedBefore } },
         data: { status: 'COMPLETED' },
       });
       for (const provider of PROVIDERS) {
@@ -430,6 +465,15 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
           data: { status: unstartedOutcome(provider, this.zoomEventsEnabled) },
         });
       }
+      // Calls outlive neither their ring nor their session.
+      await this.prisma.sessionCall.updateMany({
+        where: { status: 'RINGING', OR: [{ createdAt: { lt: new Date(now.getTime() - RING_MS) } }, { session: { status: { notIn: ['SCHEDULED', 'LIVE'] } } }] },
+        data: { status: 'MISSED' },
+      });
+      await this.prisma.sessionCall.updateMany({
+        where: { status: 'ACTIVE', session: { status: { notIn: ['SCHEDULED', 'LIVE'] } } },
+        data: { status: 'ENDED' },
+      });
     } catch (err) {
       this.logger.warn(`Closing overdue sessions failed: ${String(err)}`);
     }
@@ -449,7 +493,7 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
   private findByMeeting(provider: SessionProvider, externalMeetingId: string) {
     return this.prisma.session.findFirst({
       where: { provider, externalMeetingId },
-      select: { id: true, status: true, startedAt: true },
+      select: meetingFacts,
     });
   }
 

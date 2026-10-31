@@ -7,6 +7,7 @@ import { Public } from '../common/decorators/public.decorator.js';
 import { ZoomOAuthService } from '../integrations/zoom-oauth.service.js';
 import { urlValidationResponse, verifyZoomSignature } from '../integrations/zoom-signature.js';
 import { SessionsService } from './sessions.service.js';
+import { CallsService } from './calls.service.js';
 
 type ZoomEvent = {
   event: string;
@@ -36,6 +37,7 @@ export class ZoomWebhookController {
   constructor(
     private readonly config: ConfigService,
     private readonly sessions: SessionsService,
+    private readonly calls: CallsService,
     private readonly oauth: ZoomOAuthService,
   ) {}
 
@@ -59,20 +61,29 @@ export class ZoomWebhookController {
     switch (body.event) {
       case 'endpoint.url_validation':
         return urlValidationResponse(secret, body.payload.plainToken ?? '');
+      // A meeting is a session's own or a call's (from the chat): each handler ignores the other's.
       case 'meeting.started':
-        if (meetingId) await this.sessions.providerStarted('ZOOM', meetingId, dateOr(body.payload.object?.start_time, eventTime));
+        if (meetingId) {
+          const at = dateOr(body.payload.object?.start_time, eventTime);
+          await this.sessions.providerStarted('ZOOM', meetingId, at);
+          await this.calls.providerStarted(meetingId, at);
+        }
         break;
       case 'meeting.ended':
         if (meetingId) {
           const startedAt = body.payload.object?.start_time ? new Date(body.payload.object.start_time) : null;
-          await this.sessions.providerEnded('ZOOM', meetingId, startedAt, dateOr(body.payload.object?.end_time, eventTime));
+          const endedAt = dateOr(body.payload.object?.end_time, eventTime);
+          await this.sessions.providerEnded('ZOOM', meetingId, startedAt, endedAt);
+          await this.calls.providerEnded(meetingId, startedAt, endedAt);
         }
         break;
       case 'meeting.participant_joined': {
         const p = body.payload.object?.participant;
         // Zoom only sends the email of participants signed in to Zoom.
         if (meetingId && p?.email) {
-          await this.sessions.providerParticipantJoined('ZOOM', meetingId, p.email, dateOr(p.join_time, eventTime));
+          const at = dateOr(p.join_time, eventTime);
+          await this.sessions.providerParticipantJoined('ZOOM', meetingId, p.email, at);
+          await this.calls.providerParticipantJoined(meetingId, p.email, at);
         }
         break;
       }

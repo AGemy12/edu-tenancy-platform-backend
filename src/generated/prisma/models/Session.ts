@@ -40,6 +40,7 @@ export type SessionMinAggregateOutputType = {
   notes: string | null
   startedAt: Date | null
   endedAt: Date | null
+  reminderSentAt: Date | null
   scheduleId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -61,6 +62,7 @@ export type SessionMaxAggregateOutputType = {
   notes: string | null
   startedAt: Date | null
   endedAt: Date | null
+  reminderSentAt: Date | null
   scheduleId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -82,6 +84,7 @@ export type SessionCountAggregateOutputType = {
   notes: number
   startedAt: number
   endedAt: number
+  reminderSentAt: number
   scheduleId: number
   createdAt: number
   updatedAt: number
@@ -105,6 +108,7 @@ export type SessionMinAggregateInputType = {
   notes?: true
   startedAt?: true
   endedAt?: true
+  reminderSentAt?: true
   scheduleId?: true
   createdAt?: true
   updatedAt?: true
@@ -126,6 +130,7 @@ export type SessionMaxAggregateInputType = {
   notes?: true
   startedAt?: true
   endedAt?: true
+  reminderSentAt?: true
   scheduleId?: true
   createdAt?: true
   updatedAt?: true
@@ -147,6 +152,7 @@ export type SessionCountAggregateInputType = {
   notes?: true
   startedAt?: true
   endedAt?: true
+  reminderSentAt?: true
   scheduleId?: true
   createdAt?: true
   updatedAt?: true
@@ -241,6 +247,7 @@ export type SessionGroupByOutputType = {
   notes: string | null
   startedAt: Date | null
   endedAt: Date | null
+  reminderSentAt: Date | null
   scheduleId: string | null
   createdAt: Date
   updatedAt: Date
@@ -283,6 +290,7 @@ export type SessionWhereInput = {
   notes?: Prisma.StringNullableFilter<"Session"> | string | null
   startedAt?: Prisma.DateTimeNullableFilter<"Session"> | Date | string | null
   endedAt?: Prisma.DateTimeNullableFilter<"Session"> | Date | string | null
+  reminderSentAt?: Prisma.DateTimeNullableFilter<"Session"> | Date | string | null
   scheduleId?: Prisma.StringNullableFilter<"Session"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Session"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Session"> | Date | string
@@ -291,6 +299,7 @@ export type SessionWhereInput = {
   course?: Prisma.XOR<Prisma.CourseNullableScalarRelationFilter, Prisma.CourseWhereInput> | null
   schedule?: Prisma.XOR<Prisma.StudentScheduleNullableScalarRelationFilter, Prisma.StudentScheduleWhereInput> | null
   attendees?: Prisma.SessionAttendeeListRelationFilter
+  calls?: Prisma.SessionCallListRelationFilter
 }
 
 export type SessionOrderByWithRelationInput = {
@@ -309,6 +318,7 @@ export type SessionOrderByWithRelationInput = {
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   endedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  reminderSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   scheduleId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -317,6 +327,7 @@ export type SessionOrderByWithRelationInput = {
   course?: Prisma.CourseOrderByWithRelationInput
   schedule?: Prisma.StudentScheduleOrderByWithRelationInput
   attendees?: Prisma.SessionAttendeeOrderByRelationAggregateInput
+  calls?: Prisma.SessionCallOrderByRelationAggregateInput
 }
 
 export type SessionWhereUniqueInput = Prisma.AtLeast<{
@@ -338,6 +349,7 @@ export type SessionWhereUniqueInput = Prisma.AtLeast<{
   notes?: Prisma.StringNullableFilter<"Session"> | string | null
   startedAt?: Prisma.DateTimeNullableFilter<"Session"> | Date | string | null
   endedAt?: Prisma.DateTimeNullableFilter<"Session"> | Date | string | null
+  reminderSentAt?: Prisma.DateTimeNullableFilter<"Session"> | Date | string | null
   scheduleId?: Prisma.StringNullableFilter<"Session"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Session"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Session"> | Date | string
@@ -346,6 +358,7 @@ export type SessionWhereUniqueInput = Prisma.AtLeast<{
   course?: Prisma.XOR<Prisma.CourseNullableScalarRelationFilter, Prisma.CourseWhereInput> | null
   schedule?: Prisma.XOR<Prisma.StudentScheduleNullableScalarRelationFilter, Prisma.StudentScheduleWhereInput> | null
   attendees?: Prisma.SessionAttendeeListRelationFilter
+  calls?: Prisma.SessionCallListRelationFilter
 }, "id">
 
 export type SessionOrderByWithAggregationInput = {
@@ -364,6 +377,7 @@ export type SessionOrderByWithAggregationInput = {
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   endedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  reminderSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   scheduleId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -391,6 +405,7 @@ export type SessionScalarWhereWithAggregatesInput = {
   notes?: Prisma.StringNullableWithAggregatesFilter<"Session"> | string | null
   startedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Session"> | Date | string | null
   endedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Session"> | Date | string | null
+  reminderSentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Session"> | Date | string | null
   scheduleId?: Prisma.StringNullableWithAggregatesFilter<"Session"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Session"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Session"> | Date | string
@@ -409,6 +424,7 @@ export type SessionCreateInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutSessionsInput
@@ -416,6 +432,7 @@ export type SessionCreateInput = {
   course?: Prisma.CourseCreateNestedOneWithoutSessionsInput
   schedule?: Prisma.StudentScheduleCreateNestedOneWithoutSessionsInput
   attendees?: Prisma.SessionAttendeeCreateNestedManyWithoutSessionInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutSessionInput
 }
 
 export type SessionUncheckedCreateInput = {
@@ -434,10 +451,12 @@ export type SessionUncheckedCreateInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   scheduleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   attendees?: Prisma.SessionAttendeeUncheckedCreateNestedManyWithoutSessionInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type SessionUpdateInput = {
@@ -453,6 +472,7 @@ export type SessionUpdateInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutSessionsNestedInput
@@ -460,6 +480,7 @@ export type SessionUpdateInput = {
   course?: Prisma.CourseUpdateOneWithoutSessionsNestedInput
   schedule?: Prisma.StudentScheduleUpdateOneWithoutSessionsNestedInput
   attendees?: Prisma.SessionAttendeeUpdateManyWithoutSessionNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutSessionNestedInput
 }
 
 export type SessionUncheckedUpdateInput = {
@@ -478,10 +499,12 @@ export type SessionUncheckedUpdateInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attendees?: Prisma.SessionAttendeeUncheckedUpdateManyWithoutSessionNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type SessionCreateManyInput = {
@@ -500,6 +523,7 @@ export type SessionCreateManyInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   scheduleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -518,6 +542,7 @@ export type SessionUpdateManyMutationInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -538,6 +563,7 @@ export type SessionUncheckedUpdateManyInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -569,6 +595,7 @@ export type SessionCountOrderByAggregateInput = {
   notes?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   endedAt?: Prisma.SortOrder
+  reminderSentAt?: Prisma.SortOrder
   scheduleId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -590,6 +617,7 @@ export type SessionMaxOrderByAggregateInput = {
   notes?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   endedAt?: Prisma.SortOrder
+  reminderSentAt?: Prisma.SortOrder
   scheduleId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -611,6 +639,7 @@ export type SessionMinOrderByAggregateInput = {
   notes?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   endedAt?: Prisma.SortOrder
+  reminderSentAt?: Prisma.SortOrder
   scheduleId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -811,6 +840,20 @@ export type SessionUpdateOneRequiredWithoutAttendeesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SessionUpdateToOneWithWhereWithoutAttendeesInput, Prisma.SessionUpdateWithoutAttendeesInput>, Prisma.SessionUncheckedUpdateWithoutAttendeesInput>
 }
 
+export type SessionCreateNestedOneWithoutCallsInput = {
+  create?: Prisma.XOR<Prisma.SessionCreateWithoutCallsInput, Prisma.SessionUncheckedCreateWithoutCallsInput>
+  connectOrCreate?: Prisma.SessionCreateOrConnectWithoutCallsInput
+  connect?: Prisma.SessionWhereUniqueInput
+}
+
+export type SessionUpdateOneRequiredWithoutCallsNestedInput = {
+  create?: Prisma.XOR<Prisma.SessionCreateWithoutCallsInput, Prisma.SessionUncheckedCreateWithoutCallsInput>
+  connectOrCreate?: Prisma.SessionCreateOrConnectWithoutCallsInput
+  upsert?: Prisma.SessionUpsertWithoutCallsInput
+  connect?: Prisma.SessionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SessionUpdateToOneWithWhereWithoutCallsInput, Prisma.SessionUpdateWithoutCallsInput>, Prisma.SessionUncheckedUpdateWithoutCallsInput>
+}
+
 export type SessionCreateWithoutTenantInput = {
   id?: string
   title: string
@@ -824,12 +867,14 @@ export type SessionCreateWithoutTenantInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   teacher: Prisma.TeacherCreateNestedOneWithoutSessionsInput
   course?: Prisma.CourseCreateNestedOneWithoutSessionsInput
   schedule?: Prisma.StudentScheduleCreateNestedOneWithoutSessionsInput
   attendees?: Prisma.SessionAttendeeCreateNestedManyWithoutSessionInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutSessionInput
 }
 
 export type SessionUncheckedCreateWithoutTenantInput = {
@@ -847,10 +892,12 @@ export type SessionUncheckedCreateWithoutTenantInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   scheduleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   attendees?: Prisma.SessionAttendeeUncheckedCreateNestedManyWithoutSessionInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type SessionCreateOrConnectWithoutTenantInput = {
@@ -898,6 +945,7 @@ export type SessionScalarWhereInput = {
   notes?: Prisma.StringNullableFilter<"Session"> | string | null
   startedAt?: Prisma.DateTimeNullableFilter<"Session"> | Date | string | null
   endedAt?: Prisma.DateTimeNullableFilter<"Session"> | Date | string | null
+  reminderSentAt?: Prisma.DateTimeNullableFilter<"Session"> | Date | string | null
   scheduleId?: Prisma.StringNullableFilter<"Session"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Session"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Session"> | Date | string
@@ -916,12 +964,14 @@ export type SessionCreateWithoutTeacherInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutSessionsInput
   course?: Prisma.CourseCreateNestedOneWithoutSessionsInput
   schedule?: Prisma.StudentScheduleCreateNestedOneWithoutSessionsInput
   attendees?: Prisma.SessionAttendeeCreateNestedManyWithoutSessionInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutSessionInput
 }
 
 export type SessionUncheckedCreateWithoutTeacherInput = {
@@ -939,10 +989,12 @@ export type SessionUncheckedCreateWithoutTeacherInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   scheduleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   attendees?: Prisma.SessionAttendeeUncheckedCreateNestedManyWithoutSessionInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type SessionCreateOrConnectWithoutTeacherInput = {
@@ -984,12 +1036,14 @@ export type SessionCreateWithoutCourseInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutSessionsInput
   teacher: Prisma.TeacherCreateNestedOneWithoutSessionsInput
   schedule?: Prisma.StudentScheduleCreateNestedOneWithoutSessionsInput
   attendees?: Prisma.SessionAttendeeCreateNestedManyWithoutSessionInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutSessionInput
 }
 
 export type SessionUncheckedCreateWithoutCourseInput = {
@@ -1007,10 +1061,12 @@ export type SessionUncheckedCreateWithoutCourseInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   scheduleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   attendees?: Prisma.SessionAttendeeUncheckedCreateNestedManyWithoutSessionInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type SessionCreateOrConnectWithoutCourseInput = {
@@ -1052,12 +1108,14 @@ export type SessionCreateWithoutScheduleInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutSessionsInput
   teacher: Prisma.TeacherCreateNestedOneWithoutSessionsInput
   course?: Prisma.CourseCreateNestedOneWithoutSessionsInput
   attendees?: Prisma.SessionAttendeeCreateNestedManyWithoutSessionInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutSessionInput
 }
 
 export type SessionUncheckedCreateWithoutScheduleInput = {
@@ -1076,9 +1134,11 @@ export type SessionUncheckedCreateWithoutScheduleInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   attendees?: Prisma.SessionAttendeeUncheckedCreateNestedManyWithoutSessionInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type SessionCreateOrConnectWithoutScheduleInput = {
@@ -1120,12 +1180,14 @@ export type SessionCreateWithoutAttendeesInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutSessionsInput
   teacher: Prisma.TeacherCreateNestedOneWithoutSessionsInput
   course?: Prisma.CourseCreateNestedOneWithoutSessionsInput
   schedule?: Prisma.StudentScheduleCreateNestedOneWithoutSessionsInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutSessionInput
 }
 
 export type SessionUncheckedCreateWithoutAttendeesInput = {
@@ -1144,9 +1206,11 @@ export type SessionUncheckedCreateWithoutAttendeesInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   scheduleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type SessionCreateOrConnectWithoutAttendeesInput = {
@@ -1178,12 +1242,14 @@ export type SessionUpdateWithoutAttendeesInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutSessionsNestedInput
   teacher?: Prisma.TeacherUpdateOneRequiredWithoutSessionsNestedInput
   course?: Prisma.CourseUpdateOneWithoutSessionsNestedInput
   schedule?: Prisma.StudentScheduleUpdateOneWithoutSessionsNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutSessionNestedInput
 }
 
 export type SessionUncheckedUpdateWithoutAttendeesInput = {
@@ -1202,9 +1268,119 @@ export type SessionUncheckedUpdateWithoutAttendeesInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutSessionNestedInput
+}
+
+export type SessionCreateWithoutCallsInput = {
+  id?: string
+  title: string
+  description?: string | null
+  provider?: $Enums.SessionProvider
+  status?: $Enums.SessionStatus
+  startAt: Date | string
+  endAt: Date | string
+  meetingUrl?: string | null
+  externalMeetingId?: string | null
+  notes?: string | null
+  startedAt?: Date | string | null
+  endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tenant: Prisma.TenantCreateNestedOneWithoutSessionsInput
+  teacher: Prisma.TeacherCreateNestedOneWithoutSessionsInput
+  course?: Prisma.CourseCreateNestedOneWithoutSessionsInput
+  schedule?: Prisma.StudentScheduleCreateNestedOneWithoutSessionsInput
+  attendees?: Prisma.SessionAttendeeCreateNestedManyWithoutSessionInput
+}
+
+export type SessionUncheckedCreateWithoutCallsInput = {
+  id?: string
+  tenantId: string
+  teacherId: string
+  courseId?: string | null
+  title: string
+  description?: string | null
+  provider?: $Enums.SessionProvider
+  status?: $Enums.SessionStatus
+  startAt: Date | string
+  endAt: Date | string
+  meetingUrl?: string | null
+  externalMeetingId?: string | null
+  notes?: string | null
+  startedAt?: Date | string | null
+  endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
+  scheduleId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  attendees?: Prisma.SessionAttendeeUncheckedCreateNestedManyWithoutSessionInput
+}
+
+export type SessionCreateOrConnectWithoutCallsInput = {
+  where: Prisma.SessionWhereUniqueInput
+  create: Prisma.XOR<Prisma.SessionCreateWithoutCallsInput, Prisma.SessionUncheckedCreateWithoutCallsInput>
+}
+
+export type SessionUpsertWithoutCallsInput = {
+  update: Prisma.XOR<Prisma.SessionUpdateWithoutCallsInput, Prisma.SessionUncheckedUpdateWithoutCallsInput>
+  create: Prisma.XOR<Prisma.SessionCreateWithoutCallsInput, Prisma.SessionUncheckedCreateWithoutCallsInput>
+  where?: Prisma.SessionWhereInput
+}
+
+export type SessionUpdateToOneWithWhereWithoutCallsInput = {
+  where?: Prisma.SessionWhereInput
+  data: Prisma.XOR<Prisma.SessionUpdateWithoutCallsInput, Prisma.SessionUncheckedUpdateWithoutCallsInput>
+}
+
+export type SessionUpdateWithoutCallsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumSessionProviderFieldUpdateOperationsInput | $Enums.SessionProvider
+  status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
+  startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meetingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalMeetingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutSessionsNestedInput
+  teacher?: Prisma.TeacherUpdateOneRequiredWithoutSessionsNestedInput
+  course?: Prisma.CourseUpdateOneWithoutSessionsNestedInput
+  schedule?: Prisma.StudentScheduleUpdateOneWithoutSessionsNestedInput
+  attendees?: Prisma.SessionAttendeeUpdateManyWithoutSessionNestedInput
+}
+
+export type SessionUncheckedUpdateWithoutCallsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  teacherId?: Prisma.StringFieldUpdateOperationsInput | string
+  courseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumSessionProviderFieldUpdateOperationsInput | $Enums.SessionProvider
+  status?: Prisma.EnumSessionStatusFieldUpdateOperationsInput | $Enums.SessionStatus
+  startAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meetingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalMeetingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  attendees?: Prisma.SessionAttendeeUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type SessionCreateManyTenantInput = {
@@ -1222,6 +1398,7 @@ export type SessionCreateManyTenantInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   scheduleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1240,12 +1417,14 @@ export type SessionUpdateWithoutTenantInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   teacher?: Prisma.TeacherUpdateOneRequiredWithoutSessionsNestedInput
   course?: Prisma.CourseUpdateOneWithoutSessionsNestedInput
   schedule?: Prisma.StudentScheduleUpdateOneWithoutSessionsNestedInput
   attendees?: Prisma.SessionAttendeeUpdateManyWithoutSessionNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutSessionNestedInput
 }
 
 export type SessionUncheckedUpdateWithoutTenantInput = {
@@ -1263,10 +1442,12 @@ export type SessionUncheckedUpdateWithoutTenantInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attendees?: Prisma.SessionAttendeeUncheckedUpdateManyWithoutSessionNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type SessionUncheckedUpdateManyWithoutTenantInput = {
@@ -1284,6 +1465,7 @@ export type SessionUncheckedUpdateManyWithoutTenantInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1304,6 +1486,7 @@ export type SessionCreateManyTeacherInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   scheduleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1322,12 +1505,14 @@ export type SessionUpdateWithoutTeacherInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutSessionsNestedInput
   course?: Prisma.CourseUpdateOneWithoutSessionsNestedInput
   schedule?: Prisma.StudentScheduleUpdateOneWithoutSessionsNestedInput
   attendees?: Prisma.SessionAttendeeUpdateManyWithoutSessionNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutSessionNestedInput
 }
 
 export type SessionUncheckedUpdateWithoutTeacherInput = {
@@ -1345,10 +1530,12 @@ export type SessionUncheckedUpdateWithoutTeacherInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attendees?: Prisma.SessionAttendeeUncheckedUpdateManyWithoutSessionNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type SessionUncheckedUpdateManyWithoutTeacherInput = {
@@ -1366,6 +1553,7 @@ export type SessionUncheckedUpdateManyWithoutTeacherInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1386,6 +1574,7 @@ export type SessionCreateManyCourseInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   scheduleId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1404,12 +1593,14 @@ export type SessionUpdateWithoutCourseInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutSessionsNestedInput
   teacher?: Prisma.TeacherUpdateOneRequiredWithoutSessionsNestedInput
   schedule?: Prisma.StudentScheduleUpdateOneWithoutSessionsNestedInput
   attendees?: Prisma.SessionAttendeeUpdateManyWithoutSessionNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutSessionNestedInput
 }
 
 export type SessionUncheckedUpdateWithoutCourseInput = {
@@ -1427,10 +1618,12 @@ export type SessionUncheckedUpdateWithoutCourseInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attendees?: Prisma.SessionAttendeeUncheckedUpdateManyWithoutSessionNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type SessionUncheckedUpdateManyWithoutCourseInput = {
@@ -1448,6 +1641,7 @@ export type SessionUncheckedUpdateManyWithoutCourseInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1469,6 +1663,7 @@ export type SessionCreateManyScheduleInput = {
   notes?: string | null
   startedAt?: Date | string | null
   endedAt?: Date | string | null
+  reminderSentAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1486,12 +1681,14 @@ export type SessionUpdateWithoutScheduleInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutSessionsNestedInput
   teacher?: Prisma.TeacherUpdateOneRequiredWithoutSessionsNestedInput
   course?: Prisma.CourseUpdateOneWithoutSessionsNestedInput
   attendees?: Prisma.SessionAttendeeUpdateManyWithoutSessionNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutSessionNestedInput
 }
 
 export type SessionUncheckedUpdateWithoutScheduleInput = {
@@ -1510,9 +1707,11 @@ export type SessionUncheckedUpdateWithoutScheduleInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attendees?: Prisma.SessionAttendeeUncheckedUpdateManyWithoutSessionNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type SessionUncheckedUpdateManyWithoutScheduleInput = {
@@ -1531,6 +1730,7 @@ export type SessionUncheckedUpdateManyWithoutScheduleInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminderSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1542,10 +1742,12 @@ export type SessionUncheckedUpdateManyWithoutScheduleInput = {
 
 export type SessionCountOutputType = {
   attendees: number
+  calls: number
 }
 
 export type SessionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   attendees?: boolean | SessionCountOutputTypeCountAttendeesArgs
+  calls?: boolean | SessionCountOutputTypeCountCallsArgs
 }
 
 /**
@@ -1565,6 +1767,13 @@ export type SessionCountOutputTypeCountAttendeesArgs<ExtArgs extends runtime.Typ
   where?: Prisma.SessionAttendeeWhereInput
 }
 
+/**
+ * SessionCountOutputType without action
+ */
+export type SessionCountOutputTypeCountCallsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SessionCallWhereInput
+}
+
 
 export type SessionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1582,6 +1791,7 @@ export type SessionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   notes?: boolean
   startedAt?: boolean
   endedAt?: boolean
+  reminderSentAt?: boolean
   scheduleId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1590,6 +1800,7 @@ export type SessionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   course?: boolean | Prisma.Session$courseArgs<ExtArgs>
   schedule?: boolean | Prisma.Session$scheduleArgs<ExtArgs>
   attendees?: boolean | Prisma.Session$attendeesArgs<ExtArgs>
+  calls?: boolean | Prisma.Session$callsArgs<ExtArgs>
   _count?: boolean | Prisma.SessionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["session"]>
 
@@ -1609,6 +1820,7 @@ export type SessionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   notes?: boolean
   startedAt?: boolean
   endedAt?: boolean
+  reminderSentAt?: boolean
   scheduleId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1634,6 +1846,7 @@ export type SessionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   notes?: boolean
   startedAt?: boolean
   endedAt?: boolean
+  reminderSentAt?: boolean
   scheduleId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1659,18 +1872,20 @@ export type SessionSelectScalar = {
   notes?: boolean
   startedAt?: boolean
   endedAt?: boolean
+  reminderSentAt?: boolean
   scheduleId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "teacherId" | "courseId" | "title" | "description" | "provider" | "status" | "startAt" | "endAt" | "meetingUrl" | "externalMeetingId" | "notes" | "startedAt" | "endedAt" | "scheduleId" | "createdAt" | "updatedAt", ExtArgs["result"]["session"]>
+export type SessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "teacherId" | "courseId" | "title" | "description" | "provider" | "status" | "startAt" | "endAt" | "meetingUrl" | "externalMeetingId" | "notes" | "startedAt" | "endedAt" | "reminderSentAt" | "scheduleId" | "createdAt" | "updatedAt", ExtArgs["result"]["session"]>
 export type SessionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
   teacher?: boolean | Prisma.TeacherDefaultArgs<ExtArgs>
   course?: boolean | Prisma.Session$courseArgs<ExtArgs>
   schedule?: boolean | Prisma.Session$scheduleArgs<ExtArgs>
   attendees?: boolean | Prisma.Session$attendeesArgs<ExtArgs>
+  calls?: boolean | Prisma.Session$callsArgs<ExtArgs>
   _count?: boolean | Prisma.SessionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SessionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1694,6 +1909,7 @@ export type $SessionPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     course: Prisma.$CoursePayload<ExtArgs> | null
     schedule: Prisma.$StudentSchedulePayload<ExtArgs> | null
     attendees: Prisma.$SessionAttendeePayload<ExtArgs>[]
+    calls: Prisma.$SessionCallPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1711,6 +1927,10 @@ export type $SessionPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     notes: string | null
     startedAt: Date | null
     endedAt: Date | null
+    /**
+     * Set when the "starting soon" reminder is claimed, so it goes out once.
+     */
+    reminderSentAt: Date | null
     scheduleId: string | null
     createdAt: Date
     updatedAt: Date
@@ -2113,6 +2333,7 @@ export interface Prisma__SessionClient<T, Null = never, ExtArgs extends runtime.
   course<T extends Prisma.Session$courseArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Session$courseArgs<ExtArgs>>): Prisma.Prisma__CourseClient<runtime.Types.Result.GetResult<Prisma.$CoursePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   schedule<T extends Prisma.Session$scheduleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Session$scheduleArgs<ExtArgs>>): Prisma.Prisma__StudentScheduleClient<runtime.Types.Result.GetResult<Prisma.$StudentSchedulePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   attendees<T extends Prisma.Session$attendeesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Session$attendeesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionAttendeePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  calls<T extends Prisma.Session$callsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Session$callsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionCallPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2157,6 +2378,7 @@ export interface SessionFieldRefs {
   readonly notes: Prisma.FieldRef<"Session", 'String'>
   readonly startedAt: Prisma.FieldRef<"Session", 'DateTime'>
   readonly endedAt: Prisma.FieldRef<"Session", 'DateTime'>
+  readonly reminderSentAt: Prisma.FieldRef<"Session", 'DateTime'>
   readonly scheduleId: Prisma.FieldRef<"Session", 'String'>
   readonly createdAt: Prisma.FieldRef<"Session", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Session", 'DateTime'>
@@ -2620,6 +2842,30 @@ export type Session$attendeesArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.SessionAttendeeScalarFieldEnum | Prisma.SessionAttendeeScalarFieldEnum[]
+}
+
+/**
+ * Session.calls
+ */
+export type Session$callsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SessionCall
+   */
+  select?: Prisma.SessionCallSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SessionCall
+   */
+  omit?: Prisma.SessionCallOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SessionCallInclude<ExtArgs> | null
+  where?: Prisma.SessionCallWhereInput
+  orderBy?: Prisma.SessionCallOrderByWithRelationInput | Prisma.SessionCallOrderByWithRelationInput[]
+  cursor?: Prisma.SessionCallWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SessionCallScalarFieldEnum | Prisma.SessionCallScalarFieldEnum[]
 }
 
 /**

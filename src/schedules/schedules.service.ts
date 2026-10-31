@@ -15,6 +15,7 @@ import {
   sessionLength,
 } from './schedule-plan.js';
 import { msg } from '../i18n/i18n.js';
+import { NotificationEvents } from '../notifications/notification-events.js';
 
 const scheduleInclude = {
   teacher: { select: { id: true, user: { select: { fullName: true } } } },
@@ -31,6 +32,7 @@ export class SchedulesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly sessions: SessionsService,
+    private readonly events: NotificationEvents,
   ) {}
 
   async list(user: JwtUser) {
@@ -131,6 +133,7 @@ export class SchedulesService {
           include: scheduleInclude,
         });
       });
+      void this.events.scheduleCreated(created.id, user.id);
       return summarize(created);
     } catch (err) {
       if (dto.provider !== 'MANUAL') {

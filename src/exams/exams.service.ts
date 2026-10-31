@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import type { JwtUser } from '../common/decorators/current-user.decorator.js';
 import type { CreateExamDto, GradeDto, GradeManyDto, UpdateExamDto } from './dto/exam.dto.js';
 import { msg } from '../i18n/i18n.js';
+import { NotificationEvents } from '../notifications/notification-events.js';
 
 const examInclude = {
   course: { select: { id: true, title: true } },
@@ -17,7 +18,10 @@ export function startOfMonth(input: string | Date) {
 
 @Injectable()
 export class ExamsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly events: NotificationEvents,
+  ) {}
 
   list(user: JwtUser, month?: string) {
     const tenantId = user.tenantId!;
@@ -82,12 +86,15 @@ export class ExamsService {
   }
 
   async update(user: JwtUser, id: string, dto: UpdateExamDto) {
-    await this.getOwned(user, id);
-    return this.prisma.exam.update({
+    const before = await this.getOwned(user, id);
+    const exam = await this.prisma.exam.update({
       where: { id },
       data: { ...dto, month: dto.month ? startOfMonth(dto.month) : undefined },
       include: examInclude,
     });
+    // Students hear about an exam once it is published for them (not when a draft is edited).
+    if (exam.status === 'PUBLISHED' && before.status === 'DRAFT') void this.events.examPublished(id, user.id);
+    return exam;
   }
 
   async remove(user: JwtUser, id: string) {
@@ -105,12 +112,15 @@ export class ExamsService {
     });
     if (!enrolled) throw new NotFoundException(msg('exams.studentNotEnrolled'));
 
-    return this.prisma.examResult.upsert({
+    const changed = await this.changedMarks(id, [{ studentId: dto.studentId, score: dto.score, feedback: dto.feedback }]);
+    const result = await this.prisma.examResult.upsert({
       where: { examId_studentId: { examId: id, studentId: dto.studentId } },
       update: { score: dto.score, feedback: dto.feedback, gradedAt: new Date() },
       create: { examId: id, studentId: dto.studentId, score: dto.score, feedback: dto.feedback },
       include: { student: { select: { id: true, user: { select: { fullName: true } } } } },
     });
+    void this.events.examGraded(id, changed, user.id);
+    return result;
   }
 
   /** Grading sheet: every student enrolled in the exam's course, with their mark so far. */
@@ -146,6 +156,7 @@ export class ExamsService {
     const enrolled = await this.prisma.enrollment.count({ where: { courseId: exam.courseId, studentId: { in: ids } } });
     if (enrolled !== ids.length) throw new NotFoundException(msg('exams.studentNotEnrolled'));
 
+    const changed = await this.changedMarks(id, dto.results);
     const now = new Date();
     await this.prisma.$transaction(
       dto.results.map((r) =>
@@ -156,7 +167,23 @@ export class ExamsService {
         }),
       ),
     );
+    void this.events.examGraded(id, changed, user.id);
     return this.roster(user, id);
+  }
+
+  /** Students whose mark or note these rows change (saving the whole sheet again tells nobody). */
+  private async changedMarks(examId: string, rows: { studentId: string; score: number; feedback?: string | null }[]) {
+    const current = await this.prisma.examResult.findMany({
+      where: { examId, studentId: { in: rows.map((r) => r.studentId) } },
+      select: { studentId: true, score: true, feedback: true },
+    });
+    const byStudent = new Map(current.map((r) => [r.studentId, r]));
+    return rows
+      .filter((r) => {
+        const was = byStudent.get(r.studentId);
+        return !was || Number(was.score) !== r.score || (was.feedback ?? null) !== (r.feedback ?? null);
+      })
+      .map((r) => r.studentId);
   }
 
   private async getOwned(user: JwtUser, id: string) {

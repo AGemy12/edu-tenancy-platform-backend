@@ -6,6 +6,7 @@ import type { JwtUser } from '../common/decorators/current-user.decorator.js';
 import { msg } from '../i18n/i18n.js';
 import { TokenCipher } from './token-cipher.js';
 import { ZoomOAuthService } from './zoom-oauth.service.js';
+import { canLinkMeetingAccount } from './meeting-accounts.js';
 
 const GOOGLE_SCOPES = ['https://www.googleapis.com/auth/calendar.events', 'openid', 'email'].join(' ');
 
@@ -33,6 +34,8 @@ export class IntegrationsService {
     const google = rows.find((r) => r.provider === 'GOOGLE');
     const zoom = rows.find((r) => r.provider === 'ZOOM');
     return {
+      /** Only a member who teaches here links an account; anyone may disconnect one they have. */
+      canLink: canLinkMeetingAccount(user),
       google: {
         configured: Boolean(this.config.get('GOOGLE_CLIENT_ID')),
         account: google ? { email: google.externalEmail ?? google.externalId, connectedAt: google.updatedAt } : null,

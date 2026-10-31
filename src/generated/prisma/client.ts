@@ -58,6 +58,13 @@ export type Plan = Prisma.PlanModel
  */
 export type Subscription = Prisma.SubscriptionModel
 /**
+ * Model SubscriptionChange
+ * The subscription as it stood from `createdAt` on: one row per change (sign-up trial, renewal,
+ * package or status change). Platform metrics (MRR, churn, trial conversion) replay these rows,
+ * so the price is copied at the time and later re-pricing of the package leaves history alone.
+ */
+export type SubscriptionChange = Prisma.SubscriptionChangeModel
+/**
  * Model User
  * One person, one sign-in. What they are in each center is a `Membership`: the same account
  * can own one center, teach in another and study in a third. `isPlatformAdmin` is the
@@ -80,6 +87,23 @@ export type PasswordResetToken = Prisma.PasswordResetTokenModel
  * 
  */
 export type RefreshToken = Prisma.RefreshTokenModel
+/**
+ * Model SupportRequest
+ * The platform asks a center to let support in as one of its members; the center's admin decides.
+ * Approval opens a window (accessUntil) in which support may enter, as that member only.
+ */
+export type SupportRequest = Prisma.SupportRequestModel
+/**
+ * Model SupportSession
+ * A platform admin working inside a center as one of its members, to solve a problem (support
+ * mode), under a request the center approved. Time-limited; every write is kept in SupportAction.
+ */
+export type SupportSession = Prisma.SupportSessionModel
+/**
+ * Model SupportAction
+ * One write (POST/PATCH/PUT/DELETE) made during a support session, with its outcome.
+ */
+export type SupportAction = Prisma.SupportActionModel
 /**
  * Model Teacher
  * 
@@ -135,6 +159,10 @@ export type SessionAttendee = Prisma.SessionAttendeeModel
  * overridden for one student; the most specific rate in effect when the session starts wins.
  * Changing a price adds a row with a later `effectiveFrom`, so past sessions keep their price.
  * Amounts are computed from these rows when read (see billing/billing.ts), never stored.
+ * One line of the rate card. STUDENT_FEE is the center's price list: a center-wide default
+ * (no teacher, course or student), or a price for a course, a student, or a student in a course;
+ * optionally narrowed to one teacher's sessions. TEACHER_PAY always names the teacher and may be
+ * narrowed to one course. The most specific line in effect at a session's start wins.
  */
 export type BillingRate = Prisma.BillingRateModel
 /**
@@ -177,3 +205,47 @@ export type StoredBlob = Prisma.StoredBlobModel
  * Extra space on top of the package: purchased upgrades or grants. `userId` null = center library.
  */
 export type StorageAddOn = Prisma.StorageAddOnModel
+/**
+ * Model Notification
+ * One thing one person should know about, in one of their spaces. Stored as a type plus values
+ * (`params`), never as text, so it reads in whatever language the person uses. Real-time delivery
+ * (socket) and email are best effort on top of this row, which stays the source of truth.
+ */
+export type Notification = Prisma.NotificationModel
+/**
+ * Model NotificationPreference
+ * A person's channel choices for one category (every space). No row = the category's defaults.
+ */
+export type NotificationPreference = Prisma.NotificationPreferenceModel
+/**
+ * Model Announcement
+ * A message from a center's admin to its members, or from the platform to centers. Delivered as
+ * ANNOUNCEMENT notifications; this row is the sender's record of it.
+ */
+export type Announcement = Prisma.AnnouncementModel
+/**
+ * Model Conversation
+ * A chat inside one center. DIRECT is between two members (one per pair, see `directKey`);
+ * GROUP has a title and admins, and may be a course's class group.
+ */
+export type Conversation = Prisma.ConversationModel
+/**
+ * Model ConversationParticipant
+ * A member in a conversation, with their read position. `unreadCount` is kept in step with
+ * messages in the same transaction (cheap inbox badges); `lastReadAt` drives "seen" receipts.
+ */
+export type ConversationParticipant = Prisma.ConversationParticipantModel
+/**
+ * Model Message
+ * 
+ */
+export type Message = Prisma.MessageModel
+/**
+ * Model SessionCall
+ * A call placed from a teacher–student direct chat during one of their one-to-one sessions
+ * (see sessions/call-rules.ts). Each call has its own meeting: a fresh Zoom meeting on the
+ * teacher's account, or the session's Meet or pasted link. When a meeting drops (a free Zoom
+ * meeting stops after 40 minutes), either of them calls again from the same chat, and the
+ * session goes on: it stays live until its planned end, so attendance and billing see one class.
+ */
+export type SessionCall = Prisma.SessionCallModel

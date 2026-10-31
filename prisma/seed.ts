@@ -30,6 +30,12 @@ async function main() {
       subscription: { create: { plan: { connect: { code: 'PRO' } }, status: 'ACTIVE', currentPeriodEnd: periodEnd } },
     },
   });
+  if ((await prisma.subscriptionChange.count({ where: { tenantId: tenant.id } })) === 0) {
+    const sub = await prisma.subscription.findUniqueOrThrow({ where: { tenantId: tenant.id }, include: { plan: true } });
+    await prisma.subscriptionChange.create({
+      data: { tenantId: tenant.id, planId: sub.planId, status: sub.status, currentPeriodEnd: sub.currentPeriodEnd, priceMonthly: sub.plan.priceMonthly, currency: sub.plan.currency, createdAt: sub.createdAt },
+    });
+  }
 
   /** A sign-in plus its membership in the demo center. */
   async function member(email: string, fullName: string, role: Role) {
@@ -83,13 +89,13 @@ async function main() {
     create: { tenantId: tenant.id, courseId: course.id, studentId: student.id },
   });
 
-  // Demo rate card: students pay 150/h with this teacher, who keeps 60% of what they pay.
+  // Demo rate card: the center charges 150/h (its default price), and this teacher keeps 60% of what their students pay.
   const hasRates = await prisma.billingRate.count({ where: { tenantId: tenant.id } });
   if (!hasRates) {
     const effectiveFrom = new Date(Date.UTC(2026, 0, 1));
     await prisma.billingRate.createMany({
       data: [
-        { tenantId: tenant.id, kind: 'STUDENT_FEE', teacherId: teacher.id, amount: 150, effectiveFrom },
+        { tenantId: tenant.id, kind: 'STUDENT_FEE', amount: 150, effectiveFrom },
         { tenantId: tenant.id, kind: 'TEACHER_PAY', basis: 'PERCENT', teacherId: teacher.id, amount: 60, effectiveFrom },
       ],
     });

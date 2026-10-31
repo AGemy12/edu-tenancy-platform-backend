@@ -35,6 +35,7 @@ export type UserMinAggregateOutputType = {
   isPlatformAdmin: boolean | null
   lastLoginAt: Date | null
   lastMembershipId: string | null
+  locale: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -48,6 +49,7 @@ export type UserMaxAggregateOutputType = {
   isPlatformAdmin: boolean | null
   lastLoginAt: Date | null
   lastMembershipId: string | null
+  locale: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -61,6 +63,7 @@ export type UserCountAggregateOutputType = {
   isPlatformAdmin: number
   lastLoginAt: number
   lastMembershipId: number
+  locale: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -76,6 +79,7 @@ export type UserMinAggregateInputType = {
   isPlatformAdmin?: true
   lastLoginAt?: true
   lastMembershipId?: true
+  locale?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -89,6 +93,7 @@ export type UserMaxAggregateInputType = {
   isPlatformAdmin?: true
   lastLoginAt?: true
   lastMembershipId?: true
+  locale?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -102,6 +107,7 @@ export type UserCountAggregateInputType = {
   isPlatformAdmin?: true
   lastLoginAt?: true
   lastMembershipId?: true
+  locale?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -188,6 +194,7 @@ export type UserGroupByOutputType = {
   isPlatformAdmin: boolean
   lastLoginAt: Date | null
   lastMembershipId: string | null
+  locale: string | null
   createdAt: Date
   updatedAt: Date
   _count: UserCountAggregateOutputType | null
@@ -222,6 +229,7 @@ export type UserWhereInput = {
   isPlatformAdmin?: Prisma.BoolFilter<"User"> | boolean
   lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   lastMembershipId?: Prisma.StringNullableFilter<"User"> | string | null
+  locale?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   memberships?: Prisma.MembershipListRelationFilter
@@ -234,6 +242,13 @@ export type UserWhereInput = {
   chargedBlobs?: Prisma.StoredBlobListRelationFilter
   teachers?: Prisma.TeacherListRelationFilter
   students?: Prisma.StudentListRelationFilter
+  supportSessions?: Prisma.SupportSessionListRelationFilter
+  supportRequests?: Prisma.SupportRequestListRelationFilter
+  supportDecisions?: Prisma.SupportRequestListRelationFilter
+  notifications?: Prisma.NotificationListRelationFilter
+  causedNotifications?: Prisma.NotificationListRelationFilter
+  notificationPrefs?: Prisma.NotificationPreferenceListRelationFilter
+  announcements?: Prisma.AnnouncementListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -245,6 +260,7 @@ export type UserOrderByWithRelationInput = {
   isPlatformAdmin?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastMembershipId?: Prisma.SortOrderInput | Prisma.SortOrder
+  locale?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   memberships?: Prisma.MembershipOrderByRelationAggregateInput
@@ -257,6 +273,13 @@ export type UserOrderByWithRelationInput = {
   chargedBlobs?: Prisma.StoredBlobOrderByRelationAggregateInput
   teachers?: Prisma.TeacherOrderByRelationAggregateInput
   students?: Prisma.StudentOrderByRelationAggregateInput
+  supportSessions?: Prisma.SupportSessionOrderByRelationAggregateInput
+  supportRequests?: Prisma.SupportRequestOrderByRelationAggregateInput
+  supportDecisions?: Prisma.SupportRequestOrderByRelationAggregateInput
+  notifications?: Prisma.NotificationOrderByRelationAggregateInput
+  causedNotifications?: Prisma.NotificationOrderByRelationAggregateInput
+  notificationPrefs?: Prisma.NotificationPreferenceOrderByRelationAggregateInput
+  announcements?: Prisma.AnnouncementOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -271,6 +294,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   isPlatformAdmin?: Prisma.BoolFilter<"User"> | boolean
   lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   lastMembershipId?: Prisma.StringNullableFilter<"User"> | string | null
+  locale?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   memberships?: Prisma.MembershipListRelationFilter
@@ -283,6 +307,13 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   chargedBlobs?: Prisma.StoredBlobListRelationFilter
   teachers?: Prisma.TeacherListRelationFilter
   students?: Prisma.StudentListRelationFilter
+  supportSessions?: Prisma.SupportSessionListRelationFilter
+  supportRequests?: Prisma.SupportRequestListRelationFilter
+  supportDecisions?: Prisma.SupportRequestListRelationFilter
+  notifications?: Prisma.NotificationListRelationFilter
+  causedNotifications?: Prisma.NotificationListRelationFilter
+  notificationPrefs?: Prisma.NotificationPreferenceListRelationFilter
+  announcements?: Prisma.AnnouncementListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -294,6 +325,7 @@ export type UserOrderByWithAggregationInput = {
   isPlatformAdmin?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastMembershipId?: Prisma.SortOrderInput | Prisma.SortOrder
+  locale?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
@@ -313,6 +345,7 @@ export type UserScalarWhereWithAggregatesInput = {
   isPlatformAdmin?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   lastLoginAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   lastMembershipId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  locale?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
@@ -326,6 +359,7 @@ export type UserCreateInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
@@ -338,6 +372,13 @@ export type UserCreateInput = {
   chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
   students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -349,6 +390,7 @@ export type UserUncheckedCreateInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
@@ -361,6 +403,13 @@ export type UserUncheckedCreateInput = {
   chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
   students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUpdateInput = {
@@ -372,6 +421,7 @@ export type UserUpdateInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
@@ -384,6 +434,13 @@ export type UserUpdateInput = {
   chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -395,6 +452,7 @@ export type UserUncheckedUpdateInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
@@ -407,6 +465,13 @@ export type UserUncheckedUpdateInput = {
   chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -418,6 +483,7 @@ export type UserCreateManyInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -431,6 +497,7 @@ export type UserUpdateManyMutationInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -444,6 +511,7 @@ export type UserUncheckedUpdateManyInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -457,6 +525,7 @@ export type UserCountOrderByAggregateInput = {
   isPlatformAdmin?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrder
   lastMembershipId?: Prisma.SortOrder
+  locale?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -470,6 +539,7 @@ export type UserMaxOrderByAggregateInput = {
   isPlatformAdmin?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrder
   lastMembershipId?: Prisma.SortOrder
+  locale?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -483,6 +553,7 @@ export type UserMinOrderByAggregateInput = {
   isPlatformAdmin?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrder
   lastMembershipId?: Prisma.SortOrder
+  locale?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -537,6 +608,50 @@ export type UserUpdateOneRequiredWithoutRefreshTokensNestedInput = {
   upsert?: Prisma.UserUpsertWithoutRefreshTokensInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutRefreshTokensInput, Prisma.UserUpdateWithoutRefreshTokensInput>, Prisma.UserUncheckedUpdateWithoutRefreshTokensInput>
+}
+
+export type UserCreateNestedOneWithoutSupportRequestsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSupportRequestsInput, Prisma.UserUncheckedCreateWithoutSupportRequestsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSupportRequestsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutSupportDecisionsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSupportDecisionsInput, Prisma.UserUncheckedCreateWithoutSupportDecisionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSupportDecisionsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutSupportRequestsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSupportRequestsInput, Prisma.UserUncheckedCreateWithoutSupportRequestsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSupportRequestsInput
+  upsert?: Prisma.UserUpsertWithoutSupportRequestsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSupportRequestsInput, Prisma.UserUpdateWithoutSupportRequestsInput>, Prisma.UserUncheckedUpdateWithoutSupportRequestsInput>
+}
+
+export type UserUpdateOneWithoutSupportDecisionsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSupportDecisionsInput, Prisma.UserUncheckedCreateWithoutSupportDecisionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSupportDecisionsInput
+  upsert?: Prisma.UserUpsertWithoutSupportDecisionsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSupportDecisionsInput, Prisma.UserUpdateWithoutSupportDecisionsInput>, Prisma.UserUncheckedUpdateWithoutSupportDecisionsInput>
+}
+
+export type UserCreateNestedOneWithoutSupportSessionsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSupportSessionsInput, Prisma.UserUncheckedCreateWithoutSupportSessionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSupportSessionsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutSupportSessionsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSupportSessionsInput, Prisma.UserUncheckedCreateWithoutSupportSessionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSupportSessionsInput
+  upsert?: Prisma.UserUpsertWithoutSupportSessionsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSupportSessionsInput, Prisma.UserUpdateWithoutSupportSessionsInput>, Prisma.UserUncheckedUpdateWithoutSupportSessionsInput>
 }
 
 export type UserCreateNestedOneWithoutTeachersInput = {
@@ -641,6 +756,66 @@ export type UserUpdateOneWithoutStorageAddOnsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutStorageAddOnsInput, Prisma.UserUpdateWithoutStorageAddOnsInput>, Prisma.UserUncheckedUpdateWithoutStorageAddOnsInput>
 }
 
+export type UserCreateNestedOneWithoutNotificationsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutNotificationsInput, Prisma.UserUncheckedCreateWithoutNotificationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutNotificationsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutCausedNotificationsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCausedNotificationsInput, Prisma.UserUncheckedCreateWithoutCausedNotificationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCausedNotificationsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutNotificationsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutNotificationsInput, Prisma.UserUncheckedCreateWithoutNotificationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutNotificationsInput
+  upsert?: Prisma.UserUpsertWithoutNotificationsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutNotificationsInput, Prisma.UserUpdateWithoutNotificationsInput>, Prisma.UserUncheckedUpdateWithoutNotificationsInput>
+}
+
+export type UserUpdateOneWithoutCausedNotificationsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCausedNotificationsInput, Prisma.UserUncheckedCreateWithoutCausedNotificationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCausedNotificationsInput
+  upsert?: Prisma.UserUpsertWithoutCausedNotificationsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCausedNotificationsInput, Prisma.UserUpdateWithoutCausedNotificationsInput>, Prisma.UserUncheckedUpdateWithoutCausedNotificationsInput>
+}
+
+export type UserCreateNestedOneWithoutNotificationPrefsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutNotificationPrefsInput, Prisma.UserUncheckedCreateWithoutNotificationPrefsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutNotificationPrefsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutNotificationPrefsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutNotificationPrefsInput, Prisma.UserUncheckedCreateWithoutNotificationPrefsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutNotificationPrefsInput
+  upsert?: Prisma.UserUpsertWithoutNotificationPrefsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutNotificationPrefsInput, Prisma.UserUpdateWithoutNotificationPrefsInput>, Prisma.UserUncheckedUpdateWithoutNotificationPrefsInput>
+}
+
+export type UserCreateNestedOneWithoutAnnouncementsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAnnouncementsInput, Prisma.UserUncheckedCreateWithoutAnnouncementsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAnnouncementsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutAnnouncementsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAnnouncementsInput, Prisma.UserUncheckedCreateWithoutAnnouncementsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAnnouncementsInput
+  upsert?: Prisma.UserUpsertWithoutAnnouncementsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAnnouncementsInput, Prisma.UserUpdateWithoutAnnouncementsInput>, Prisma.UserUncheckedUpdateWithoutAnnouncementsInput>
+}
+
 export type UserCreateWithoutMembershipsInput = {
   id?: string
   email: string
@@ -650,6 +825,7 @@ export type UserCreateWithoutMembershipsInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -661,6 +837,13 @@ export type UserCreateWithoutMembershipsInput = {
   chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
   students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutMembershipsInput = {
@@ -672,6 +855,7 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -683,6 +867,13 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
   students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutMembershipsInput = {
@@ -710,6 +901,7 @@ export type UserUpdateWithoutMembershipsInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -721,6 +913,13 @@ export type UserUpdateWithoutMembershipsInput = {
   chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMembershipsInput = {
@@ -732,6 +931,7 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -743,6 +943,13 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutPasswordResetTokensInput = {
@@ -754,6 +961,7 @@ export type UserCreateWithoutPasswordResetTokensInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
@@ -765,6 +973,13 @@ export type UserCreateWithoutPasswordResetTokensInput = {
   chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
   students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutPasswordResetTokensInput = {
@@ -776,6 +991,7 @@ export type UserUncheckedCreateWithoutPasswordResetTokensInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
@@ -787,6 +1003,13 @@ export type UserUncheckedCreateWithoutPasswordResetTokensInput = {
   chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
   students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutPasswordResetTokensInput = {
@@ -814,6 +1037,7 @@ export type UserUpdateWithoutPasswordResetTokensInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
@@ -825,6 +1049,13 @@ export type UserUpdateWithoutPasswordResetTokensInput = {
   chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPasswordResetTokensInput = {
@@ -836,6 +1067,7 @@ export type UserUncheckedUpdateWithoutPasswordResetTokensInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
@@ -847,6 +1079,13 @@ export type UserUncheckedUpdateWithoutPasswordResetTokensInput = {
   chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutRefreshTokensInput = {
@@ -858,6 +1097,7 @@ export type UserCreateWithoutRefreshTokensInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
@@ -869,6 +1109,13 @@ export type UserCreateWithoutRefreshTokensInput = {
   chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
   students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutRefreshTokensInput = {
@@ -880,6 +1127,7 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
@@ -891,6 +1139,13 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
   students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutRefreshTokensInput = {
@@ -918,6 +1173,7 @@ export type UserUpdateWithoutRefreshTokensInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
@@ -929,6 +1185,13 @@ export type UserUpdateWithoutRefreshTokensInput = {
   chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRefreshTokensInput = {
@@ -940,6 +1203,7 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
@@ -951,6 +1215,421 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
+}
+
+export type UserCreateWithoutSupportRequestsInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  fullName: string
+  phone?: string | null
+  isPlatformAdmin?: boolean
+  lastLoginAt?: Date | string | null
+  lastMembershipId?: string | null
+  locale?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutUserInput
+  libraryFolders?: Prisma.LibraryFolderCreateNestedManyWithoutOwnerInput
+  libraryFiles?: Prisma.LibraryFileCreateNestedManyWithoutOwnerInput
+  storageAddOns?: Prisma.StorageAddOnCreateNestedManyWithoutUserInput
+  chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
+  teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
+  students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
+}
+
+export type UserUncheckedCreateWithoutSupportRequestsInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  fullName: string
+  phone?: string | null
+  isPlatformAdmin?: boolean
+  lastLoginAt?: Date | string | null
+  lastMembershipId?: string | null
+  locale?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutUserInput
+  libraryFolders?: Prisma.LibraryFolderUncheckedCreateNestedManyWithoutOwnerInput
+  libraryFiles?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutOwnerInput
+  storageAddOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutUserInput
+  chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
+  teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
+}
+
+export type UserCreateOrConnectWithoutSupportRequestsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutSupportRequestsInput, Prisma.UserUncheckedCreateWithoutSupportRequestsInput>
+}
+
+export type UserCreateWithoutSupportDecisionsInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  fullName: string
+  phone?: string | null
+  isPlatformAdmin?: boolean
+  lastLoginAt?: Date | string | null
+  lastMembershipId?: string | null
+  locale?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutUserInput
+  libraryFolders?: Prisma.LibraryFolderCreateNestedManyWithoutOwnerInput
+  libraryFiles?: Prisma.LibraryFileCreateNestedManyWithoutOwnerInput
+  storageAddOns?: Prisma.StorageAddOnCreateNestedManyWithoutUserInput
+  chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
+  teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
+  students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
+}
+
+export type UserUncheckedCreateWithoutSupportDecisionsInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  fullName: string
+  phone?: string | null
+  isPlatformAdmin?: boolean
+  lastLoginAt?: Date | string | null
+  lastMembershipId?: string | null
+  locale?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutUserInput
+  libraryFolders?: Prisma.LibraryFolderUncheckedCreateNestedManyWithoutOwnerInput
+  libraryFiles?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutOwnerInput
+  storageAddOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutUserInput
+  chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
+  teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
+}
+
+export type UserCreateOrConnectWithoutSupportDecisionsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutSupportDecisionsInput, Prisma.UserUncheckedCreateWithoutSupportDecisionsInput>
+}
+
+export type UserUpsertWithoutSupportRequestsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutSupportRequestsInput, Prisma.UserUncheckedUpdateWithoutSupportRequestsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSupportRequestsInput, Prisma.UserUncheckedCreateWithoutSupportRequestsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutSupportRequestsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutSupportRequestsInput, Prisma.UserUncheckedUpdateWithoutSupportRequestsInput>
+}
+
+export type UserUpdateWithoutSupportRequestsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutUserNestedInput
+  libraryFolders?: Prisma.LibraryFolderUpdateManyWithoutOwnerNestedInput
+  libraryFiles?: Prisma.LibraryFileUpdateManyWithoutOwnerNestedInput
+  storageAddOns?: Prisma.StorageAddOnUpdateManyWithoutUserNestedInput
+  chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
+  teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
+  students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
+}
+
+export type UserUncheckedUpdateWithoutSupportRequestsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutUserNestedInput
+  libraryFolders?: Prisma.LibraryFolderUncheckedUpdateManyWithoutOwnerNestedInput
+  libraryFiles?: Prisma.LibraryFileUncheckedUpdateManyWithoutOwnerNestedInput
+  storageAddOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutUserNestedInput
+  chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
+  teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
+}
+
+export type UserUpsertWithoutSupportDecisionsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutSupportDecisionsInput, Prisma.UserUncheckedUpdateWithoutSupportDecisionsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSupportDecisionsInput, Prisma.UserUncheckedCreateWithoutSupportDecisionsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutSupportDecisionsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutSupportDecisionsInput, Prisma.UserUncheckedUpdateWithoutSupportDecisionsInput>
+}
+
+export type UserUpdateWithoutSupportDecisionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutUserNestedInput
+  libraryFolders?: Prisma.LibraryFolderUpdateManyWithoutOwnerNestedInput
+  libraryFiles?: Prisma.LibraryFileUpdateManyWithoutOwnerNestedInput
+  storageAddOns?: Prisma.StorageAddOnUpdateManyWithoutUserNestedInput
+  chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
+  teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
+  students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
+}
+
+export type UserUncheckedUpdateWithoutSupportDecisionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutUserNestedInput
+  libraryFolders?: Prisma.LibraryFolderUncheckedUpdateManyWithoutOwnerNestedInput
+  libraryFiles?: Prisma.LibraryFileUncheckedUpdateManyWithoutOwnerNestedInput
+  storageAddOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutUserNestedInput
+  chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
+  teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
+}
+
+export type UserCreateWithoutSupportSessionsInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  fullName: string
+  phone?: string | null
+  isPlatformAdmin?: boolean
+  lastLoginAt?: Date | string | null
+  lastMembershipId?: string | null
+  locale?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutUserInput
+  libraryFolders?: Prisma.LibraryFolderCreateNestedManyWithoutOwnerInput
+  libraryFiles?: Prisma.LibraryFileCreateNestedManyWithoutOwnerInput
+  storageAddOns?: Prisma.StorageAddOnCreateNestedManyWithoutUserInput
+  chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
+  teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
+  students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
+}
+
+export type UserUncheckedCreateWithoutSupportSessionsInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  fullName: string
+  phone?: string | null
+  isPlatformAdmin?: boolean
+  lastLoginAt?: Date | string | null
+  lastMembershipId?: string | null
+  locale?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutUserInput
+  libraryFolders?: Prisma.LibraryFolderUncheckedCreateNestedManyWithoutOwnerInput
+  libraryFiles?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutOwnerInput
+  storageAddOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutUserInput
+  chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
+  teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
+}
+
+export type UserCreateOrConnectWithoutSupportSessionsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutSupportSessionsInput, Prisma.UserUncheckedCreateWithoutSupportSessionsInput>
+}
+
+export type UserUpsertWithoutSupportSessionsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutSupportSessionsInput, Prisma.UserUncheckedUpdateWithoutSupportSessionsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSupportSessionsInput, Prisma.UserUncheckedCreateWithoutSupportSessionsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutSupportSessionsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutSupportSessionsInput, Prisma.UserUncheckedUpdateWithoutSupportSessionsInput>
+}
+
+export type UserUpdateWithoutSupportSessionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutUserNestedInput
+  libraryFolders?: Prisma.LibraryFolderUpdateManyWithoutOwnerNestedInput
+  libraryFiles?: Prisma.LibraryFileUpdateManyWithoutOwnerNestedInput
+  storageAddOns?: Prisma.StorageAddOnUpdateManyWithoutUserNestedInput
+  chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
+  teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
+  students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
+}
+
+export type UserUncheckedUpdateWithoutSupportSessionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutUserNestedInput
+  libraryFolders?: Prisma.LibraryFolderUncheckedUpdateManyWithoutOwnerNestedInput
+  libraryFiles?: Prisma.LibraryFileUncheckedUpdateManyWithoutOwnerNestedInput
+  storageAddOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutUserNestedInput
+  chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
+  teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutTeachersInput = {
@@ -962,6 +1641,7 @@ export type UserCreateWithoutTeachersInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
@@ -973,6 +1653,13 @@ export type UserCreateWithoutTeachersInput = {
   storageAddOns?: Prisma.StorageAddOnCreateNestedManyWithoutUserInput
   chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
   students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutTeachersInput = {
@@ -984,6 +1671,7 @@ export type UserUncheckedCreateWithoutTeachersInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
@@ -995,6 +1683,13 @@ export type UserUncheckedCreateWithoutTeachersInput = {
   storageAddOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutUserInput
   chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
   students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutTeachersInput = {
@@ -1022,6 +1717,7 @@ export type UserUpdateWithoutTeachersInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
@@ -1033,6 +1729,13 @@ export type UserUpdateWithoutTeachersInput = {
   storageAddOns?: Prisma.StorageAddOnUpdateManyWithoutUserNestedInput
   chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
   students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTeachersInput = {
@@ -1044,6 +1747,7 @@ export type UserUncheckedUpdateWithoutTeachersInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
@@ -1055,6 +1759,13 @@ export type UserUncheckedUpdateWithoutTeachersInput = {
   storageAddOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutUserNestedInput
   chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
   students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutStudentsInput = {
@@ -1066,6 +1777,7 @@ export type UserCreateWithoutStudentsInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
@@ -1077,6 +1789,13 @@ export type UserCreateWithoutStudentsInput = {
   storageAddOns?: Prisma.StorageAddOnCreateNestedManyWithoutUserInput
   chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutStudentsInput = {
@@ -1088,6 +1807,7 @@ export type UserUncheckedCreateWithoutStudentsInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
@@ -1099,6 +1819,13 @@ export type UserUncheckedCreateWithoutStudentsInput = {
   storageAddOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutUserInput
   chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutStudentsInput = {
@@ -1126,6 +1853,7 @@ export type UserUpdateWithoutStudentsInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
@@ -1137,6 +1865,13 @@ export type UserUpdateWithoutStudentsInput = {
   storageAddOns?: Prisma.StorageAddOnUpdateManyWithoutUserNestedInput
   chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutStudentsInput = {
@@ -1148,6 +1883,7 @@ export type UserUncheckedUpdateWithoutStudentsInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
@@ -1159,6 +1895,13 @@ export type UserUncheckedUpdateWithoutStudentsInput = {
   storageAddOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutUserNestedInput
   chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutIntegrationsInput = {
@@ -1170,6 +1913,7 @@ export type UserCreateWithoutIntegrationsInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
@@ -1181,6 +1925,13 @@ export type UserCreateWithoutIntegrationsInput = {
   chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
   students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutIntegrationsInput = {
@@ -1192,6 +1943,7 @@ export type UserUncheckedCreateWithoutIntegrationsInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
@@ -1203,6 +1955,13 @@ export type UserUncheckedCreateWithoutIntegrationsInput = {
   chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
   students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutIntegrationsInput = {
@@ -1230,6 +1989,7 @@ export type UserUpdateWithoutIntegrationsInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
@@ -1241,6 +2001,13 @@ export type UserUpdateWithoutIntegrationsInput = {
   chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutIntegrationsInput = {
@@ -1252,6 +2019,7 @@ export type UserUncheckedUpdateWithoutIntegrationsInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
@@ -1263,6 +2031,13 @@ export type UserUncheckedUpdateWithoutIntegrationsInput = {
   chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutLibraryFoldersInput = {
@@ -1274,6 +2049,7 @@ export type UserCreateWithoutLibraryFoldersInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
@@ -1285,6 +2061,13 @@ export type UserCreateWithoutLibraryFoldersInput = {
   chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
   students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutLibraryFoldersInput = {
@@ -1296,6 +2079,7 @@ export type UserUncheckedCreateWithoutLibraryFoldersInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
@@ -1307,6 +2091,13 @@ export type UserUncheckedCreateWithoutLibraryFoldersInput = {
   chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
   students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutLibraryFoldersInput = {
@@ -1334,6 +2125,7 @@ export type UserUpdateWithoutLibraryFoldersInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
@@ -1345,6 +2137,13 @@ export type UserUpdateWithoutLibraryFoldersInput = {
   chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutLibraryFoldersInput = {
@@ -1356,6 +2155,7 @@ export type UserUncheckedUpdateWithoutLibraryFoldersInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
@@ -1367,6 +2167,13 @@ export type UserUncheckedUpdateWithoutLibraryFoldersInput = {
   chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutLibraryFilesInput = {
@@ -1378,6 +2185,7 @@ export type UserCreateWithoutLibraryFilesInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
@@ -1389,6 +2197,13 @@ export type UserCreateWithoutLibraryFilesInput = {
   chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
   students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutLibraryFilesInput = {
@@ -1400,6 +2215,7 @@ export type UserUncheckedCreateWithoutLibraryFilesInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
@@ -1411,6 +2227,13 @@ export type UserUncheckedCreateWithoutLibraryFilesInput = {
   chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
   students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutLibraryFilesInput = {
@@ -1438,6 +2261,7 @@ export type UserUpdateWithoutLibraryFilesInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
@@ -1449,6 +2273,13 @@ export type UserUpdateWithoutLibraryFilesInput = {
   chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutLibraryFilesInput = {
@@ -1460,6 +2291,7 @@ export type UserUncheckedUpdateWithoutLibraryFilesInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
@@ -1471,6 +2303,13 @@ export type UserUncheckedUpdateWithoutLibraryFilesInput = {
   chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutChargedBlobsInput = {
@@ -1482,6 +2321,7 @@ export type UserCreateWithoutChargedBlobsInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
@@ -1493,6 +2333,13 @@ export type UserCreateWithoutChargedBlobsInput = {
   storageAddOns?: Prisma.StorageAddOnCreateNestedManyWithoutUserInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
   students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutChargedBlobsInput = {
@@ -1504,6 +2351,7 @@ export type UserUncheckedCreateWithoutChargedBlobsInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
@@ -1515,6 +2363,13 @@ export type UserUncheckedCreateWithoutChargedBlobsInput = {
   storageAddOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutUserInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
   students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutChargedBlobsInput = {
@@ -1542,6 +2397,7 @@ export type UserUpdateWithoutChargedBlobsInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
@@ -1553,6 +2409,13 @@ export type UserUpdateWithoutChargedBlobsInput = {
   storageAddOns?: Prisma.StorageAddOnUpdateManyWithoutUserNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutChargedBlobsInput = {
@@ -1564,6 +2427,7 @@ export type UserUncheckedUpdateWithoutChargedBlobsInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
@@ -1575,6 +2439,13 @@ export type UserUncheckedUpdateWithoutChargedBlobsInput = {
   storageAddOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutUserNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserCreateWithoutStorageAddOnsInput = {
@@ -1586,6 +2457,7 @@ export type UserCreateWithoutStorageAddOnsInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
@@ -1597,6 +2469,13 @@ export type UserCreateWithoutStorageAddOnsInput = {
   chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
   students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
 }
 
 export type UserUncheckedCreateWithoutStorageAddOnsInput = {
@@ -1608,6 +2487,7 @@ export type UserUncheckedCreateWithoutStorageAddOnsInput = {
   isPlatformAdmin?: boolean
   lastLoginAt?: Date | string | null
   lastMembershipId?: string | null
+  locale?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
@@ -1619,6 +2499,13 @@ export type UserUncheckedCreateWithoutStorageAddOnsInput = {
   chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
   students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
 }
 
 export type UserCreateOrConnectWithoutStorageAddOnsInput = {
@@ -1646,6 +2533,7 @@ export type UserUpdateWithoutStorageAddOnsInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
@@ -1657,6 +2545,13 @@ export type UserUpdateWithoutStorageAddOnsInput = {
   chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
 }
 
 export type UserUncheckedUpdateWithoutStorageAddOnsInput = {
@@ -1668,6 +2563,7 @@ export type UserUncheckedUpdateWithoutStorageAddOnsInput = {
   isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
@@ -1679,6 +2575,557 @@ export type UserUncheckedUpdateWithoutStorageAddOnsInput = {
   chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
   students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
+}
+
+export type UserCreateWithoutNotificationsInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  fullName: string
+  phone?: string | null
+  isPlatformAdmin?: boolean
+  lastLoginAt?: Date | string | null
+  lastMembershipId?: string | null
+  locale?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutUserInput
+  libraryFolders?: Prisma.LibraryFolderCreateNestedManyWithoutOwnerInput
+  libraryFiles?: Prisma.LibraryFileCreateNestedManyWithoutOwnerInput
+  storageAddOns?: Prisma.StorageAddOnCreateNestedManyWithoutUserInput
+  chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
+  teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
+  students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
+}
+
+export type UserUncheckedCreateWithoutNotificationsInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  fullName: string
+  phone?: string | null
+  isPlatformAdmin?: boolean
+  lastLoginAt?: Date | string | null
+  lastMembershipId?: string | null
+  locale?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutUserInput
+  libraryFolders?: Prisma.LibraryFolderUncheckedCreateNestedManyWithoutOwnerInput
+  libraryFiles?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutOwnerInput
+  storageAddOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutUserInput
+  chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
+  teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
+}
+
+export type UserCreateOrConnectWithoutNotificationsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutNotificationsInput, Prisma.UserUncheckedCreateWithoutNotificationsInput>
+}
+
+export type UserCreateWithoutCausedNotificationsInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  fullName: string
+  phone?: string | null
+  isPlatformAdmin?: boolean
+  lastLoginAt?: Date | string | null
+  lastMembershipId?: string | null
+  locale?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutUserInput
+  libraryFolders?: Prisma.LibraryFolderCreateNestedManyWithoutOwnerInput
+  libraryFiles?: Prisma.LibraryFileCreateNestedManyWithoutOwnerInput
+  storageAddOns?: Prisma.StorageAddOnCreateNestedManyWithoutUserInput
+  chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
+  teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
+  students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
+}
+
+export type UserUncheckedCreateWithoutCausedNotificationsInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  fullName: string
+  phone?: string | null
+  isPlatformAdmin?: boolean
+  lastLoginAt?: Date | string | null
+  lastMembershipId?: string | null
+  locale?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutUserInput
+  libraryFolders?: Prisma.LibraryFolderUncheckedCreateNestedManyWithoutOwnerInput
+  libraryFiles?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutOwnerInput
+  storageAddOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutUserInput
+  chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
+  teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
+}
+
+export type UserCreateOrConnectWithoutCausedNotificationsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCausedNotificationsInput, Prisma.UserUncheckedCreateWithoutCausedNotificationsInput>
+}
+
+export type UserUpsertWithoutNotificationsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutNotificationsInput, Prisma.UserUncheckedUpdateWithoutNotificationsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutNotificationsInput, Prisma.UserUncheckedCreateWithoutNotificationsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutNotificationsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutNotificationsInput, Prisma.UserUncheckedUpdateWithoutNotificationsInput>
+}
+
+export type UserUpdateWithoutNotificationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutUserNestedInput
+  libraryFolders?: Prisma.LibraryFolderUpdateManyWithoutOwnerNestedInput
+  libraryFiles?: Prisma.LibraryFileUpdateManyWithoutOwnerNestedInput
+  storageAddOns?: Prisma.StorageAddOnUpdateManyWithoutUserNestedInput
+  chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
+  teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
+  students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
+}
+
+export type UserUncheckedUpdateWithoutNotificationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutUserNestedInput
+  libraryFolders?: Prisma.LibraryFolderUncheckedUpdateManyWithoutOwnerNestedInput
+  libraryFiles?: Prisma.LibraryFileUncheckedUpdateManyWithoutOwnerNestedInput
+  storageAddOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutUserNestedInput
+  chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
+  teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
+}
+
+export type UserUpsertWithoutCausedNotificationsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCausedNotificationsInput, Prisma.UserUncheckedUpdateWithoutCausedNotificationsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCausedNotificationsInput, Prisma.UserUncheckedCreateWithoutCausedNotificationsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCausedNotificationsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCausedNotificationsInput, Prisma.UserUncheckedUpdateWithoutCausedNotificationsInput>
+}
+
+export type UserUpdateWithoutCausedNotificationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutUserNestedInput
+  libraryFolders?: Prisma.LibraryFolderUpdateManyWithoutOwnerNestedInput
+  libraryFiles?: Prisma.LibraryFileUpdateManyWithoutOwnerNestedInput
+  storageAddOns?: Prisma.StorageAddOnUpdateManyWithoutUserNestedInput
+  chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
+  teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
+  students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCausedNotificationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutUserNestedInput
+  libraryFolders?: Prisma.LibraryFolderUncheckedUpdateManyWithoutOwnerNestedInput
+  libraryFiles?: Prisma.LibraryFileUncheckedUpdateManyWithoutOwnerNestedInput
+  storageAddOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutUserNestedInput
+  chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
+  teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
+}
+
+export type UserCreateWithoutNotificationPrefsInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  fullName: string
+  phone?: string | null
+  isPlatformAdmin?: boolean
+  lastLoginAt?: Date | string | null
+  lastMembershipId?: string | null
+  locale?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutUserInput
+  libraryFolders?: Prisma.LibraryFolderCreateNestedManyWithoutOwnerInput
+  libraryFiles?: Prisma.LibraryFileCreateNestedManyWithoutOwnerInput
+  storageAddOns?: Prisma.StorageAddOnCreateNestedManyWithoutUserInput
+  chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
+  teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
+  students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutAuthorInput
+}
+
+export type UserUncheckedCreateWithoutNotificationPrefsInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  fullName: string
+  phone?: string | null
+  isPlatformAdmin?: boolean
+  lastLoginAt?: Date | string | null
+  lastMembershipId?: string | null
+  locale?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutUserInput
+  libraryFolders?: Prisma.LibraryFolderUncheckedCreateNestedManyWithoutOwnerInput
+  libraryFiles?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutOwnerInput
+  storageAddOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutUserInput
+  chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
+  teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutAuthorInput
+}
+
+export type UserCreateOrConnectWithoutNotificationPrefsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutNotificationPrefsInput, Prisma.UserUncheckedCreateWithoutNotificationPrefsInput>
+}
+
+export type UserUpsertWithoutNotificationPrefsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutNotificationPrefsInput, Prisma.UserUncheckedUpdateWithoutNotificationPrefsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutNotificationPrefsInput, Prisma.UserUncheckedCreateWithoutNotificationPrefsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutNotificationPrefsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutNotificationPrefsInput, Prisma.UserUncheckedUpdateWithoutNotificationPrefsInput>
+}
+
+export type UserUpdateWithoutNotificationPrefsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutUserNestedInput
+  libraryFolders?: Prisma.LibraryFolderUpdateManyWithoutOwnerNestedInput
+  libraryFiles?: Prisma.LibraryFileUpdateManyWithoutOwnerNestedInput
+  storageAddOns?: Prisma.StorageAddOnUpdateManyWithoutUserNestedInput
+  chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
+  teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
+  students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutAuthorNestedInput
+}
+
+export type UserUncheckedUpdateWithoutNotificationPrefsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutUserNestedInput
+  libraryFolders?: Prisma.LibraryFolderUncheckedUpdateManyWithoutOwnerNestedInput
+  libraryFiles?: Prisma.LibraryFileUncheckedUpdateManyWithoutOwnerNestedInput
+  storageAddOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutUserNestedInput
+  chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
+  teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutAuthorNestedInput
+}
+
+export type UserCreateWithoutAnnouncementsInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  fullName: string
+  phone?: string | null
+  isPlatformAdmin?: boolean
+  lastLoginAt?: Date | string | null
+  lastMembershipId?: string | null
+  locale?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutUserInput
+  libraryFolders?: Prisma.LibraryFolderCreateNestedManyWithoutOwnerInput
+  libraryFiles?: Prisma.LibraryFileCreateNestedManyWithoutOwnerInput
+  storageAddOns?: Prisma.StorageAddOnCreateNestedManyWithoutUserInput
+  chargedBlobs?: Prisma.StoredBlobCreateNestedManyWithoutChargedToInput
+  teachers?: Prisma.TeacherCreateNestedManyWithoutUserInput
+  students?: Prisma.StudentCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutAnnouncementsInput = {
+  id?: string
+  email: string
+  passwordHash: string
+  fullName: string
+  phone?: string | null
+  isPlatformAdmin?: boolean
+  lastLoginAt?: Date | string | null
+  lastMembershipId?: string | null
+  locale?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutUserInput
+  libraryFolders?: Prisma.LibraryFolderUncheckedCreateNestedManyWithoutOwnerInput
+  libraryFiles?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutOwnerInput
+  storageAddOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutUserInput
+  chargedBlobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutChargedToInput
+  teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutUserInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutUserInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutActorInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  supportDecisions?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutDecidedByInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  causedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutActorInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutAnnouncementsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutAnnouncementsInput, Prisma.UserUncheckedCreateWithoutAnnouncementsInput>
+}
+
+export type UserUpsertWithoutAnnouncementsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutAnnouncementsInput, Prisma.UserUncheckedUpdateWithoutAnnouncementsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutAnnouncementsInput, Prisma.UserUncheckedCreateWithoutAnnouncementsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutAnnouncementsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutAnnouncementsInput, Prisma.UserUncheckedUpdateWithoutAnnouncementsInput>
+}
+
+export type UserUpdateWithoutAnnouncementsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutUserNestedInput
+  libraryFolders?: Prisma.LibraryFolderUpdateManyWithoutOwnerNestedInput
+  libraryFiles?: Prisma.LibraryFileUpdateManyWithoutOwnerNestedInput
+  storageAddOns?: Prisma.StorageAddOnUpdateManyWithoutUserNestedInput
+  chargedBlobs?: Prisma.StoredBlobUpdateManyWithoutChargedToNestedInput
+  teachers?: Prisma.TeacherUpdateManyWithoutUserNestedInput
+  students?: Prisma.StudentUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutAnnouncementsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isPlatformAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastMembershipId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+  passwordResetTokens?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutUserNestedInput
+  libraryFolders?: Prisma.LibraryFolderUncheckedUpdateManyWithoutOwnerNestedInput
+  libraryFiles?: Prisma.LibraryFileUncheckedUpdateManyWithoutOwnerNestedInput
+  storageAddOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutUserNestedInput
+  chargedBlobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutChargedToNestedInput
+  teachers?: Prisma.TeacherUncheckedUpdateManyWithoutUserNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutUserNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutActorNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  supportDecisions?: Prisma.SupportRequestUncheckedUpdateManyWithoutDecidedByNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  causedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutActorNestedInput
+  notificationPrefs?: Prisma.NotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -1697,6 +3144,13 @@ export type UserCountOutputType = {
   chargedBlobs: number
   teachers: number
   students: number
+  supportSessions: number
+  supportRequests: number
+  supportDecisions: number
+  notifications: number
+  causedNotifications: number
+  notificationPrefs: number
+  announcements: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1710,6 +3164,13 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   chargedBlobs?: boolean | UserCountOutputTypeCountChargedBlobsArgs
   teachers?: boolean | UserCountOutputTypeCountTeachersArgs
   students?: boolean | UserCountOutputTypeCountStudentsArgs
+  supportSessions?: boolean | UserCountOutputTypeCountSupportSessionsArgs
+  supportRequests?: boolean | UserCountOutputTypeCountSupportRequestsArgs
+  supportDecisions?: boolean | UserCountOutputTypeCountSupportDecisionsArgs
+  notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
+  causedNotifications?: boolean | UserCountOutputTypeCountCausedNotificationsArgs
+  notificationPrefs?: boolean | UserCountOutputTypeCountNotificationPrefsArgs
+  announcements?: boolean | UserCountOutputTypeCountAnnouncementsArgs
 }
 
 /**
@@ -1792,6 +3253,55 @@ export type UserCountOutputTypeCountStudentsArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.StudentWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountSupportSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SupportSessionWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountSupportRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SupportRequestWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountSupportDecisionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SupportRequestWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.NotificationWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCausedNotificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.NotificationWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountNotificationPrefsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.NotificationPreferenceWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountAnnouncementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AnnouncementWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1802,6 +3312,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   isPlatformAdmin?: boolean
   lastLoginAt?: boolean
   lastMembershipId?: boolean
+  locale?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   memberships?: boolean | Prisma.User$membershipsArgs<ExtArgs>
@@ -1814,6 +3325,13 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   chargedBlobs?: boolean | Prisma.User$chargedBlobsArgs<ExtArgs>
   teachers?: boolean | Prisma.User$teachersArgs<ExtArgs>
   students?: boolean | Prisma.User$studentsArgs<ExtArgs>
+  supportSessions?: boolean | Prisma.User$supportSessionsArgs<ExtArgs>
+  supportRequests?: boolean | Prisma.User$supportRequestsArgs<ExtArgs>
+  supportDecisions?: boolean | Prisma.User$supportDecisionsArgs<ExtArgs>
+  notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
+  causedNotifications?: boolean | Prisma.User$causedNotificationsArgs<ExtArgs>
+  notificationPrefs?: boolean | Prisma.User$notificationPrefsArgs<ExtArgs>
+  announcements?: boolean | Prisma.User$announcementsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1826,6 +3344,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   isPlatformAdmin?: boolean
   lastLoginAt?: boolean
   lastMembershipId?: boolean
+  locale?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -1839,6 +3358,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   isPlatformAdmin?: boolean
   lastLoginAt?: boolean
   lastMembershipId?: boolean
+  locale?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -1852,11 +3372,12 @@ export type UserSelectScalar = {
   isPlatformAdmin?: boolean
   lastLoginAt?: boolean
   lastMembershipId?: boolean
+  locale?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "fullName" | "phone" | "isPlatformAdmin" | "lastLoginAt" | "lastMembershipId" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "fullName" | "phone" | "isPlatformAdmin" | "lastLoginAt" | "lastMembershipId" | "locale" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   memberships?: boolean | Prisma.User$membershipsArgs<ExtArgs>
   refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
@@ -1868,6 +3389,13 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   chargedBlobs?: boolean | Prisma.User$chargedBlobsArgs<ExtArgs>
   teachers?: boolean | Prisma.User$teachersArgs<ExtArgs>
   students?: boolean | Prisma.User$studentsArgs<ExtArgs>
+  supportSessions?: boolean | Prisma.User$supportSessionsArgs<ExtArgs>
+  supportRequests?: boolean | Prisma.User$supportRequestsArgs<ExtArgs>
+  supportDecisions?: boolean | Prisma.User$supportDecisionsArgs<ExtArgs>
+  notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
+  causedNotifications?: boolean | Prisma.User$causedNotificationsArgs<ExtArgs>
+  notificationPrefs?: boolean | Prisma.User$notificationPrefsArgs<ExtArgs>
+  announcements?: boolean | Prisma.User$announcementsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1886,6 +3414,13 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     chargedBlobs: Prisma.$StoredBlobPayload<ExtArgs>[]
     teachers: Prisma.$TeacherPayload<ExtArgs>[]
     students: Prisma.$StudentPayload<ExtArgs>[]
+    supportSessions: Prisma.$SupportSessionPayload<ExtArgs>[]
+    supportRequests: Prisma.$SupportRequestPayload<ExtArgs>[]
+    supportDecisions: Prisma.$SupportRequestPayload<ExtArgs>[]
+    notifications: Prisma.$NotificationPayload<ExtArgs>[]
+    causedNotifications: Prisma.$NotificationPayload<ExtArgs>[]
+    notificationPrefs: Prisma.$NotificationPreferencePayload<ExtArgs>[]
+    announcements: Prisma.$AnnouncementPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1899,6 +3434,10 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
      * The center opened last; where the next sign-in lands.
      */
     lastMembershipId: string | null
+    /**
+     * The language the person last used the app in ("ar" | "en"); emails sent on their behalf use it.
+     */
+    locale: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["user"]>
@@ -2305,6 +3844,13 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   chargedBlobs<T extends Prisma.User$chargedBlobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$chargedBlobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StoredBlobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   teachers<T extends Prisma.User$teachersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$teachersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   students<T extends Prisma.User$studentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$studentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  supportSessions<T extends Prisma.User$supportSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$supportSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  supportRequests<T extends Prisma.User$supportRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$supportRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  supportDecisions<T extends Prisma.User$supportDecisionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$supportDecisionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  notifications<T extends Prisma.User$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  causedNotifications<T extends Prisma.User$causedNotificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$causedNotificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  notificationPrefs<T extends Prisma.User$notificationPrefsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationPrefsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPreferencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  announcements<T extends Prisma.User$announcementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$announcementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AnnouncementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2342,6 +3888,7 @@ export interface UserFieldRefs {
   readonly isPlatformAdmin: Prisma.FieldRef<"User", 'Boolean'>
   readonly lastLoginAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly lastMembershipId: Prisma.FieldRef<"User", 'String'>
+  readonly locale: Prisma.FieldRef<"User", 'String'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
 }
@@ -2974,6 +4521,174 @@ export type User$studentsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.StudentScalarFieldEnum | Prisma.StudentScalarFieldEnum[]
+}
+
+/**
+ * User.supportSessions
+ */
+export type User$supportSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SupportSession
+   */
+  select?: Prisma.SupportSessionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SupportSession
+   */
+  omit?: Prisma.SupportSessionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SupportSessionInclude<ExtArgs> | null
+  where?: Prisma.SupportSessionWhereInput
+  orderBy?: Prisma.SupportSessionOrderByWithRelationInput | Prisma.SupportSessionOrderByWithRelationInput[]
+  cursor?: Prisma.SupportSessionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SupportSessionScalarFieldEnum | Prisma.SupportSessionScalarFieldEnum[]
+}
+
+/**
+ * User.supportRequests
+ */
+export type User$supportRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SupportRequest
+   */
+  select?: Prisma.SupportRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SupportRequest
+   */
+  omit?: Prisma.SupportRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SupportRequestInclude<ExtArgs> | null
+  where?: Prisma.SupportRequestWhereInput
+  orderBy?: Prisma.SupportRequestOrderByWithRelationInput | Prisma.SupportRequestOrderByWithRelationInput[]
+  cursor?: Prisma.SupportRequestWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SupportRequestScalarFieldEnum | Prisma.SupportRequestScalarFieldEnum[]
+}
+
+/**
+ * User.supportDecisions
+ */
+export type User$supportDecisionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SupportRequest
+   */
+  select?: Prisma.SupportRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SupportRequest
+   */
+  omit?: Prisma.SupportRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SupportRequestInclude<ExtArgs> | null
+  where?: Prisma.SupportRequestWhereInput
+  orderBy?: Prisma.SupportRequestOrderByWithRelationInput | Prisma.SupportRequestOrderByWithRelationInput[]
+  cursor?: Prisma.SupportRequestWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SupportRequestScalarFieldEnum | Prisma.SupportRequestScalarFieldEnum[]
+}
+
+/**
+ * User.notifications
+ */
+export type User$notificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Notification
+   */
+  select?: Prisma.NotificationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Notification
+   */
+  omit?: Prisma.NotificationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotificationInclude<ExtArgs> | null
+  where?: Prisma.NotificationWhereInput
+  orderBy?: Prisma.NotificationOrderByWithRelationInput | Prisma.NotificationOrderByWithRelationInput[]
+  cursor?: Prisma.NotificationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.NotificationScalarFieldEnum | Prisma.NotificationScalarFieldEnum[]
+}
+
+/**
+ * User.causedNotifications
+ */
+export type User$causedNotificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Notification
+   */
+  select?: Prisma.NotificationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Notification
+   */
+  omit?: Prisma.NotificationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotificationInclude<ExtArgs> | null
+  where?: Prisma.NotificationWhereInput
+  orderBy?: Prisma.NotificationOrderByWithRelationInput | Prisma.NotificationOrderByWithRelationInput[]
+  cursor?: Prisma.NotificationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.NotificationScalarFieldEnum | Prisma.NotificationScalarFieldEnum[]
+}
+
+/**
+ * User.notificationPrefs
+ */
+export type User$notificationPrefsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the NotificationPreference
+   */
+  select?: Prisma.NotificationPreferenceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the NotificationPreference
+   */
+  omit?: Prisma.NotificationPreferenceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotificationPreferenceInclude<ExtArgs> | null
+  where?: Prisma.NotificationPreferenceWhereInput
+  orderBy?: Prisma.NotificationPreferenceOrderByWithRelationInput | Prisma.NotificationPreferenceOrderByWithRelationInput[]
+  cursor?: Prisma.NotificationPreferenceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.NotificationPreferenceScalarFieldEnum | Prisma.NotificationPreferenceScalarFieldEnum[]
+}
+
+/**
+ * User.announcements
+ */
+export type User$announcementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Announcement
+   */
+  select?: Prisma.AnnouncementSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Announcement
+   */
+  omit?: Prisma.AnnouncementOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AnnouncementInclude<ExtArgs> | null
+  where?: Prisma.AnnouncementWhereInput
+  orderBy?: Prisma.AnnouncementOrderByWithRelationInput | Prisma.AnnouncementOrderByWithRelationInput[]
+  cursor?: Prisma.AnnouncementWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AnnouncementScalarFieldEnum | Prisma.AnnouncementScalarFieldEnum[]
 }
 
 /**

@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { vi } from 'vitest';
 import { TeachersService, hasTeachingRecord } from './teachers.service.js';
 import type { JwtUser } from '../common/decorators/current-user.decorator.js';
@@ -16,11 +16,19 @@ function setup({
   row,
   existingUser = null,
   otherCenters = 0,
-}: { maxTeachers?: number; teachers?: number; row?: object; existingUser?: object | null; otherCenters?: number } = {}) {
+  integrations = [],
+}: { maxTeachers?: number; teachers?: number; row?: object; existingUser?: object | null; otherCenters?: number; integrations?: { userId: string; provider: string }[] } = {}) {
   const prisma = {
+    integration: {
+      findMany: vi.fn().mockResolvedValue(integrations),
+      count: vi.fn().mockImplementation(({ where }) =>
+        Promise.resolve(integrations.filter((i) => i.userId === where.userId && i.provider === where.provider).length),
+      ),
+    },
     subscription: { findUnique: vi.fn().mockResolvedValue({ plan: { maxTeachers } }) },
     teacher: {
       count: vi.fn().mockResolvedValue(teachers),
+      findMany: vi.fn().mockResolvedValue([]),
       create: vi.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'tc9', ...data })),
       findFirst: vi.fn().mockResolvedValue(row ?? null),
       update: vi.fn().mockResolvedValue(row),
@@ -42,8 +50,56 @@ function setup({
   };
   prisma.$transaction.mockImplementation((fn: (tx: typeof prisma) => unknown) => fn(prisma));
   const auth = { sendWelcome: vi.fn() };
-  return { prisma, auth, service: new TeachersService(prisma as unknown as PrismaService, auth as unknown as AuthService) };
+  const events = new Proxy({} as Record<string, ReturnType<typeof vi.fn>>, { get: (fns, k: string) => (fns[k] ??= vi.fn()) });
+  return { prisma, auth, events, service: new TeachersService(prisma as unknown as PrismaService, auth as unknown as AuthService, events as never) };
 }
+
+describe('teachers and their meeting accounts', () => {
+  const rows = [
+    { id: 'tc1', userId: 'u2', membershipId: 'm2' },
+    { id: 'tc2', userId: 'u3', membershipId: 'm3' },
+  ];
+  const integrations = [
+    { userId: 'u2', provider: 'ZOOM' },
+    { userId: 'u2', provider: 'GOOGLE' },
+    { userId: 'u3', provider: 'GOOGLE' },
+  ];
+
+  it('shows the admin which accounts each teacher linked', async () => {
+    const { prisma, service } = setup({ integrations });
+    prisma.teacher.findMany.mockResolvedValue(rows);
+    const list = await service.list(admin);
+    expect(list.map((t) => (t as { meetingAccounts?: object }).meetingAccounts)).toEqual([
+      { zoom: true, google: true },
+      { zoom: false, google: true },
+    ]);
+  });
+
+  it('tells teachers and students nothing about them', async () => {
+    for (const role of ['TEACHER', 'STUDENT'] as const) {
+      const { prisma, service } = setup({ integrations });
+      prisma.teacher.findMany.mockResolvedValue(rows);
+      const list = await service.list({ ...admin, role });
+      expect(list.some((t) => 'meetingAccounts' in t)).toBe(false);
+      expect(prisma.integration.findMany).not.toHaveBeenCalled();
+    }
+  });
+
+  it('reminds a teacher to link an account they lack, and refuses one they already linked', async () => {
+    const { events, service } = setup({ row: rows[1], integrations });
+    await service.remindMeetingAccount(admin, 'tc2', 'ZOOM');
+    expect(events.meetingAccountNeeded).toHaveBeenCalledWith('m3', 'ZOOM', 'u1');
+
+    await expect(service.remindMeetingAccount(admin, 'tc2', 'GOOGLE_MEET')).rejects.toBeInstanceOf(ConflictException);
+    expect(events.meetingAccountNeeded).toHaveBeenCalledTimes(1);
+  });
+
+  it('looks the teacher up inside the center', async () => {
+    const { prisma, service } = setup();
+    await expect(service.remindMeetingAccount(admin, 'elsewhere', 'ZOOM')).rejects.toBeInstanceOf(NotFoundException);
+    expect(prisma.teacher.findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: { id: 'elsewhere', tenantId: 't1' } }));
+  });
+});
 
 describe('TeachersService.addSelf', () => {
   it('links a teacher profile to the admin account and membership', async () => {

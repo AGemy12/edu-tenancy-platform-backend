@@ -4,6 +4,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module.js';
+import { RealtimeAdapter } from './realtime/realtime.adapter.js';
 
 const API_VERSION = '1.0.0';
 
@@ -27,10 +28,11 @@ async function bootstrap() {
   );
 
   app.setGlobalPrefix('api');
-  app.enableCors({
-    origin: (process.env.CORS_ORIGIN ?? 'http://localhost:3000').split(',').map((s) => s.trim()),
-    credentials: true,
-  });
+  const origins = (process.env.CORS_ORIGIN ?? 'http://localhost:3000').split(',').map((s) => s.trim());
+  // Content-Disposition is exposed so the web app can save report PDFs under their real names.
+  app.enableCors({ origin: origins, credentials: true, exposedHeaders: ['Content-Disposition'] });
+  // Real-time channel (notifications, messages) on the same server, same origins.
+  app.useWebSocketAdapter(new RealtimeAdapter(app, origins));
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
   );

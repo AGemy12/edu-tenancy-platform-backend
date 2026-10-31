@@ -4,8 +4,12 @@ import {
   chargeCents,
   isBillable,
   monthKey,
+  platformFeeCents,
+  rateSource,
   rateStatuses,
   resolveRate,
+  sessionFeesCents,
+  studentFeeCents,
   teacherPayCents,
   type Rate,
 } from './billing.js';
@@ -54,13 +58,20 @@ describe('resolveRate', () => {
   const at = day('2026-10-10');
   const target = { kind: 'STUDENT_FEE' as const, teacherId: 't1', courseId: 'c1', studentId: 's1', at };
 
-  it('prefers student over course over the teacher default', () => {
+  it('prefers student over course over teacher over the center default', () => {
+    const center = rate({ teacherId: null, amount: 90 });
     const base = rate({ amount: 100 });
-    const course = rate({ courseId: 'c1', amount: 120 });
-    const student = rate({ studentId: 's1', amount: 80 });
-    expect(resolveRate([base, course, student], target)).toBe(student);
-    expect(resolveRate([base, course], target)).toBe(course);
-    expect(resolveRate([base], target)).toBe(base);
+    const course = rate({ courseId: 'c1', teacherId: null, amount: 120 });
+    const student = rate({ studentId: 's1', teacherId: null, amount: 80 });
+    expect(resolveRate([center, base, course, student], target)).toBe(student);
+    expect(resolveRate([center, base, course], target)).toBe(course);
+    expect(resolveRate([center, base], target)).toBe(base);
+    expect(resolveRate([center], target)).toBe(center);
+  });
+
+  it('a center-wide price applies to every teacher', () => {
+    const center = rate({ teacherId: null, amount: 90 });
+    expect(resolveRate([center], { ...target, teacherId: 't99' })).toBe(center);
   });
 
   it('ignores rates for someone else', () => {
@@ -69,6 +80,13 @@ describe('resolveRate', () => {
     const otherTeacher = rate({ teacherId: 't2', amount: 3 });
     const pay = rate({ kind: 'TEACHER_PAY', amount: 4 });
     expect(resolveRate([otherStudent, otherCourse, otherTeacher, pay], target)).toBeNull();
+  });
+
+  it('names the tier a rate came from', () => {
+    expect(rateSource(rate({ teacherId: null }))).toBe('CENTER');
+    expect(rateSource(rate({}))).toBe('TEACHER');
+    expect(rateSource(rate({ courseId: 'c1' }))).toBe('COURSE');
+    expect(rateSource(rate({ courseId: 'c1', studentId: 's1' }))).toBe('STUDENT');
   });
 
   it('uses the price in effect when the session started', () => {
@@ -101,9 +119,39 @@ describe('money', () => {
     expect(chargeCents(99.99, 20)).toBe(3_333);
   });
 
-  it('pays teachers per hour or as a share of the fees', () => {
+  it('charges students by the hour or flat per session', () => {
+    expect(studentFeeCents({ basis: 'PER_HOUR', amount: 100 }, 90)).toBe(15_000);
+    expect(studentFeeCents({ basis: 'PER_SESSION', amount: 250 }, 90)).toBe(25_000);
+    expect(studentFeeCents({ basis: 'PER_SESSION', amount: 250 }, 15)).toBe(25_000);
+  });
+
+  it('pays teachers per hour, per session, or as a share of the fees', () => {
     expect(teacherPayCents({ basis: 'PER_HOUR', amount: 80 }, 90, 50_000)).toBe(12_000);
+    expect(teacherPayCents({ basis: 'PER_SESSION', amount: 200 }, 90, 50_000)).toBe(20_000);
     expect(teacherPayCents({ basis: 'PERCENT', amount: 60 }, 90, 50_000)).toBe(30_000);
+  });
+
+  it('takes the platform commission only when one is set', () => {
+    expect(platformFeeCents(50_000, 10)).toBe(5_000);
+    expect(platformFeeCents(50_000, 12.5)).toBe(6_250);
+    expect(platformFeeCents(50_000, 0)).toBe(0);
+    expect(platformFeeCents(50_000, null)).toBe(0);
+  });
+
+  it('prices a whole session from its attendees', () => {
+    const center = rate({ teacherId: null, amount: 100 });
+    const special = rate({ teacherId: null, studentId: 's2', basis: 'PER_SESSION', amount: 50 });
+    const session = {
+      status: 'COMPLETED' as const,
+      startAt: new Date('2026-10-01T10:00:00Z'),
+      endAt: new Date('2026-10-01T11:30:00Z'),
+      teacherId: 't1',
+      courseId: null,
+      attendees: [{ studentId: 's1' }, { studentId: 's2' }, { studentId: 's3' }],
+    };
+    // s1 and s3: 100/h × 1.5h; s2: flat 50.
+    expect(sessionFeesCents(session, [center, special])).toBe(35_000);
+    expect(sessionFeesCents({ ...session, status: 'CANCELED' }, [center, special])).toBe(0);
   });
 });
 

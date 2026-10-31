@@ -346,6 +346,7 @@ export type PlanWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Plan"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Plan"> | Date | string
   subscriptions?: Prisma.SubscriptionListRelationFilter
+  subscriptionChanges?: Prisma.SubscriptionChangeListRelationFilter
 }
 
 export type PlanOrderByWithRelationInput = {
@@ -368,6 +369,7 @@ export type PlanOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   subscriptions?: Prisma.SubscriptionOrderByRelationAggregateInput
+  subscriptionChanges?: Prisma.SubscriptionChangeOrderByRelationAggregateInput
 }
 
 export type PlanWhereUniqueInput = Prisma.AtLeast<{
@@ -393,6 +395,7 @@ export type PlanWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Plan"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Plan"> | Date | string
   subscriptions?: Prisma.SubscriptionListRelationFilter
+  subscriptionChanges?: Prisma.SubscriptionChangeListRelationFilter
 }, "id" | "code">
 
 export type PlanOrderByWithAggregationInput = {
@@ -465,6 +468,7 @@ export type PlanCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPlanInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutPlanInput
 }
 
 export type PlanUncheckedCreateInput = {
@@ -487,6 +491,7 @@ export type PlanUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutPlanInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutPlanInput
 }
 
 export type PlanUpdateInput = {
@@ -509,6 +514,7 @@ export type PlanUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutPlanNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutPlanNestedInput
 }
 
 export type PlanUncheckedUpdateInput = {
@@ -531,6 +537,7 @@ export type PlanUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutPlanNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutPlanNestedInput
 }
 
 export type PlanCreateManyInput = {
@@ -684,16 +691,9 @@ export type PlanScalarRelationFilter = {
   isNot?: Prisma.PlanWhereInput
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
-export type NullableDecimalFieldUpdateOperationsInput = {
-  set?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
+export type PlanNullableScalarRelationFilter = {
+  is?: Prisma.PlanWhereInput | null
+  isNot?: Prisma.PlanWhereInput | null
 }
 
 export type BoolFieldUpdateOperationsInput = {
@@ -722,6 +722,22 @@ export type PlanUpdateOneRequiredWithoutSubscriptionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.PlanUpdateToOneWithWhereWithoutSubscriptionsInput, Prisma.PlanUpdateWithoutSubscriptionsInput>, Prisma.PlanUncheckedUpdateWithoutSubscriptionsInput>
 }
 
+export type PlanCreateNestedOneWithoutSubscriptionChangesInput = {
+  create?: Prisma.XOR<Prisma.PlanCreateWithoutSubscriptionChangesInput, Prisma.PlanUncheckedCreateWithoutSubscriptionChangesInput>
+  connectOrCreate?: Prisma.PlanCreateOrConnectWithoutSubscriptionChangesInput
+  connect?: Prisma.PlanWhereUniqueInput
+}
+
+export type PlanUpdateOneWithoutSubscriptionChangesNestedInput = {
+  create?: Prisma.XOR<Prisma.PlanCreateWithoutSubscriptionChangesInput, Prisma.PlanUncheckedCreateWithoutSubscriptionChangesInput>
+  connectOrCreate?: Prisma.PlanCreateOrConnectWithoutSubscriptionChangesInput
+  upsert?: Prisma.PlanUpsertWithoutSubscriptionChangesInput
+  disconnect?: Prisma.PlanWhereInput | boolean
+  delete?: Prisma.PlanWhereInput | boolean
+  connect?: Prisma.PlanWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PlanUpdateToOneWithWhereWithoutSubscriptionChangesInput, Prisma.PlanUpdateWithoutSubscriptionChangesInput>, Prisma.PlanUncheckedUpdateWithoutSubscriptionChangesInput>
+}
+
 export type PlanCreateWithoutSubscriptionsInput = {
   id?: string
   code: string
@@ -741,6 +757,7 @@ export type PlanCreateWithoutSubscriptionsInput = {
   maxFileMb: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutPlanInput
 }
 
 export type PlanUncheckedCreateWithoutSubscriptionsInput = {
@@ -762,6 +779,7 @@ export type PlanUncheckedCreateWithoutSubscriptionsInput = {
   maxFileMb: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutPlanInput
 }
 
 export type PlanCreateOrConnectWithoutSubscriptionsInput = {
@@ -799,6 +817,7 @@ export type PlanUpdateWithoutSubscriptionsInput = {
   maxFileMb?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutPlanNestedInput
 }
 
 export type PlanUncheckedUpdateWithoutSubscriptionsInput = {
@@ -820,6 +839,111 @@ export type PlanUncheckedUpdateWithoutSubscriptionsInput = {
   maxFileMb?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutPlanNestedInput
+}
+
+export type PlanCreateWithoutSubscriptionChangesInput = {
+  id?: string
+  code: string
+  nameAr: string
+  nameEn: string
+  descriptionAr?: string | null
+  descriptionEn?: string | null
+  priceMonthly?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency?: string
+  isPublic?: boolean
+  isActive?: boolean
+  sortOrder?: number
+  maxTeachers: number
+  maxStudents: number
+  storagePerTeacherMb: number
+  sharedStorageMb: number
+  maxFileMb: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPlanInput
+}
+
+export type PlanUncheckedCreateWithoutSubscriptionChangesInput = {
+  id?: string
+  code: string
+  nameAr: string
+  nameEn: string
+  descriptionAr?: string | null
+  descriptionEn?: string | null
+  priceMonthly?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency?: string
+  isPublic?: boolean
+  isActive?: boolean
+  sortOrder?: number
+  maxTeachers: number
+  maxStudents: number
+  storagePerTeacherMb: number
+  sharedStorageMb: number
+  maxFileMb: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutPlanInput
+}
+
+export type PlanCreateOrConnectWithoutSubscriptionChangesInput = {
+  where: Prisma.PlanWhereUniqueInput
+  create: Prisma.XOR<Prisma.PlanCreateWithoutSubscriptionChangesInput, Prisma.PlanUncheckedCreateWithoutSubscriptionChangesInput>
+}
+
+export type PlanUpsertWithoutSubscriptionChangesInput = {
+  update: Prisma.XOR<Prisma.PlanUpdateWithoutSubscriptionChangesInput, Prisma.PlanUncheckedUpdateWithoutSubscriptionChangesInput>
+  create: Prisma.XOR<Prisma.PlanCreateWithoutSubscriptionChangesInput, Prisma.PlanUncheckedCreateWithoutSubscriptionChangesInput>
+  where?: Prisma.PlanWhereInput
+}
+
+export type PlanUpdateToOneWithWhereWithoutSubscriptionChangesInput = {
+  where?: Prisma.PlanWhereInput
+  data: Prisma.XOR<Prisma.PlanUpdateWithoutSubscriptionChangesInput, Prisma.PlanUncheckedUpdateWithoutSubscriptionChangesInput>
+}
+
+export type PlanUpdateWithoutSubscriptionChangesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  nameAr?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
+  descriptionAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  descriptionEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceMonthly?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  maxTeachers?: Prisma.IntFieldUpdateOperationsInput | number
+  maxStudents?: Prisma.IntFieldUpdateOperationsInput | number
+  storagePerTeacherMb?: Prisma.IntFieldUpdateOperationsInput | number
+  sharedStorageMb?: Prisma.IntFieldUpdateOperationsInput | number
+  maxFileMb?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutPlanNestedInput
+}
+
+export type PlanUncheckedUpdateWithoutSubscriptionChangesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  nameAr?: Prisma.StringFieldUpdateOperationsInput | string
+  nameEn?: Prisma.StringFieldUpdateOperationsInput | string
+  descriptionAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  descriptionEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceMonthly?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  maxTeachers?: Prisma.IntFieldUpdateOperationsInput | number
+  maxStudents?: Prisma.IntFieldUpdateOperationsInput | number
+  storagePerTeacherMb?: Prisma.IntFieldUpdateOperationsInput | number
+  sharedStorageMb?: Prisma.IntFieldUpdateOperationsInput | number
+  maxFileMb?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutPlanNestedInput
 }
 
 
@@ -829,10 +953,12 @@ export type PlanUncheckedUpdateWithoutSubscriptionsInput = {
 
 export type PlanCountOutputType = {
   subscriptions: number
+  subscriptionChanges: number
 }
 
 export type PlanCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   subscriptions?: boolean | PlanCountOutputTypeCountSubscriptionsArgs
+  subscriptionChanges?: boolean | PlanCountOutputTypeCountSubscriptionChangesArgs
 }
 
 /**
@@ -850,6 +976,13 @@ export type PlanCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensi
  */
 export type PlanCountOutputTypeCountSubscriptionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.SubscriptionWhereInput
+}
+
+/**
+ * PlanCountOutputType without action
+ */
+export type PlanCountOutputTypeCountSubscriptionChangesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SubscriptionChangeWhereInput
 }
 
 
@@ -873,6 +1006,7 @@ export type PlanSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   createdAt?: boolean
   updatedAt?: boolean
   subscriptions?: boolean | Prisma.Plan$subscriptionsArgs<ExtArgs>
+  subscriptionChanges?: boolean | Prisma.Plan$subscriptionChangesArgs<ExtArgs>
   _count?: boolean | Prisma.PlanCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["plan"]>
 
@@ -942,6 +1076,7 @@ export type PlanSelectScalar = {
 export type PlanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "nameAr" | "nameEn" | "descriptionAr" | "descriptionEn" | "priceMonthly" | "currency" | "isPublic" | "isActive" | "sortOrder" | "maxTeachers" | "maxStudents" | "storagePerTeacherMb" | "sharedStorageMb" | "maxFileMb" | "createdAt" | "updatedAt", ExtArgs["result"]["plan"]>
 export type PlanInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   subscriptions?: boolean | Prisma.Plan$subscriptionsArgs<ExtArgs>
+  subscriptionChanges?: boolean | Prisma.Plan$subscriptionChangesArgs<ExtArgs>
   _count?: boolean | Prisma.PlanCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PlanIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -951,6 +1086,7 @@ export type $PlanPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name: "Plan"
   objects: {
     subscriptions: Prisma.$SubscriptionPayload<ExtArgs>[]
+    subscriptionChanges: Prisma.$SubscriptionChangePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1366,6 +1502,7 @@ readonly fields: PlanFieldRefs;
 export interface Prisma__PlanClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   subscriptions<T extends Prisma.Plan$subscriptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Plan$subscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  subscriptionChanges<T extends Prisma.Plan$subscriptionChangesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Plan$subscriptionChangesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SubscriptionChangePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1827,6 +1964,30 @@ export type Plan$subscriptionsArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.SubscriptionScalarFieldEnum | Prisma.SubscriptionScalarFieldEnum[]
+}
+
+/**
+ * Plan.subscriptionChanges
+ */
+export type Plan$subscriptionChangesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SubscriptionChange
+   */
+  select?: Prisma.SubscriptionChangeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SubscriptionChange
+   */
+  omit?: Prisma.SubscriptionChangeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubscriptionChangeInclude<ExtArgs> | null
+  where?: Prisma.SubscriptionChangeWhereInput
+  orderBy?: Prisma.SubscriptionChangeOrderByWithRelationInput | Prisma.SubscriptionChangeOrderByWithRelationInput[]
+  cursor?: Prisma.SubscriptionChangeWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SubscriptionChangeScalarFieldEnum | Prisma.SubscriptionChangeScalarFieldEnum[]
 }
 
 /**

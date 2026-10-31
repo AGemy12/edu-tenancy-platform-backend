@@ -1,7 +1,9 @@
 import {
   EARLY_ENTRY_MIN,
   LIVE_GRACE_MIN,
+  RECONNECT_GRACE_MIN,
   UNSTARTED_GRACE_MIN,
+  afterMeetingEnded,
   canDelete,
   canReschedule,
   entryWindow,
@@ -85,10 +87,33 @@ describe('overdue sessions', () => {
     expect(LIVE_GRACE_MIN).toBeGreaterThan(UNSTARTED_GRACE_MIN);
   });
 
+  it(`keeps a dropped session open for calling back for ${RECONNECT_GRACE_MIN} minutes`, () => {
+    const now = new Date('2026-10-14T20:00:00Z');
+    expect(now.getTime() - overdueCutoffs(now).droppedEndedBefore.getTime()).toBe(RECONNECT_GRACE_MIN * MIN);
+  });
+
   it('marks a session missed only when Zoom could have told us it started', () => {
     expect(unstartedOutcome('ZOOM', true)).toBe('MISSED');
     expect(unstartedOutcome('ZOOM', false)).toBe('COMPLETED');
     expect(unstartedOutcome('GOOGLE_MEET', true)).toBe('COMPLETED');
     expect(unstartedOutcome('MANUAL', true)).toBe('COMPLETED');
+  });
+});
+
+describe('afterMeetingEnded', () => {
+  const endAt = new Date('2026-10-14T17:00:00Z');
+
+  it('keeps a session live when its meeting drops before the planned end (Zoom free: 40 minutes)', () => {
+    expect(afterMeetingEnded({ status: 'LIVE', endAt }, new Date('2026-10-14T16:40:00Z'))).toBe('LIVE');
+    expect(afterMeetingEnded({ status: 'SCHEDULED', endAt }, new Date('2026-10-14T16:40:00Z'))).toBe('LIVE');
+  });
+
+  it('completes it at or after the planned end', () => {
+    expect(afterMeetingEnded({ status: 'LIVE', endAt }, endAt)).toBe('COMPLETED');
+    expect(afterMeetingEnded({ status: 'LIVE', endAt }, new Date('2026-10-14T17:20:00Z'))).toBe('COMPLETED');
+  });
+
+  it('never reopens a completed session', () => {
+    expect(afterMeetingEnded({ status: 'COMPLETED', endAt }, new Date('2026-10-14T16:40:00Z'))).toBe('COMPLETED');
   });
 });

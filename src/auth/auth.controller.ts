@@ -19,6 +19,7 @@ import { Lang } from '../i18n/lang.decorator.js';
 import type { Locale } from '../i18n/locale.js';
 import { AllowExpired } from '../tenants/subscription.guard.js';
 import { AllowSuspended } from './account-status.js';
+import { DenyInSupport } from '../support/support.guard.js';
 
 /** Per-IP limits on the routes that guess or send something: passwords, emails, sign-ups. */
 const perMinute = (limit: number) => Throttle({ default: { limit, ttl: 60_000 } });
@@ -58,6 +59,7 @@ export class AuthController {
   @Post('switch')
   @HttpCode(200)
   @ApiBearerAuth()
+  @DenyInSupport()
   switch(@CurrentUser() user: JwtUser, @Body() dto: SwitchMembershipDto) {
     return this.auth.switch(user, dto);
   }
@@ -66,6 +68,7 @@ export class AuthController {
   @perMinute(5)
   @Post('tenants')
   @ApiBearerAuth()
+  @DenyInSupport()
   createTenant(@CurrentUser() user: JwtUser, @Body() dto: CreateTenantDto) {
     return this.auth.createTenant(user, dto);
   }
@@ -101,6 +104,7 @@ export class AuthController {
 
   @Patch('me')
   @ApiBearerAuth()
+  @DenyInSupport()
   updateProfile(@CurrentUser() user: JwtUser, @Body() dto: UpdateProfileDto) {
     return this.auth.updateProfile(user, dto);
   }
@@ -109,6 +113,7 @@ export class AuthController {
   @Post('change-password')
   @HttpCode(200)
   @ApiBearerAuth()
+  @DenyInSupport()
   changePassword(@CurrentUser() user: JwtUser, @Body() dto: ChangePasswordDto) {
     return this.auth.changePassword(user.id, dto);
   }

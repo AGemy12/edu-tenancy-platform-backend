@@ -11,7 +11,10 @@ import type { SessionProvider, SessionStatus } from '../generated/prisma/enums.j
  *   MISSED ──complete──▶ COMPLETED   (the teacher confirms it did take place)
  *
  * "start" happens when the host opens the meeting from the platform or when Zoom reports
- * `meeting.started`; "complete" when the host ends it or Zoom reports `meeting.ended`.
+ * `meeting.started`; "complete" when the host ends it or Zoom reports `meeting.ended` at or after
+ * the planned end. A meeting that ends before then dropped (a free Zoom meeting stops after 40
+ * minutes): the session stays LIVE with `endedAt` set, so either side can call again from their
+ * chat, and closes RECONNECT_GRACE_MIN after the planned end if nobody does.
  * COMPLETED and CANCELED are final.
  */
 export type SessionAction = 'start' | 'complete' | 'cancel';
@@ -30,6 +33,8 @@ export const EARLY_ENTRY_MIN = 15;
 export const UNSTARTED_GRACE_MIN = 30;
 /** A live session with no end event is closed this long after its planned end (classes run over). */
 export const LIVE_GRACE_MIN = 180;
+/** A session whose meeting dropped can be called back into until this long after its planned end. */
+export const RECONNECT_GRACE_MIN = 15;
 
 const MIN = 60_000;
 
@@ -68,7 +73,17 @@ export function overdueCutoffs(now: Date) {
   return {
     liveEndedBefore: new Date(now.getTime() - LIVE_GRACE_MIN * MIN),
     unstartedEndedBefore: new Date(now.getTime() - UNSTARTED_GRACE_MIN * MIN),
+    droppedEndedBefore: new Date(now.getTime() - RECONNECT_GRACE_MIN * MIN),
   };
+}
+
+/**
+ * The status once a meeting of the session ended at `endedAt`: before the planned end it dropped,
+ * and the session stays live for calling back; at or after it, the class is over.
+ */
+export function afterMeetingEnded(s: { status: SessionStatus; endAt: Date }, endedAt: Date): SessionStatus {
+  if (s.status === 'COMPLETED') return 'COMPLETED';
+  return endedAt < s.endAt ? 'LIVE' : 'COMPLETED';
 }
 
 /**

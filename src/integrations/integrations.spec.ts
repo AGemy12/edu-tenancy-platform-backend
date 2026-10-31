@@ -1,6 +1,51 @@
 import { createHmac } from 'node:crypto';
+import { ForbiddenException } from '@nestjs/common';
+import { vi } from 'vitest';
 import { deriveKey, openSecret, sealSecret } from './token-cipher.js';
 import { urlValidationResponse, verifyZoomSignature, zoomSignature } from './zoom-signature.js';
+import { canLinkMeetingAccount, linkedAccounts } from './meeting-accounts.js';
+import { IntegrationsController } from './integrations.controller.js';
+import type { JwtUser } from '../common/decorators/current-user.decorator.js';
+
+describe('meeting accounts', () => {
+  it('are linked only by members who teach in the center', () => {
+    expect(canLinkMeetingAccount({ teacherId: 'tc1' })).toBe(true);
+    expect(canLinkMeetingAccount({ teacherId: null })).toBe(false);
+  });
+
+  it('maps integration rows to what each session provider needs', () => {
+    expect(linkedAccounts([])).toEqual({ zoom: false, google: false });
+    expect(linkedAccounts(['ZOOM'])).toEqual({ zoom: true, google: false });
+    expect(linkedAccounts(['GOOGLE', 'ZOOM'])).toEqual({ zoom: true, google: true });
+  });
+
+  const base: JwtUser = {
+    id: 'u1', email: 'owner@x.test', role: 'TENANT_ADMIN', tenantId: 't1', teacherId: null, studentId: null, status: 'ACTIVE', membershipId: 'm1',
+  };
+  function controller() {
+    const integrations = { googleAuthUrl: vi.fn().mockResolvedValue({ url: 'g' }), status: vi.fn() };
+    const zoom = { authUrl: vi.fn().mockResolvedValue({ url: 'z' }), disconnect: vi.fn() };
+    return { integrations, zoom, ctrl: new IntegrationsController(integrations as never, zoom as never, {} as never) };
+  }
+
+  it('an admin who does not teach cannot start linking, but may still disconnect', async () => {
+    const { integrations, zoom, ctrl } = controller();
+    expect(() => ctrl.zoomConnect(base)).toThrow(ForbiddenException);
+    expect(() => ctrl.googleConnect(base)).toThrow(ForbiddenException);
+    expect(zoom.authUrl).not.toHaveBeenCalled();
+    expect(integrations.googleAuthUrl).not.toHaveBeenCalled();
+    await ctrl.disconnectZoom(base);
+    expect(zoom.disconnect).toHaveBeenCalledWith('u1');
+  });
+
+  it('a teacher, or an admin with a teacher profile, can', async () => {
+    for (const user of [{ ...base, teacherId: 'tc1' }, { ...base, role: 'TEACHER' as const, teacherId: 'tc2' }]) {
+      const { ctrl } = controller();
+      await expect(ctrl.zoomConnect(user)).resolves.toEqual({ url: 'z' });
+      await expect(ctrl.googleConnect(user)).resolves.toEqual({ url: 'g' });
+    }
+  });
+});
 
 describe('token cipher', () => {
   const key = deriveKey('test-secret');

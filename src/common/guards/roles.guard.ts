@@ -18,7 +18,12 @@ export class RolesGuard implements CanActivate {
 
     const { user } = ctx.switchToHttp().getRequest<{ user?: JwtUser }>();
     if (!user) throw new ForbiddenException(msg('auth.forbidden'));
-    if (user.role === 'SUPER_ADMIN') return true;
+    // The platform console has no center: it passes any role check, but center routes need a
+    // center (a 403 here, instead of a service failing on a missing tenantId).
+    if (user.role === 'SUPER_ADMIN') {
+      if (user.tenantId || required.includes('SUPER_ADMIN')) return true;
+      throw new ForbiddenException(msg('auth.forbidden'));
+    }
     if (!required.includes(user.role)) {
       throw new ForbiddenException(msg('auth.forbidden'));
     }

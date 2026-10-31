@@ -6,8 +6,11 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import type { JwtUser } from '../common/decorators/current-user.decorator.js';
 import { msg } from '../i18n/i18n.js';
 
-/** `mid` is the membership the session is signed into; null only for the platform operator's console. */
-export type AccessPayload = { sub: string; mid: string | null };
+/**
+ * `mid` is the membership the session is signed into; null only for the platform operator's console.
+ * `sid` marks a support session: a platform admin working as that member, checked on every request.
+ */
+export type AccessPayload = { sub: string; mid: string | null; sid?: string };
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -51,7 +54,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       if (!m) throw new UnauthorizedException(msg('auth.invalidSession'));
       if (m.status === 'BLOCKED') throw new UnauthorizedException(msg('auth.blocked'));
       if (m.tenant.status !== 'ACTIVE') throw new UnauthorizedException(msg('auth.tenantSuspended'));
+      const support = payload.sid ? await this.supportSession(payload.sid, m.id) : null;
       return {
+        ...(support && { supportSessionId: support.id, supportActorId: support.actorId }),
         id: user.id,
         email: user.email,
         role: m.role,
@@ -65,5 +70,17 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
     if (!user.isPlatformAdmin) throw new UnauthorizedException(msg('auth.invalidSession'));
     return { id: user.id, email: user.email, role: 'SUPER_ADMIN', status: 'ACTIVE', tenantId: null, teacherId: null, studentId: null, membershipId: null };
+  }
+
+  /** A support session ends when it is closed, runs out, or its admin is no longer a platform admin. */
+  private async supportSession(id: string, membershipId: string) {
+    const s = await this.prisma.supportSession.findUnique({
+      where: { id },
+      select: { id: true, actorId: true, membershipId: true, expiresAt: true, endedAt: true, actor: { select: { isPlatformAdmin: true } } },
+    });
+    if (!s || s.membershipId !== membershipId || s.endedAt || s.expiresAt <= new Date() || !s.actor.isPlatformAdmin) {
+      throw new UnauthorizedException(msg('support.sessionEnded'));
+    }
+    return s;
   }
 }

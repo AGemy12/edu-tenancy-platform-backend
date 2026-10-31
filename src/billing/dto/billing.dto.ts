@@ -109,6 +109,15 @@ export class BillingSummaryQueryDto extends BillingQueryDto {
   groupBy: BillingGroup;
 }
 
+/** Super admin: the platform's earnings over a period. */
+export class PlatformBillingQueryDto {
+  @IsISO8601()
+  from: string;
+
+  @IsISO8601()
+  to: string;
+}
+
 export class RatesQueryDto {
   @IsOptional()
   @IsEnum(RateKind)
@@ -127,8 +136,10 @@ export class CreateRateDto {
   @IsEnum(RateBasis)
   basis?: RateBasis;
 
+  /** Required for teacher pay. A student price without it applies to every teacher's sessions. */
+  @IsOptional()
   @IsUUID()
-  teacherId: string;
+  teacherId?: string;
 
   @IsOptional()
   @IsUUID()

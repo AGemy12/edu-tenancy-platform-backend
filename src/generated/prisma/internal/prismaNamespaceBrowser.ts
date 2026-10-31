@@ -54,10 +54,14 @@ export const ModelName = {
   Tenant: 'Tenant',
   Plan: 'Plan',
   Subscription: 'Subscription',
+  SubscriptionChange: 'SubscriptionChange',
   User: 'User',
   Membership: 'Membership',
   PasswordResetToken: 'PasswordResetToken',
   RefreshToken: 'RefreshToken',
+  SupportRequest: 'SupportRequest',
+  SupportSession: 'SupportSession',
+  SupportAction: 'SupportAction',
   Teacher: 'Teacher',
   Student: 'Student',
   TeacherStudent: 'TeacherStudent',
@@ -74,7 +78,14 @@ export const ModelName = {
   LibraryFolder: 'LibraryFolder',
   LibraryFile: 'LibraryFile',
   StoredBlob: 'StoredBlob',
-  StorageAddOn: 'StorageAddOn'
+  StorageAddOn: 'StorageAddOn',
+  Notification: 'Notification',
+  NotificationPreference: 'NotificationPreference',
+  Announcement: 'Announcement',
+  Conversation: 'Conversation',
+  ConversationParticipant: 'ConversationParticipant',
+  Message: 'Message',
+  SessionCall: 'SessionCall'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -100,6 +111,9 @@ export const TenantScalarFieldEnum = {
   status: 'status',
   timezone: 'timezone',
   currency: 'currency',
+  logoKey: 'logoKey',
+  platformFeePercent: 'platformFeePercent',
+  expiryNotice: 'expiryNotice',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -145,6 +159,21 @@ export const SubscriptionScalarFieldEnum = {
 export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
 
 
+export const SubscriptionChangeScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  planId: 'planId',
+  status: 'status',
+  currentPeriodEnd: 'currentPeriodEnd',
+  priceMonthly: 'priceMonthly',
+  currency: 'currency',
+  actorId: 'actorId',
+  createdAt: 'createdAt'
+} as const
+
+export type SubscriptionChangeScalarFieldEnum = (typeof SubscriptionChangeScalarFieldEnum)[keyof typeof SubscriptionChangeScalarFieldEnum]
+
+
 export const UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
@@ -154,6 +183,7 @@ export const UserScalarFieldEnum = {
   isPlatformAdmin: 'isPlatformAdmin',
   lastLoginAt: 'lastLoginAt',
   lastMembershipId: 'lastMembershipId',
+  locale: 'locale',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -171,6 +201,7 @@ export const MembershipScalarFieldEnum = {
   statusChangedAt: 'statusChangedAt',
   statusChangedById: 'statusChangedById',
   storageQuotaMb: 'storageQuotaMb',
+  lastSeenAt: 'lastSeenAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -198,10 +229,61 @@ export const RefreshTokenScalarFieldEnum = {
   expiresAt: 'expiresAt',
   revokedAt: 'revokedAt',
   remember: 'remember',
+  supportSessionId: 'supportSessionId',
   createdAt: 'createdAt'
 } as const
 
 export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
+
+
+export const SupportRequestScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  requestedById: 'requestedById',
+  membershipId: 'membershipId',
+  targetName: 'targetName',
+  targetEmail: 'targetEmail',
+  targetRole: 'targetRole',
+  reason: 'reason',
+  minutes: 'minutes',
+  status: 'status',
+  decidedById: 'decidedById',
+  decidedAt: 'decidedAt',
+  accessUntil: 'accessUntil',
+  createdAt: 'createdAt'
+} as const
+
+export type SupportRequestScalarFieldEnum = (typeof SupportRequestScalarFieldEnum)[keyof typeof SupportRequestScalarFieldEnum]
+
+
+export const SupportSessionScalarFieldEnum = {
+  id: 'id',
+  actorId: 'actorId',
+  tenantId: 'tenantId',
+  membershipId: 'membershipId',
+  targetName: 'targetName',
+  targetEmail: 'targetEmail',
+  targetRole: 'targetRole',
+  reason: 'reason',
+  requestId: 'requestId',
+  startedAt: 'startedAt',
+  expiresAt: 'expiresAt',
+  endedAt: 'endedAt'
+} as const
+
+export type SupportSessionScalarFieldEnum = (typeof SupportSessionScalarFieldEnum)[keyof typeof SupportSessionScalarFieldEnum]
+
+
+export const SupportActionScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  method: 'method',
+  path: 'path',
+  status: 'status',
+  createdAt: 'createdAt'
+} as const
+
+export type SupportActionScalarFieldEnum = (typeof SupportActionScalarFieldEnum)[keyof typeof SupportActionScalarFieldEnum]
 
 
 export const TeacherScalarFieldEnum = {
@@ -288,6 +370,7 @@ export const SessionScalarFieldEnum = {
   notes: 'notes',
   startedAt: 'startedAt',
   endedAt: 'endedAt',
+  reminderSentAt: 'reminderSentAt',
   scheduleId: 'scheduleId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -473,12 +556,137 @@ export const StorageAddOnScalarFieldEnum = {
 export type StorageAddOnScalarFieldEnum = (typeof StorageAddOnScalarFieldEnum)[keyof typeof StorageAddOnScalarFieldEnum]
 
 
+export const NotificationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  membershipId: 'membershipId',
+  tenantId: 'tenantId',
+  type: 'type',
+  params: 'params',
+  link: 'link',
+  actorId: 'actorId',
+  dedupeKey: 'dedupeKey',
+  oversight: 'oversight',
+  readAt: 'readAt',
+  createdAt: 'createdAt'
+} as const
+
+export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
+
+
+export const NotificationPreferenceScalarFieldEnum = {
+  userId: 'userId',
+  category: 'category',
+  inApp: 'inApp',
+  email: 'email',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NotificationPreferenceScalarFieldEnum = (typeof NotificationPreferenceScalarFieldEnum)[keyof typeof NotificationPreferenceScalarFieldEnum]
+
+
+export const AnnouncementScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  authorId: 'authorId',
+  audience: 'audience',
+  title: 'title',
+  body: 'body',
+  recipients: 'recipients',
+  createdAt: 'createdAt'
+} as const
+
+export type AnnouncementScalarFieldEnum = (typeof AnnouncementScalarFieldEnum)[keyof typeof AnnouncementScalarFieldEnum]
+
+
+export const ConversationScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  kind: 'kind',
+  directKey: 'directKey',
+  title: 'title',
+  courseId: 'courseId',
+  adminsOnly: 'adminsOnly',
+  createdById: 'createdById',
+  lastMessageAt: 'lastMessageAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ConversationScalarFieldEnum = (typeof ConversationScalarFieldEnum)[keyof typeof ConversationScalarFieldEnum]
+
+
+export const ConversationParticipantScalarFieldEnum = {
+  conversationId: 'conversationId',
+  membershipId: 'membershipId',
+  isAdmin: 'isAdmin',
+  unreadCount: 'unreadCount',
+  lastReadAt: 'lastReadAt',
+  muted: 'muted',
+  archivedAt: 'archivedAt',
+  joinedAt: 'joinedAt'
+} as const
+
+export type ConversationParticipantScalarFieldEnum = (typeof ConversationParticipantScalarFieldEnum)[keyof typeof ConversationParticipantScalarFieldEnum]
+
+
+export const MessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  tenantId: 'tenantId',
+  senderId: 'senderId',
+  kind: 'kind',
+  body: 'body',
+  params: 'params',
+  replyToId: 'replyToId',
+  clientId: 'clientId',
+  editedAt: 'editedAt',
+  deletedAt: 'deletedAt',
+  callId: 'callId',
+  createdAt: 'createdAt'
+} as const
+
+export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
+
+
+export const SessionCallScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  sessionId: 'sessionId',
+  conversationId: 'conversationId',
+  callerId: 'callerId',
+  status: 'status',
+  joinUrl: 'joinUrl',
+  externalMeetingId: 'externalMeetingId',
+  answeredAt: 'answeredAt',
+  endedAt: 'endedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type SessionCallScalarFieldEnum = (typeof SessionCallScalarFieldEnum)[keyof typeof SessionCallScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -495,4 +703,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

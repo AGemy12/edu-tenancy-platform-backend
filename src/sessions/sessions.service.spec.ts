@@ -68,6 +68,7 @@ function setup(session = makeSession(), attendee: object | null = null) {
     config as unknown as ConfigService,
     zoom as unknown as ZoomProvider,
     {} as GoogleMeetProvider,
+    new Proxy({}, { get: () => vi.fn() }) as never,
   );
   return { prisma, zoom, service };
 }
@@ -199,6 +200,33 @@ describe('complete', () => {
     const { service } = setup(makeSession({ startAt: inMinutes(60) }));
     await expect(service.complete(host, 'ses1')).rejects.toBeInstanceOf(BadRequestException);
   });
+
+  it('keeps the time a dropped meeting ended, not when the host closed it', async () => {
+    const droppedAt = inMinutes(-5);
+    const { prisma, service } = setup(makeSession({ status: 'LIVE', startAt: inMinutes(-45), endedAt: droppedAt }));
+    await service.complete(host, 'ses1');
+    expect(prisma.session.update).toHaveBeenCalledWith(expect.objectContaining({ data: { status: 'COMPLETED', endedAt: droppedAt } }));
+  });
+});
+
+describe('meeting events', () => {
+  it('keeps the session live when its meeting drops before the planned end, for calling back', async () => {
+    const { prisma, service } = setup(makeSession({ status: 'LIVE', startAt: inMinutes(-40), endAt: inMinutes(20) }));
+    await service.providerEnded('ZOOM', '111', inMinutes(-40), inMinutes(0));
+    expect(prisma.session.update).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ status: 'LIVE', endedAt: expect.any(Date) }) }));
+  });
+
+  it('completes it when the meeting ends at the planned end', async () => {
+    const { prisma, service } = setup(makeSession({ status: 'LIVE', startAt: inMinutes(-60), endAt: inMinutes(-1) }));
+    await service.providerEnded('ZOOM', '111', inMinutes(-60), inMinutes(0));
+    expect(prisma.session.update).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ status: 'COMPLETED' }) }));
+  });
+
+  it('clears the drop when the meeting comes back', async () => {
+    const { prisma, service } = setup(makeSession({ status: 'LIVE', endedAt: inMinutes(-2) }));
+    await service.providerStarted('ZOOM', '111', new Date());
+    expect(prisma.session.update).toHaveBeenCalledWith({ where: { id: 'ses1' }, data: { endedAt: null } });
+  });
 });
 
 describe('closeOverdue', () => {
@@ -206,6 +234,7 @@ describe('closeOverdue', () => {
     const run = async (secret?: string) => {
       const { prisma, service } = setup();
       Object.assign(prisma.session, { updateMany: vi.fn() });
+      Object.assign(prisma, { sessionCall: { updateMany: vi.fn() } });
       (service as unknown as { config: { get: () => unknown } }).config.get = () => secret;
       await service.closeOverdue(new Date());
       const calls = (prisma.session as unknown as { updateMany: { mock: { calls: [{ where: { status: string; provider?: string }; data: { status: string } }][] } } }).updateMany.mock.calls;
@@ -213,6 +242,17 @@ describe('closeOverdue', () => {
     };
     expect(await run('secret')).toBe('MISSED');
     expect(await run(undefined)).toBe('COMPLETED');
+  });
+
+  it('closes a dropped session nobody called back into, and the calls of closed sessions', async () => {
+    const { prisma, service } = setup();
+    Object.assign(prisma.session, { updateMany: vi.fn() });
+    Object.assign(prisma, { sessionCall: { updateMany: vi.fn() } });
+    await service.closeOverdue(new Date());
+    const sessionWheres = (prisma.session as unknown as { updateMany: { mock: { calls: [{ where: Record<string, unknown> }][] } } }).updateMany.mock.calls.map(([a]) => a.where);
+    expect(sessionWheres).toContainEqual(expect.objectContaining({ status: 'LIVE', endedAt: { not: null } }));
+    const callUpdates = (prisma as unknown as { sessionCall: { updateMany: { mock: { calls: [{ data: { status: string } }][] } } } }).sessionCall.updateMany.mock.calls.map(([a]) => a.data.status);
+    expect(callUpdates).toEqual(['MISSED', 'ENDED']);
   });
 });
 

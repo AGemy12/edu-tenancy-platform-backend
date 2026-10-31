@@ -5,6 +5,7 @@ import {
   BillingSessionsQueryDto,
   BillingSummaryQueryDto,
   CreateRateDto,
+  PlatformBillingQueryDto,
   RatesQueryDto,
   UpdateRateDto,
 } from './dto/billing.dto.js';
@@ -38,6 +39,13 @@ export class BillingController {
   @Roles('TENANT_ADMIN', 'TEACHER', 'STUDENT')
   options(@CurrentUser() user: JwtUser) {
     return this.billing.options(user);
+  }
+
+  /** Super admin: subscription prices and session commissions per center over a period. */
+  @Get('platform')
+  @Roles('SUPER_ADMIN')
+  platform(@Query() q: PlatformBillingQueryDto) {
+    return this.billing.platform(q);
   }
 
   @Get('rates')

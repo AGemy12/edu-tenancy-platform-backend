@@ -1,19 +1,22 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { JwtUser } from '../common/decorators/current-user.decorator.js';
-import type { Prisma, RateBasis } from '../generated/prisma/client.js';
+import type { Prisma, RateBasis, RateKind } from '../generated/prisma/client.js';
 import { msg } from '../i18n/i18n.js';
+import { isExpired } from '../tenants/subscription.js';
 import {
   BILLABLE_STATUSES,
   actualMinutes,
   bookedMinutes,
-  chargeCents,
   fromCents,
   isBillable,
   monthKey,
+  platformFeeCents,
   rateSource,
   rateStatuses,
   resolveRate,
+  sessionFeesCents,
+  studentFeeCents,
   teacherPayCents,
   type Rate,
   type RateSource,
@@ -24,6 +27,7 @@ import type {
   BillingSessionsQueryDto,
   BillingSort,
   CreateRateDto,
+  PlatformBillingQueryDto,
   RatesQueryDto,
   UpdateRateDto,
 } from './dto/billing.dto.js';
@@ -43,6 +47,7 @@ type Line = {
   joinedAt: Date | null;
   minutes: number;
   rate: number | null;
+  rateBasis: RateBasis | null;
   rateSource: RateSource | null;
   feeCents: number;
 };
@@ -70,12 +75,24 @@ type Row = {
   /** Fees of every student on the session, even when only some lines are shown. */
   sessionFeesCents: number;
   pay: Pay;
+  /** The platform's commission on the whole session's fees. */
+  platformFeeCents: number;
 };
 
 const rateInclude = {
   teacher: { select: { id: true, user: { select: { fullName: true } } } },
   course: { select: { id: true, title: true } },
   student: { select: { id: true, user: { select: { fullName: true } } } },
+} as const;
+
+/** Sessions with what's needed to price them, no names. */
+const pricingSelect = {
+  status: true,
+  startAt: true,
+  endAt: true,
+  teacherId: true,
+  courseId: true,
+  attendees: { select: { studentId: true } },
 } as const;
 
 @Injectable()
@@ -85,13 +102,14 @@ export class BillingService {
   // ───────── Reports ─────────
 
   async sessions(user: JwtUser, q: BillingSessionsQueryDto) {
-    const { viewer, partial, currency, rows } = await this.compute(user, q);
+    const { viewer, partial, currency, platformFeePercent, rows } = await this.compute(user, q);
     sortRows(rows, q.sort ?? 'date_desc');
     const pageSize = q.pageSize ?? DEFAULT_PAGE_SIZE;
     const pages = Math.max(1, Math.ceil(rows.length / pageSize));
     const page = Math.min(q.page ?? 1, pages);
     return {
       currency,
+      ...(viewer === 'admin' ? { platformFeePercent } : {}),
       totals: totals(rows, viewer, partial),
       page,
       pageSize,
@@ -101,19 +119,21 @@ export class BillingService {
   }
 
   async summary(user: JwtUser, q: BillingQueryDto & { groupBy: BillingGroup }) {
-    const { viewer, partial, currency, timezone, rows } = await this.compute(user, q);
-    const groups = new Map<string, { key: string; label: string | null; sessions: number; minutes: number; fees: number; pay: number }>();
-    const add = (key: string, label: string | null, minutes: number, fees: number, pay: number) => {
-      const g = groups.get(key) ?? { key, label, sessions: 0, minutes: 0, fees: 0, pay: 0 };
+    const { viewer, partial, currency, timezone, platformFeePercent, rows } = await this.compute(user, q);
+    type Group = { key: string; label: string | null; sessions: number; minutes: number; fees: number; pay: number; platformFee: number };
+    const groups = new Map<string, Group>();
+    const add = (key: string, label: string | null, minutes: number, fees: number, pay: number, platformFee: number) => {
+      const g = groups.get(key) ?? { key, label, sessions: 0, minutes: 0, fees: 0, pay: 0, platformFee: 0 };
       g.sessions += 1;
       g.minutes += minutes;
       g.fees += fees;
       g.pay += pay;
+      g.platformFee += platformFee;
       groups.set(key, g);
     };
     for (const r of rows) {
       if (q.groupBy === 'student') {
-        for (const l of r.lines) add(l.studentId, l.name, l.minutes, l.feeCents, 0);
+        for (const l of r.lines) add(l.studentId, l.name, l.minutes, l.feeCents, 0, 0);
         continue;
       }
       const [key, label] =
@@ -122,7 +142,7 @@ export class BillingService {
           : q.groupBy === 'course'
             ? [r.course?.id ?? 'none', r.course?.title ?? null]
             : [monthKey(r.startAt, timezone), null];
-      add(key, label, r.minutes, r.feesCents, r.pay?.cents ?? 0);
+      add(key, label, r.minutes, r.feesCents, r.pay?.cents ?? 0, r.platformFeeCents);
     }
 
     const showPay = viewer !== 'student' && q.groupBy !== 'student';
@@ -132,6 +152,7 @@ export class BillingService {
     );
     return {
       currency,
+      ...(viewer === 'admin' ? { platformFeePercent } : {}),
       groupBy: q.groupBy,
       totals: totals(rows, viewer, partial),
       groups: list.map((g) => ({
@@ -141,7 +162,7 @@ export class BillingService {
         minutes: g.minutes,
         fees: fromCents(g.fees),
         ...(showPay ? { teacherPay: fromCents(g.pay) } : {}),
-        ...(showNet ? { net: fromCents(g.fees - g.pay) } : {}),
+        ...(showNet ? { platformFee: fromCents(g.platformFee), net: fromCents(g.fees - g.pay - g.platformFee) } : {}),
       })),
     };
   }
@@ -198,14 +219,91 @@ export class BillingService {
     };
   }
 
+  /**
+   * Super admin: what the platform earns from every center over a period — the subscription
+   * price and the commission on session fees (computed with each center's own percentage).
+   */
+  async platform(q: PlatformBillingQueryDto) {
+    const { from, to } = parseRange(q);
+    const tenants = await this.prisma.tenant.findMany({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        status: true,
+        currency: true,
+        platformFeePercent: true,
+        subscription: { select: { status: true, currentPeriodEnd: true, plan: { select: { nameAr: true, nameEn: true, priceMonthly: true, currency: true } } } },
+        billingRates: { where: { kind: 'STUDENT_FEE' } },
+        sessions: { where: { startAt: { gte: from, lt: to }, status: { in: BILLABLE_STATUSES } }, select: pricingSelect },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    const rows = tenants.map((t) => {
+      const rates = t.billingRates.map(toRate);
+      const percent = t.platformFeePercent === null ? null : Number(t.platformFeePercent);
+      const fees = t.sessions.reduce((sum, s) => sum + sessionFeesCents(s, rates), 0);
+      return {
+        id: t.id,
+        name: t.name,
+        slug: t.slug,
+        status: t.status,
+        currency: t.currency,
+        platformFeePercent: percent,
+        sessions: t.sessions.length,
+        fees: fromCents(fees),
+        platformFee: fromCents(platformFeeCents(fees, percent)),
+        subscription: t.subscription
+          ? {
+              status: t.subscription.status,
+              expired: isExpired(t.subscription),
+              plan: {
+                nameAr: t.subscription.plan.nameAr,
+                nameEn: t.subscription.plan.nameEn,
+                priceMonthly: t.subscription.plan.priceMonthly === null ? null : Number(t.subscription.plan.priceMonthly),
+                currency: t.subscription.plan.currency,
+              },
+            }
+          : null,
+      };
+    });
+
+    // Centers bill in their own currencies, so platform totals are per currency.
+    const byCurrency = new Map<string, { currency: string; centers: number; withFee: number; sessions: number; fees: number; platformFee: number }>();
+    for (const r of rows) {
+      const g = byCurrency.get(r.currency) ?? { currency: r.currency, centers: 0, withFee: 0, sessions: 0, fees: 0, platformFee: 0 };
+      g.centers += 1;
+      if (r.platformFeePercent !== null) g.withFee += 1;
+      g.sessions += r.sessions;
+      g.fees += r.fees;
+      g.platformFee += r.platformFee;
+      byCurrency.set(r.currency, g);
+    }
+    return {
+      from,
+      to,
+      totals: [...byCurrency.values()].map((g) => ({ ...g, fees: round2(g.fees), platformFee: round2(g.platformFee) })),
+      tenants: rows.sort((a, b) => b.platformFee - a.platformFee || b.fees - a.fees || a.name.localeCompare(b.name)),
+    };
+  }
+
   // ───────── Rate card ─────────
 
   async listRates(user: JwtUser, q: RatesQueryDto) {
     const tenantId = user.tenantId!;
+    let scope: Prisma.BillingRateWhereInput = {};
+    if (user.role === 'TEACHER') {
+      // Their pay, plus every student price that can apply to their sessions.
+      const teacherId = user.teacherId!;
+      scope = { OR: [{ teacherId }, { teacherId: null, courseId: null }, { teacherId: null, course: { teacherId } }] };
+    } else if (q.teacherId) {
+      scope = { teacherId: q.teacherId };
+    }
     const rows = await this.prisma.billingRate.findMany({
-      where: { tenantId, kind: q.kind, teacherId: user.role === 'TEACHER' ? user.teacherId! : q.teacherId },
+      where: { tenantId, kind: q.kind, ...scope },
       include: rateInclude,
-      orderBy: [{ teacher: { user: { fullName: 'asc' } } }, { kind: 'asc' }, { effectiveFrom: 'desc' }],
+      orderBy: [{ kind: 'asc' }, { effectiveFrom: 'desc' }, { createdAt: 'desc' }],
     });
     const statuses = rateStatuses(rows.map(toRate), new Date());
     return rows.map((r) => ({ ...serializeRate(r), state: statuses.get(r.id) }));
@@ -214,12 +312,16 @@ export class BillingService {
   async createRate(user: JwtUser, dto: CreateRateDto) {
     const tenantId = user.tenantId!;
     const basis = dto.basis ?? 'PER_HOUR';
-    assertRateShape(dto.kind, basis, dto.amount, dto.studentId);
+    assertRateShape(dto.kind, basis, dto.amount, dto.teacherId, dto.studentId);
 
-    const teacher = await this.prisma.teacher.findFirst({ where: { id: dto.teacherId, tenantId }, select: { id: true } });
-    if (!teacher) throw new NotFoundException(msg('teachers.notFound'));
+    if (dto.teacherId) {
+      const teacher = await this.prisma.teacher.findFirst({ where: { id: dto.teacherId, tenantId }, select: { id: true } });
+      if (!teacher) throw new NotFoundException(msg('teachers.notFound'));
+    }
     if (dto.courseId) {
-      const course = await this.prisma.course.findFirst({ where: { id: dto.courseId, tenantId, teacherId: dto.teacherId } });
+      const course = await this.prisma.course.findFirst({
+        where: { id: dto.courseId, tenantId, ...(dto.teacherId ? { teacherId: dto.teacherId } : {}) },
+      });
       if (!course) throw new NotFoundException(msg('sessions.courseNotFound'));
     }
     if (dto.studentId) {
@@ -227,7 +329,13 @@ export class BillingService {
       if (!student) throw new NotFoundException(msg('students.notFound'));
     }
 
-    const scope = { tenantId, kind: dto.kind, teacherId: dto.teacherId, courseId: dto.courseId ?? null, studentId: dto.studentId ?? null };
+    const scope = {
+      tenantId,
+      kind: dto.kind,
+      teacherId: dto.teacherId ?? null,
+      courseId: dto.courseId ?? null,
+      studentId: dto.studentId ?? null,
+    };
     const effectiveFrom = new Date(dto.effectiveFrom);
     await this.assertNoTwin(scope, effectiveFrom);
     const row = await this.prisma.billingRate.create({
@@ -240,7 +348,7 @@ export class BillingService {
   async updateRate(user: JwtUser, id: string, dto: UpdateRateDto) {
     const rate = await this.getRate(user, id);
     const basis = dto.basis ?? rate.basis;
-    assertRateShape(rate.kind, basis, dto.amount ?? Number(rate.amount), rate.studentId);
+    assertRateShape(rate.kind, basis, dto.amount ?? Number(rate.amount), rate.teacherId, rate.studentId);
     const effectiveFrom = dto.effectiveFrom ? new Date(dto.effectiveFrom) : undefined;
     if (effectiveFrom && effectiveFrom.getTime() !== rate.effectiveFrom.getTime()) {
       const { tenantId, kind, teacherId, courseId, studentId } = rate;
@@ -265,12 +373,7 @@ export class BillingService {
   private async compute(user: JwtUser, q: BillingQueryDto) {
     const tenantId = user.tenantId!;
     const viewer: Viewer = user.role === 'STUDENT' ? 'student' : user.role === 'TEACHER' ? 'teacher' : 'admin';
-    const from = new Date(q.from);
-    const to = new Date(q.to);
-    if (!(to.getTime() > from.getTime())) throw new BadRequestException(msg('billing.invalidRange'));
-    if (to.getTime() - from.getTime() > MAX_RANGE_DAYS * DAY_MS) {
-      throw new BadRequestException(msg('billing.rangeTooLong', { days: MAX_RANGE_DAYS }));
-    }
+    const { from, to } = parseRange(q);
 
     const teacherId = viewer === 'teacher' ? user.teacherId! : q.teacherId;
     const studentId = viewer === 'student' ? user.studentId! : q.studentId;
@@ -297,8 +400,8 @@ export class BillingService {
         : {}),
     };
 
-    const [tenant, sessions] = await Promise.all([
-      this.prisma.tenant.findUnique({ where: { id: tenantId }, select: { currency: true, timezone: true } }),
+    const [tenant, sessions, rateRows] = await Promise.all([
+      this.prisma.tenant.findUnique({ where: { id: tenantId }, select: { currency: true, timezone: true, platformFeePercent: true } }),
       this.prisma.session.findMany({
         where,
         orderBy: { startAt: 'desc' },
@@ -322,12 +425,12 @@ export class BillingService {
           },
         },
       }),
+      // The whole rate card: center-wide prices have no teacher, so they can't be narrowed by one.
+      this.prisma.billingRate.findMany({ where: { tenantId } }),
     ]);
-
-    const teacherIds = [...new Set(sessions.map((s) => s.teacherId))];
-    const rates = teacherIds.length
-      ? (await this.prisma.billingRate.findMany({ where: { tenantId, teacherId: { in: teacherIds } } })).map(toRate)
-      : [];
+    const rates = rateRows.map(toRate);
+    // Only the center sees (and pays) the platform's commission.
+    const platformFeePercent = viewer === 'admin' && tenant?.platformFeePercent != null ? Number(tenant.platformFeePercent) : null;
 
     const rows: Row[] = [];
     for (const s of sessions) {
@@ -344,11 +447,12 @@ export class BillingService {
           joinedAt: a.joinedAt,
           minutes,
           rate: rate?.amount ?? null,
+          rateBasis: rate?.basis ?? null,
           rateSource: rate ? rateSource(rate) : null,
-          feeCents: rate ? chargeCents(rate.amount, minutes) : 0,
+          feeCents: rate ? studentFeeCents(rate, minutes) : 0,
         };
       });
-      const sessionFeesCents = sum(all.map((l) => l.feeCents));
+      const sessionFees = sum(all.map((l) => l.feeCents));
       const payRate =
         billable && viewer !== 'student'
           ? resolveRate(rates, { kind: 'TEACHER_PAY', teacherId: s.teacherId, courseId: s.courseId, at: s.startAt })
@@ -378,15 +482,16 @@ export class BillingService {
         course: s.course,
         lines,
         feesCents: sum(lines.map((l) => l.feeCents)),
-        sessionFeesCents,
+        sessionFeesCents: sessionFees,
         pay: payRate
           ? {
-              cents: teacherPayCents(payRate, minutes, sessionFeesCents),
+              cents: teacherPayCents(payRate, minutes, sessionFees),
               basis: payRate.basis,
               rate: payRate.amount,
               source: rateSource(payRate),
             }
           : null,
+        platformFeeCents: platformFeeCents(sessionFees, platformFeePercent),
       });
     }
 
@@ -396,6 +501,7 @@ export class BillingService {
       partial: Boolean(studentId || q.attendance),
       currency: tenant?.currency ?? 'EGP',
       timezone: tenant?.timezone ?? 'UTC',
+      platformFeePercent,
       rows,
     };
   }
@@ -416,19 +522,31 @@ export class BillingService {
   }
 }
 
-function assertRateShape(kind: string, basis: RateBasis, amount: number, studentId: string | null | undefined) {
+function parseRange(q: { from: string; to: string }) {
+  const from = new Date(q.from);
+  const to = new Date(q.to);
+  if (!(to.getTime() > from.getTime())) throw new BadRequestException(msg('billing.invalidRange'));
+  if (to.getTime() - from.getTime() > MAX_RANGE_DAYS * DAY_MS) {
+    throw new BadRequestException(msg('billing.rangeTooLong', { days: MAX_RANGE_DAYS }));
+  }
+  return { from, to };
+}
+
+function assertRateShape(kind: RateKind, basis: RateBasis, amount: number, teacherId: string | null | undefined, studentId: string | null | undefined) {
+  if (kind === 'TEACHER_PAY' && !teacherId) throw new BadRequestException(msg('billing.teacherPayNeedsTeacher'));
   if (kind === 'TEACHER_PAY' && studentId) throw new BadRequestException(msg('billing.teacherPayNoStudent'));
   if (basis === 'PERCENT' && kind !== 'TEACHER_PAY') throw new BadRequestException(msg('billing.percentOnlyTeacherPay'));
   if (basis === 'PERCENT' && amount > 100) throw new BadRequestException(msg('billing.percentMax'));
 }
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
+const round2 = (n: number) => Math.round(n * 100) / 100;
 
 function toRate(r: {
   id: string;
   kind: Rate['kind'];
   basis: RateBasis;
-  teacherId: string;
+  teacherId: string | null;
   courseId: string | null;
   studentId: string | null;
   amount: Prisma.Decimal;
@@ -440,9 +558,10 @@ function toRate(r: {
 function serializeRate<
   T extends {
     amount: Prisma.Decimal;
+    teacherId: string | null;
     courseId: string | null;
     studentId: string | null;
-    teacher: { id: string; user: { fullName: string } };
+    teacher: { id: string; user: { fullName: string } } | null;
     course: { id: string; title: string } | null;
     student: { id: string; user: { fullName: string } } | null;
   },
@@ -452,7 +571,7 @@ function serializeRate<
     ...rest,
     amount: Number(r.amount),
     source: rateSource(r),
-    teacher: { id: teacher.id, name: teacher.user.fullName },
+    teacher: teacher ? { id: teacher.id, name: teacher.user.fullName } : null,
     course,
     student: student ? { id: student.id, name: student.user.fullName } : null,
   };
@@ -474,6 +593,7 @@ function totals(rows: Row[], viewer: Viewer, partial: boolean) {
   const lines = rows.flatMap((r) => r.lines);
   const fees = sum(lines.map((l) => l.feeCents));
   const pay = sum(rows.map((r) => r.pay?.cents ?? 0));
+  const platformFee = sum(rows.map((r) => r.platformFeeCents));
   return {
     sessions: rows.length,
     chargedSessions: rows.filter((r) => r.billable).length,
@@ -483,7 +603,7 @@ function totals(rows: Row[], viewer: Viewer, partial: boolean) {
     studentMinutes: sum(lines.map((l) => l.minutes)),
     fees: fromCents(fees),
     ...(viewer !== 'student' ? { teacherPay: fromCents(pay) } : {}),
-    ...(viewer === 'admin' && !partial ? { net: fromCents(fees - pay) } : {}),
+    ...(viewer === 'admin' && !partial ? { platformFee: fromCents(platformFee), net: fromCents(fees - pay - platformFee) } : {}),
     missingRates: rows.filter((r) => r.billable).flatMap((r) => r.lines).filter((l) => l.rate === null).length,
     unconfirmed: rows.filter((r) => r.billable && !r.confirmed).length,
   };
@@ -512,6 +632,7 @@ function serializeRow(r: Row, viewer: Viewer, partial: boolean) {
       joinedAt: l.joinedAt,
       minutes: l.minutes,
       rate: l.rate,
+      rateBasis: l.rateBasis,
       rateSource: l.rateSource,
       fee: fromCents(l.feeCents),
     })),
@@ -519,6 +640,8 @@ function serializeRow(r: Row, viewer: Viewer, partial: boolean) {
     ...(viewer !== 'student'
       ? { teacherPay: r.pay ? { amount: fromCents(r.pay.cents), basis: r.pay.basis, rate: r.pay.rate, source: r.pay.source } : null }
       : {}),
-    ...(viewer === 'admin' && !partial ? { net: fromCents(r.sessionFeesCents - (r.pay?.cents ?? 0)) } : {}),
+    ...(viewer === 'admin' && !partial
+      ? { platformFee: fromCents(r.platformFeeCents), net: fromCents(r.sessionFeesCents - (r.pay?.cents ?? 0) - r.platformFeeCents) }
+      : {}),
   };
 }

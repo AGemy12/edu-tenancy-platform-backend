@@ -1,5 +1,6 @@
-import { IsArray, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsEmail, IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { IsStrongPassword } from '../../auth/password-policy.js';
+import type { HostedProvider } from '../../integrations/meeting-accounts.js';
 
 export class CreateTeacherDto {
   @IsString()
@@ -48,4 +49,9 @@ export class UpdateTeacherDto {
   @IsString({ each: true })
   subjects?: string[];
 
+}
+
+export class MeetingReminderDto {
+  @IsIn(['ZOOM', 'GOOGLE_MEET'])
+  provider: HostedProvider;
 }

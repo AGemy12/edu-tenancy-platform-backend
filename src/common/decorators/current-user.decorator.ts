@@ -11,6 +11,9 @@ export type JwtUser = {
   studentId: string | null;
   /** The center this session is signed into; null for the platform operator's console. */
   membershipId: string | null;
+  /** Set when a platform admin is working as this member (support mode): the session and the admin. */
+  supportSessionId?: string | null;
+  supportActorId?: string | null;
 };
 
 export const CurrentUser = createParamDecorator(

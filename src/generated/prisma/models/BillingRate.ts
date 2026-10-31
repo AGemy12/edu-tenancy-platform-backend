@@ -18,6 +18,10 @@ import type * as Prisma from "../internal/prismaNamespace.js"
  * overridden for one student; the most specific rate in effect when the session starts wins.
  * Changing a price adds a row with a later `effectiveFrom`, so past sessions keep their price.
  * Amounts are computed from these rows when read (see billing/billing.ts), never stored.
+ * One line of the rate card. STUDENT_FEE is the center's price list: a center-wide default
+ * (no teacher, course or student), or a price for a course, a student, or a student in a course;
+ * optionally narrowed to one teacher's sessions. TEACHER_PAY always names the teacher and may be
+ * narrowed to one course. The most specific line in effect at a session's start wins.
  */
 export type BillingRateModel = runtime.Types.Result.DefaultSelection<Prisma.$BillingRatePayload>
 
@@ -229,7 +233,7 @@ export type BillingRateGroupByOutputType = {
   tenantId: string
   kind: $Enums.RateKind
   basis: $Enums.RateBasis
-  teacherId: string
+  teacherId: string | null
   courseId: string | null
   studentId: string | null
   amount: runtime.Decimal
@@ -267,7 +271,7 @@ export type BillingRateWhereInput = {
   tenantId?: Prisma.StringFilter<"BillingRate"> | string
   kind?: Prisma.EnumRateKindFilter<"BillingRate"> | $Enums.RateKind
   basis?: Prisma.EnumRateBasisFilter<"BillingRate"> | $Enums.RateBasis
-  teacherId?: Prisma.StringFilter<"BillingRate"> | string
+  teacherId?: Prisma.StringNullableFilter<"BillingRate"> | string | null
   courseId?: Prisma.StringNullableFilter<"BillingRate"> | string | null
   studentId?: Prisma.StringNullableFilter<"BillingRate"> | string | null
   amount?: Prisma.DecimalFilter<"BillingRate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -276,7 +280,7 @@ export type BillingRateWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"BillingRate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BillingRate"> | Date | string
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
-  teacher?: Prisma.XOR<Prisma.TeacherScalarRelationFilter, Prisma.TeacherWhereInput>
+  teacher?: Prisma.XOR<Prisma.TeacherNullableScalarRelationFilter, Prisma.TeacherWhereInput> | null
   course?: Prisma.XOR<Prisma.CourseNullableScalarRelationFilter, Prisma.CourseWhereInput> | null
   student?: Prisma.XOR<Prisma.StudentNullableScalarRelationFilter, Prisma.StudentWhereInput> | null
 }
@@ -286,7 +290,7 @@ export type BillingRateOrderByWithRelationInput = {
   tenantId?: Prisma.SortOrder
   kind?: Prisma.SortOrder
   basis?: Prisma.SortOrder
-  teacherId?: Prisma.SortOrder
+  teacherId?: Prisma.SortOrderInput | Prisma.SortOrder
   courseId?: Prisma.SortOrderInput | Prisma.SortOrder
   studentId?: Prisma.SortOrderInput | Prisma.SortOrder
   amount?: Prisma.SortOrder
@@ -308,7 +312,7 @@ export type BillingRateWhereUniqueInput = Prisma.AtLeast<{
   tenantId?: Prisma.StringFilter<"BillingRate"> | string
   kind?: Prisma.EnumRateKindFilter<"BillingRate"> | $Enums.RateKind
   basis?: Prisma.EnumRateBasisFilter<"BillingRate"> | $Enums.RateBasis
-  teacherId?: Prisma.StringFilter<"BillingRate"> | string
+  teacherId?: Prisma.StringNullableFilter<"BillingRate"> | string | null
   courseId?: Prisma.StringNullableFilter<"BillingRate"> | string | null
   studentId?: Prisma.StringNullableFilter<"BillingRate"> | string | null
   amount?: Prisma.DecimalFilter<"BillingRate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -317,7 +321,7 @@ export type BillingRateWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"BillingRate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BillingRate"> | Date | string
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
-  teacher?: Prisma.XOR<Prisma.TeacherScalarRelationFilter, Prisma.TeacherWhereInput>
+  teacher?: Prisma.XOR<Prisma.TeacherNullableScalarRelationFilter, Prisma.TeacherWhereInput> | null
   course?: Prisma.XOR<Prisma.CourseNullableScalarRelationFilter, Prisma.CourseWhereInput> | null
   student?: Prisma.XOR<Prisma.StudentNullableScalarRelationFilter, Prisma.StudentWhereInput> | null
 }, "id">
@@ -327,7 +331,7 @@ export type BillingRateOrderByWithAggregationInput = {
   tenantId?: Prisma.SortOrder
   kind?: Prisma.SortOrder
   basis?: Prisma.SortOrder
-  teacherId?: Prisma.SortOrder
+  teacherId?: Prisma.SortOrderInput | Prisma.SortOrder
   courseId?: Prisma.SortOrderInput | Prisma.SortOrder
   studentId?: Prisma.SortOrderInput | Prisma.SortOrder
   amount?: Prisma.SortOrder
@@ -350,7 +354,7 @@ export type BillingRateScalarWhereWithAggregatesInput = {
   tenantId?: Prisma.StringWithAggregatesFilter<"BillingRate"> | string
   kind?: Prisma.EnumRateKindWithAggregatesFilter<"BillingRate"> | $Enums.RateKind
   basis?: Prisma.EnumRateBasisWithAggregatesFilter<"BillingRate"> | $Enums.RateBasis
-  teacherId?: Prisma.StringWithAggregatesFilter<"BillingRate"> | string
+  teacherId?: Prisma.StringNullableWithAggregatesFilter<"BillingRate"> | string | null
   courseId?: Prisma.StringNullableWithAggregatesFilter<"BillingRate"> | string | null
   studentId?: Prisma.StringNullableWithAggregatesFilter<"BillingRate"> | string | null
   amount?: Prisma.DecimalWithAggregatesFilter<"BillingRate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -370,7 +374,7 @@ export type BillingRateCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutBillingRatesInput
-  teacher: Prisma.TeacherCreateNestedOneWithoutBillingRatesInput
+  teacher?: Prisma.TeacherCreateNestedOneWithoutBillingRatesInput
   course?: Prisma.CourseCreateNestedOneWithoutBillingRatesInput
   student?: Prisma.StudentCreateNestedOneWithoutBillingRatesInput
 }
@@ -380,7 +384,7 @@ export type BillingRateUncheckedCreateInput = {
   tenantId: string
   kind: $Enums.RateKind
   basis?: $Enums.RateBasis
-  teacherId: string
+  teacherId?: string | null
   courseId?: string | null
   studentId?: string | null
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -400,7 +404,7 @@ export type BillingRateUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutBillingRatesNestedInput
-  teacher?: Prisma.TeacherUpdateOneRequiredWithoutBillingRatesNestedInput
+  teacher?: Prisma.TeacherUpdateOneWithoutBillingRatesNestedInput
   course?: Prisma.CourseUpdateOneWithoutBillingRatesNestedInput
   student?: Prisma.StudentUpdateOneWithoutBillingRatesNestedInput
 }
@@ -410,7 +414,7 @@ export type BillingRateUncheckedUpdateInput = {
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumRateKindFieldUpdateOperationsInput | $Enums.RateKind
   basis?: Prisma.EnumRateBasisFieldUpdateOperationsInput | $Enums.RateBasis
-  teacherId?: Prisma.StringFieldUpdateOperationsInput | string
+  teacherId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -425,7 +429,7 @@ export type BillingRateCreateManyInput = {
   tenantId: string
   kind: $Enums.RateKind
   basis?: $Enums.RateBasis
-  teacherId: string
+  teacherId?: string | null
   courseId?: string | null
   studentId?: string | null
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -451,7 +455,7 @@ export type BillingRateUncheckedUpdateManyInput = {
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumRateKindFieldUpdateOperationsInput | $Enums.RateKind
   basis?: Prisma.EnumRateBasisFieldUpdateOperationsInput | $Enums.RateBasis
-  teacherId?: Prisma.StringFieldUpdateOperationsInput | string
+  teacherId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -717,7 +721,7 @@ export type BillingRateCreateWithoutTenantInput = {
   note?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  teacher: Prisma.TeacherCreateNestedOneWithoutBillingRatesInput
+  teacher?: Prisma.TeacherCreateNestedOneWithoutBillingRatesInput
   course?: Prisma.CourseCreateNestedOneWithoutBillingRatesInput
   student?: Prisma.StudentCreateNestedOneWithoutBillingRatesInput
 }
@@ -726,7 +730,7 @@ export type BillingRateUncheckedCreateWithoutTenantInput = {
   id?: string
   kind: $Enums.RateKind
   basis?: $Enums.RateBasis
-  teacherId: string
+  teacherId?: string | null
   courseId?: string | null
   studentId?: string | null
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -770,7 +774,7 @@ export type BillingRateScalarWhereInput = {
   tenantId?: Prisma.StringFilter<"BillingRate"> | string
   kind?: Prisma.EnumRateKindFilter<"BillingRate"> | $Enums.RateKind
   basis?: Prisma.EnumRateBasisFilter<"BillingRate"> | $Enums.RateBasis
-  teacherId?: Prisma.StringFilter<"BillingRate"> | string
+  teacherId?: Prisma.StringNullableFilter<"BillingRate"> | string | null
   courseId?: Prisma.StringNullableFilter<"BillingRate"> | string | null
   studentId?: Prisma.StringNullableFilter<"BillingRate"> | string | null
   amount?: Prisma.DecimalFilter<"BillingRate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -844,7 +848,7 @@ export type BillingRateCreateWithoutStudentInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutBillingRatesInput
-  teacher: Prisma.TeacherCreateNestedOneWithoutBillingRatesInput
+  teacher?: Prisma.TeacherCreateNestedOneWithoutBillingRatesInput
   course?: Prisma.CourseCreateNestedOneWithoutBillingRatesInput
 }
 
@@ -853,7 +857,7 @@ export type BillingRateUncheckedCreateWithoutStudentInput = {
   tenantId: string
   kind: $Enums.RateKind
   basis?: $Enums.RateBasis
-  teacherId: string
+  teacherId?: string | null
   courseId?: string | null
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   effectiveFrom: Date | string
@@ -898,7 +902,7 @@ export type BillingRateCreateWithoutCourseInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutBillingRatesInput
-  teacher: Prisma.TeacherCreateNestedOneWithoutBillingRatesInput
+  teacher?: Prisma.TeacherCreateNestedOneWithoutBillingRatesInput
   student?: Prisma.StudentCreateNestedOneWithoutBillingRatesInput
 }
 
@@ -907,7 +911,7 @@ export type BillingRateUncheckedCreateWithoutCourseInput = {
   tenantId: string
   kind: $Enums.RateKind
   basis?: $Enums.RateBasis
-  teacherId: string
+  teacherId?: string | null
   studentId?: string | null
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   effectiveFrom: Date | string
@@ -946,7 +950,7 @@ export type BillingRateCreateManyTenantInput = {
   id?: string
   kind: $Enums.RateKind
   basis?: $Enums.RateBasis
-  teacherId: string
+  teacherId?: string | null
   courseId?: string | null
   studentId?: string | null
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -965,7 +969,7 @@ export type BillingRateUpdateWithoutTenantInput = {
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  teacher?: Prisma.TeacherUpdateOneRequiredWithoutBillingRatesNestedInput
+  teacher?: Prisma.TeacherUpdateOneWithoutBillingRatesNestedInput
   course?: Prisma.CourseUpdateOneWithoutBillingRatesNestedInput
   student?: Prisma.StudentUpdateOneWithoutBillingRatesNestedInput
 }
@@ -974,7 +978,7 @@ export type BillingRateUncheckedUpdateWithoutTenantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumRateKindFieldUpdateOperationsInput | $Enums.RateKind
   basis?: Prisma.EnumRateBasisFieldUpdateOperationsInput | $Enums.RateBasis
-  teacherId?: Prisma.StringFieldUpdateOperationsInput | string
+  teacherId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -988,7 +992,7 @@ export type BillingRateUncheckedUpdateManyWithoutTenantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumRateKindFieldUpdateOperationsInput | $Enums.RateKind
   basis?: Prisma.EnumRateBasisFieldUpdateOperationsInput | $Enums.RateBasis
-  teacherId?: Prisma.StringFieldUpdateOperationsInput | string
+  teacherId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1059,7 +1063,7 @@ export type BillingRateCreateManyStudentInput = {
   tenantId: string
   kind: $Enums.RateKind
   basis?: $Enums.RateBasis
-  teacherId: string
+  teacherId?: string | null
   courseId?: string | null
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   effectiveFrom: Date | string
@@ -1078,7 +1082,7 @@ export type BillingRateUpdateWithoutStudentInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutBillingRatesNestedInput
-  teacher?: Prisma.TeacherUpdateOneRequiredWithoutBillingRatesNestedInput
+  teacher?: Prisma.TeacherUpdateOneWithoutBillingRatesNestedInput
   course?: Prisma.CourseUpdateOneWithoutBillingRatesNestedInput
 }
 
@@ -1087,7 +1091,7 @@ export type BillingRateUncheckedUpdateWithoutStudentInput = {
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumRateKindFieldUpdateOperationsInput | $Enums.RateKind
   basis?: Prisma.EnumRateBasisFieldUpdateOperationsInput | $Enums.RateBasis
-  teacherId?: Prisma.StringFieldUpdateOperationsInput | string
+  teacherId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   effectiveFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1101,7 +1105,7 @@ export type BillingRateUncheckedUpdateManyWithoutStudentInput = {
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumRateKindFieldUpdateOperationsInput | $Enums.RateKind
   basis?: Prisma.EnumRateBasisFieldUpdateOperationsInput | $Enums.RateBasis
-  teacherId?: Prisma.StringFieldUpdateOperationsInput | string
+  teacherId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   courseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   effectiveFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1115,7 +1119,7 @@ export type BillingRateCreateManyCourseInput = {
   tenantId: string
   kind: $Enums.RateKind
   basis?: $Enums.RateBasis
-  teacherId: string
+  teacherId?: string | null
   studentId?: string | null
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   effectiveFrom: Date | string
@@ -1134,7 +1138,7 @@ export type BillingRateUpdateWithoutCourseInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutBillingRatesNestedInput
-  teacher?: Prisma.TeacherUpdateOneRequiredWithoutBillingRatesNestedInput
+  teacher?: Prisma.TeacherUpdateOneWithoutBillingRatesNestedInput
   student?: Prisma.StudentUpdateOneWithoutBillingRatesNestedInput
 }
 
@@ -1143,7 +1147,7 @@ export type BillingRateUncheckedUpdateWithoutCourseInput = {
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumRateKindFieldUpdateOperationsInput | $Enums.RateKind
   basis?: Prisma.EnumRateBasisFieldUpdateOperationsInput | $Enums.RateBasis
-  teacherId?: Prisma.StringFieldUpdateOperationsInput | string
+  teacherId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   effectiveFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1157,7 +1161,7 @@ export type BillingRateUncheckedUpdateManyWithoutCourseInput = {
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   kind?: Prisma.EnumRateKindFieldUpdateOperationsInput | $Enums.RateKind
   basis?: Prisma.EnumRateBasisFieldUpdateOperationsInput | $Enums.RateBasis
-  teacherId?: Prisma.StringFieldUpdateOperationsInput | string
+  teacherId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   studentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   effectiveFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1182,7 +1186,7 @@ export type BillingRateSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   createdAt?: boolean
   updatedAt?: boolean
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
-  teacher?: boolean | Prisma.TeacherDefaultArgs<ExtArgs>
+  teacher?: boolean | Prisma.BillingRate$teacherArgs<ExtArgs>
   course?: boolean | Prisma.BillingRate$courseArgs<ExtArgs>
   student?: boolean | Prisma.BillingRate$studentArgs<ExtArgs>
 }, ExtArgs["result"]["billingRate"]>
@@ -1201,7 +1205,7 @@ export type BillingRateSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   createdAt?: boolean
   updatedAt?: boolean
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
-  teacher?: boolean | Prisma.TeacherDefaultArgs<ExtArgs>
+  teacher?: boolean | Prisma.BillingRate$teacherArgs<ExtArgs>
   course?: boolean | Prisma.BillingRate$courseArgs<ExtArgs>
   student?: boolean | Prisma.BillingRate$studentArgs<ExtArgs>
 }, ExtArgs["result"]["billingRate"]>
@@ -1220,7 +1224,7 @@ export type BillingRateSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   createdAt?: boolean
   updatedAt?: boolean
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
-  teacher?: boolean | Prisma.TeacherDefaultArgs<ExtArgs>
+  teacher?: boolean | Prisma.BillingRate$teacherArgs<ExtArgs>
   course?: boolean | Prisma.BillingRate$courseArgs<ExtArgs>
   student?: boolean | Prisma.BillingRate$studentArgs<ExtArgs>
 }, ExtArgs["result"]["billingRate"]>
@@ -1243,19 +1247,19 @@ export type BillingRateSelectScalar = {
 export type BillingRateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "kind" | "basis" | "teacherId" | "courseId" | "studentId" | "amount" | "effectiveFrom" | "note" | "createdAt" | "updatedAt", ExtArgs["result"]["billingRate"]>
 export type BillingRateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
-  teacher?: boolean | Prisma.TeacherDefaultArgs<ExtArgs>
+  teacher?: boolean | Prisma.BillingRate$teacherArgs<ExtArgs>
   course?: boolean | Prisma.BillingRate$courseArgs<ExtArgs>
   student?: boolean | Prisma.BillingRate$studentArgs<ExtArgs>
 }
 export type BillingRateIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
-  teacher?: boolean | Prisma.TeacherDefaultArgs<ExtArgs>
+  teacher?: boolean | Prisma.BillingRate$teacherArgs<ExtArgs>
   course?: boolean | Prisma.BillingRate$courseArgs<ExtArgs>
   student?: boolean | Prisma.BillingRate$studentArgs<ExtArgs>
 }
 export type BillingRateIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
-  teacher?: boolean | Prisma.TeacherDefaultArgs<ExtArgs>
+  teacher?: boolean | Prisma.BillingRate$teacherArgs<ExtArgs>
   course?: boolean | Prisma.BillingRate$courseArgs<ExtArgs>
   student?: boolean | Prisma.BillingRate$studentArgs<ExtArgs>
 }
@@ -1264,7 +1268,7 @@ export type $BillingRatePayload<ExtArgs extends runtime.Types.Extensions.Interna
   name: "BillingRate"
   objects: {
     tenant: Prisma.$TenantPayload<ExtArgs>
-    teacher: Prisma.$TeacherPayload<ExtArgs>
+    teacher: Prisma.$TeacherPayload<ExtArgs> | null
     course: Prisma.$CoursePayload<ExtArgs> | null
     student: Prisma.$StudentPayload<ExtArgs> | null
   }
@@ -1273,7 +1277,7 @@ export type $BillingRatePayload<ExtArgs extends runtime.Types.Extensions.Interna
     tenantId: string
     kind: $Enums.RateKind
     basis: $Enums.RateBasis
-    teacherId: string
+    teacherId: string | null
     courseId: string | null
     studentId: string | null
     amount: runtime.Decimal
@@ -1676,7 +1680,7 @@ readonly fields: BillingRateFieldRefs;
 export interface Prisma__BillingRateClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   tenant<T extends Prisma.TenantDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TenantDefaultArgs<ExtArgs>>): Prisma.Prisma__TenantClient<runtime.Types.Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  teacher<T extends Prisma.TeacherDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TeacherDefaultArgs<ExtArgs>>): Prisma.Prisma__TeacherClient<runtime.Types.Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  teacher<T extends Prisma.BillingRate$teacherArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BillingRate$teacherArgs<ExtArgs>>): Prisma.Prisma__TeacherClient<runtime.Types.Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   course<T extends Prisma.BillingRate$courseArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BillingRate$courseArgs<ExtArgs>>): Prisma.Prisma__CourseClient<runtime.Types.Result.GetResult<Prisma.$CoursePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   student<T extends Prisma.BillingRate$studentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BillingRate$studentArgs<ExtArgs>>): Prisma.Prisma__StudentClient<runtime.Types.Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
@@ -2118,6 +2122,25 @@ export type BillingRateDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * Limit how many BillingRates to delete.
    */
   limit?: number
+}
+
+/**
+ * BillingRate.teacher
+ */
+export type BillingRate$teacherArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Teacher
+   */
+  select?: Prisma.TeacherSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Teacher
+   */
+  omit?: Prisma.TeacherOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TeacherInclude<ExtArgs> | null
+  where?: Prisma.TeacherWhereInput
 }
 
 /**

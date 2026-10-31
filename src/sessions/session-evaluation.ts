@@ -16,10 +16,10 @@ const text = (v: string | null | undefined) => {
 
 /**
  * The attendee row an evaluation produces. The status decides `attended` (what billing and reports
- * count): present and late students attended, absent ones didn't, and absent students get no rating.
+ * count): present and late students attended, absent ones (excused or not) didn't, and get no rating.
  */
 export function evaluationRow(e: Evaluation, now = new Date()) {
-  const absent = e.status === 'ABSENT';
+  const absent = e.status === 'ABSENT' || e.status === 'EXCUSED';
   return {
     status: e.status,
     attended: !absent,

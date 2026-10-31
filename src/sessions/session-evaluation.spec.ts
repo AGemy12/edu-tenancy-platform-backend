@@ -18,6 +18,10 @@ describe('evaluationRow', () => {
     });
   });
 
+  it('treats an excused absence as not attended, without a rating', () => {
+    expect(evaluationRow({ status: 'EXCUSED', rating: 5 }, now)).toMatchObject({ status: 'EXCUSED', attended: false, rating: null });
+  });
+
   it('stores blank text as nothing', () => {
     expect(evaluationRow({ status: 'PRESENT', homework: '   ', progress: '', comment: undefined }, now)).toMatchObject({
       homework: null,

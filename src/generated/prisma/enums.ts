@@ -85,7 +85,8 @@ export type SessionStatus = (typeof SessionStatus)[keyof typeof SessionStatus]
 export const AttendanceStatus = {
   PRESENT: 'PRESENT',
   LATE: 'LATE',
-  ABSENT: 'ABSENT'
+  ABSENT: 'ABSENT',
+  EXCUSED: 'EXCUSED'
 } as const
 
 export type AttendanceStatus = (typeof AttendanceStatus)[keyof typeof AttendanceStatus]
@@ -119,6 +120,7 @@ export type RateKind = (typeof RateKind)[keyof typeof RateKind]
 
 export const RateBasis = {
   PER_HOUR: 'PER_HOUR',
+  PER_SESSION: 'PER_SESSION',
   PERCENT: 'PERCENT'
 } as const
 
@@ -159,3 +161,95 @@ export const FileCategory = {
 } as const
 
 export type FileCategory = (typeof FileCategory)[keyof typeof FileCategory]
+
+
+export const NotificationType = {
+  SESSION_SCHEDULED: 'SESSION_SCHEDULED',
+  SESSION_RESCHEDULED: 'SESSION_RESCHEDULED',
+  SESSION_CANCELED: 'SESSION_CANCELED',
+  SESSION_LIVE: 'SESSION_LIVE',
+  SESSION_REMINDER: 'SESSION_REMINDER',
+  SESSION_EVALUATED: 'SESSION_EVALUATED',
+  SCHEDULE_CREATED: 'SCHEDULE_CREATED',
+  EXAM_PUBLISHED: 'EXAM_PUBLISHED',
+  EXAM_GRADED: 'EXAM_GRADED',
+  FILES_SHARED: 'FILES_SHARED',
+  TEACHER_ASSIGNED: 'TEACHER_ASSIGNED',
+  STUDENT_ASSIGNED: 'STUDENT_ASSIGNED',
+  ACCOUNT_STATUS: 'ACCOUNT_STATUS',
+  SUBSCRIPTION_CHANGED: 'SUBSCRIPTION_CHANGED',
+  SUBSCRIPTION_EXPIRING: 'SUBSCRIPTION_EXPIRING',
+  SUBSCRIPTION_EXPIRED: 'SUBSCRIPTION_EXPIRED',
+  SUPPORT_REQUESTED: 'SUPPORT_REQUESTED',
+  SUPPORT_DECIDED: 'SUPPORT_DECIDED',
+  TENANT_REGISTERED: 'TENANT_REGISTERED',
+  ANNOUNCEMENT: 'ANNOUNCEMENT',
+  MEMBER_ADDED: 'MEMBER_ADDED',
+  MEETING_ACCOUNT_NEEDED: 'MEETING_ACCOUNT_NEEDED'
+} as const
+
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
+
+
+export const NotificationCategory = {
+  SESSIONS: 'SESSIONS',
+  EXAMS: 'EXAMS',
+  LIBRARY: 'LIBRARY',
+  PEOPLE: 'PEOPLE',
+  ACCOUNT: 'ACCOUNT',
+  SUBSCRIPTION: 'SUBSCRIPTION',
+  SUPPORT: 'SUPPORT',
+  PLATFORM: 'PLATFORM',
+  ANNOUNCEMENTS: 'ANNOUNCEMENTS',
+  ACTIVITY: 'ACTIVITY'
+} as const
+
+export type NotificationCategory = (typeof NotificationCategory)[keyof typeof NotificationCategory]
+
+
+export const AnnouncementAudience = {
+  EVERYONE: 'EVERYONE',
+  ADMINS: 'ADMINS',
+  TEACHERS: 'TEACHERS',
+  STUDENTS: 'STUDENTS'
+} as const
+
+export type AnnouncementAudience = (typeof AnnouncementAudience)[keyof typeof AnnouncementAudience]
+
+
+export const ConversationKind = {
+  DIRECT: 'DIRECT',
+  GROUP: 'GROUP'
+} as const
+
+export type ConversationKind = (typeof ConversationKind)[keyof typeof ConversationKind]
+
+
+export const MessageKind = {
+  TEXT: 'TEXT',
+  SYSTEM: 'SYSTEM',
+  CALL: 'CALL'
+} as const
+
+export type MessageKind = (typeof MessageKind)[keyof typeof MessageKind]
+
+
+export const CallStatus = {
+  RINGING: 'RINGING',
+  ACTIVE: 'ACTIVE',
+  ENDED: 'ENDED',
+  MISSED: 'MISSED'
+} as const
+
+export type CallStatus = (typeof CallStatus)[keyof typeof CallStatus]
+
+
+export const SupportRequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  DENIED: 'DENIED',
+  CANCELED: 'CANCELED',
+  REVOKED: 'REVOKED'
+} as const
+
+export type SupportRequestStatus = (typeof SupportRequestStatus)[keyof typeof SupportRequestStatus]

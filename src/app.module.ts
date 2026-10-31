@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { MailModule } from './mail/mail.module.js';
@@ -18,6 +18,13 @@ import { BillingModule } from './billing/billing.module.js';
 import { IntegrationsModule } from './integrations/integrations.module.js';
 import { LibraryModule } from './library/library.module.js';
 import { PlansModule } from './plans/plans.module.js';
+import { PlatformModule } from './platform/platform.module.js';
+import { SupportModule } from './support/support.module.js';
+import { RealtimeModule } from './realtime/realtime.module.js';
+import { NotificationsModule } from './notifications/notifications.module.js';
+import { MessagingModule } from './messaging/messaging.module.js';
+import { SupportGuard } from './support/support.guard.js';
+import { SupportAuditInterceptor } from './support/support-audit.interceptor.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { RolesGuard } from './common/guards/roles.guard.js';
 import { AccountStatusGuard } from './auth/account-status.js';
@@ -32,6 +39,9 @@ import { I18nExceptionFilter } from './i18n/i18n-exception.filter.js';
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 600 }]),
     PrismaModule,
     MailModule,
+    RealtimeModule,
+    NotificationsModule,
+    MessagingModule,
     AuthModule,
     TenantsModule,
     TeachersModule,
@@ -44,6 +54,8 @@ import { I18nExceptionFilter } from './i18n/i18n-exception.filter.js';
     BillingModule,
     IntegrationsModule,
     PlansModule,
+    PlatformModule,
+    SupportModule,
     LibraryModule,
   ],
   controllers: [AppController],
@@ -53,10 +65,14 @@ import { I18nExceptionFilter } from './i18n/i18n-exception.filter.js';
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    // Support mode (a platform admin working as a member) can't touch the person's own account.
+    { provide: APP_GUARD, useClass: SupportGuard },
     { provide: APP_GUARD, useClass: AccountStatusGuard },
     { provide: APP_GUARD, useClass: SubscriptionGuard },
     // Translates error messages to the request language (Accept-Language).
     { provide: APP_FILTER, useClass: I18nExceptionFilter },
+    // Logs every write made in support mode.
+    { provide: APP_INTERCEPTOR, useClass: SupportAuditInterceptor },
   ],
 })
 export class AppModule {}

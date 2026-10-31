@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import type { JwtUser } from '../common/decorators/current-user.decorator.js';
 import type { CreateCourseDto, UpdateCourseDto } from './dto/course.dto.js';
 import { msg } from '../i18n/i18n.js';
+import { MessagingService } from '../messaging/messaging.service.js';
 
 const courseInclude = {
   teacher: { select: { id: true, user: { select: { fullName: true } } } },
@@ -11,7 +12,10 @@ const courseInclude = {
 
 @Injectable()
 export class CoursesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly messaging: MessagingService,
+  ) {}
 
   list(user: JwtUser) {
     const tenantId = user.tenantId!;
@@ -65,7 +69,7 @@ export class CoursesService {
     const student = await this.prisma.student.findFirst({ where: { id: studentId, tenantId: user.tenantId! } });
     if (!student) throw new NotFoundException(msg('students.notFound'));
 
-    return this.prisma.$transaction(async (tx) => {
+    const enrollment = await this.prisma.$transaction(async (tx) => {
       // Enrolling also links the student to the course teacher.
       await tx.teacherStudent.upsert({
         where: { teacherId_studentId: { teacherId: course.teacherId, studentId } },
@@ -78,11 +82,14 @@ export class CoursesService {
         create: { tenantId: user.tenantId!, courseId, studentId },
       });
     });
+    void this.messaging.courseEnrollmentChanged(courseId, studentId, true);
+    return enrollment;
   }
 
   async unenroll(user: JwtUser, courseId: string, studentId: string) {
     await this.getOwned(user, courseId);
     await this.prisma.enrollment.deleteMany({ where: { courseId, studentId } });
+    void this.messaging.courseEnrollmentChanged(courseId, studentId, false);
   }
 
   /** Course the caller may manage (admin: any in tenant; teacher: own). */

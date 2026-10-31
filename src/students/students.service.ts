@@ -8,6 +8,7 @@ import type { SetAccountStatusDto } from '../auth/dto/account-status.dto.js';
 import type { JwtUser } from '../common/decorators/current-user.decorator.js';
 import type { CreateStudentDto, UpdateStudentDto } from './dto/student.dto.js';
 import { msg } from '../i18n/i18n.js';
+import { NotificationEvents } from '../notifications/notification-events.js';
 import type { Locale } from '../i18n/locale.js';
 
 const studentInclude = {
@@ -31,6 +32,7 @@ export class StudentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auth: AuthService,
+    private readonly events: NotificationEvents,
   ) {}
 
   list(user: JwtUser) {
@@ -95,6 +97,8 @@ export class StudentsService {
       });
     });
     await this.auth.sendWelcome(student.membershipId, { existingAccount: Boolean(existing) }, locale);
+    void this.events.memberAdded(student.membershipId, user.id);
+    if (teacherId) void this.events.teacherLinked(teacherId, student.id, user.id);
     return student;
   }
 
@@ -115,6 +119,7 @@ export class StudentsService {
   async setStatus(user: JwtUser, id: string, dto: SetAccountStatusDto) {
     const student = await this.get(user, id);
     await setAccountStatus(this.prisma, student.membershipId, dto, user.id);
+    if (student.membership.status !== dto.status) void this.events.accountStatus(student.membershipId, dto.status, dto.reason, user.id);
     return this.get(user, id);
   }
 
@@ -122,11 +127,13 @@ export class StudentsService {
     const student = await this.get(user, studentId);
     const teacher = await this.prisma.teacher.findFirst({ where: { id: teacherId, tenantId: user.tenantId! } });
     if (!teacher) throw new NotFoundException(msg('teachers.notFound'));
+    const linked = student.teachers.some((t) => t.teacher.id === teacherId);
     await this.prisma.teacherStudent.upsert({
       where: { teacherId_studentId: { teacherId, studentId: student.id } },
       update: {},
       create: { teacherId, studentId: student.id },
     });
+    if (!linked) void this.events.teacherLinked(teacherId, student.id, user.id);
     return this.get(user, studentId);
   }
 
@@ -139,6 +146,7 @@ export class StudentsService {
     const student = await this.get(user, id);
     if (hasStudyRecord(student._count)) throw new ConflictException(msg('students.hasRecord'));
     await removeMembership(this.prisma, student.membershipId);
+    this.events.memberRemoved(student.membershipId);
   }
 
   private async assertQuota(tenantId: string) {

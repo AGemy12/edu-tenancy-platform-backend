@@ -10,6 +10,6 @@ import { BootstrapService } from './bootstrap.service.js';
   imports: [PassportModule.register({ defaultStrategy: 'jwt' }), JwtModule.register({})],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, BootstrapService],
-  exports: [AuthService],
+  exports: [AuthService, JwtStrategy],
 })
 export class AuthModule {}

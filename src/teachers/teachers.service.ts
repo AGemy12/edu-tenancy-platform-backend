@@ -8,7 +8,9 @@ import type { SetAccountStatusDto } from '../auth/dto/account-status.dto.js';
 import type { CreateTeacherDto, UpdateTeacherDto } from './dto/teacher.dto.js';
 import type { JwtUser } from '../common/decorators/current-user.decorator.js';
 import { msg } from '../i18n/i18n.js';
+import { NotificationEvents } from '../notifications/notification-events.js';
 import type { Locale } from '../i18n/locale.js';
+import { MEETING_ACCOUNT, linkedAccounts, type HostedProvider } from '../integrations/meeting-accounts.js';
 
 const teacherInclude = {
   user: { select: { id: true, fullName: true, email: true, phone: true } },
@@ -30,20 +32,52 @@ export class TeachersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auth: AuthService,
+    private readonly events: NotificationEvents,
   ) {}
 
-  list(tenantId: string) {
-    return this.prisma.teacher.findMany({
-      where: { tenantId },
+  /** Admins also see which meeting accounts each teacher has linked (sessions run on them). */
+  async list(viewer: JwtUser) {
+    const teachers = await this.prisma.teacher.findMany({
+      where: { tenantId: viewer.tenantId! },
       include: teacherInclude,
       orderBy: { createdAt: 'desc' },
     });
+    return this.withMeetingAccounts(viewer, teachers);
   }
 
   async get(tenantId: string, id: string) {
     const teacher = await this.prisma.teacher.findFirst({ where: { id, tenantId }, include: teacherInclude });
     if (!teacher) throw new NotFoundException(msg('teachers.notFound'));
     return teacher;
+  }
+
+  async getFor(viewer: JwtUser, id: string) {
+    const [teacher] = await this.withMeetingAccounts(viewer, [await this.get(viewer.tenantId!, id)]);
+    return teacher;
+  }
+
+  /**
+   * Asks a teacher to link the account a provider's sessions are created on (only they can link
+   * it). Refused once it is linked; repeated presses send at most one reminder a day.
+   */
+  async remindMeetingAccount(user: JwtUser, id: string, provider: HostedProvider) {
+    const teacher = await this.get(user.tenantId!, id);
+    const linked = await this.prisma.integration.count({ where: { userId: teacher.userId, provider: MEETING_ACCOUNT[provider] } });
+    if (linked) throw new ConflictException(msg('teachers.meetingAccountLinked'));
+    void this.events.meetingAccountNeeded(teacher.membershipId, provider, user.id);
+  }
+
+  private async withMeetingAccounts<T extends { userId: string }>(viewer: JwtUser, teachers: T[]) {
+    // Teachers and students don't need to know about each other's accounts.
+    if (viewer.role !== 'TENANT_ADMIN') return teachers;
+    const rows = await this.prisma.integration.findMany({
+      where: { userId: { in: teachers.map((t) => t.userId) } },
+      select: { userId: true, provider: true },
+    });
+    return teachers.map((t) => ({
+      ...t,
+      meetingAccounts: linkedAccounts(rows.filter((r) => r.userId === t.userId).map((r) => r.provider)),
+    }));
   }
 
   /**
@@ -73,6 +107,7 @@ export class TeachersService {
       });
     });
     await this.auth.sendWelcome(teacher.membershipId, { existingAccount: Boolean(existing) }, locale);
+    void this.events.memberAdded(teacher.membershipId, user.id);
     return teacher;
   }
 
@@ -111,6 +146,7 @@ export class TeachersService {
       throw new ForbiddenException(msg('teachers.adminStaysActive'));
     }
     await setAccountStatus(this.prisma, teacher.membershipId, dto, user.id);
+    if (teacher.membership.status !== dto.status) void this.events.accountStatus(teacher.membershipId, dto.status, dto.reason, user.id);
     return this.get(user.tenantId!, id);
   }
 
@@ -123,6 +159,7 @@ export class TeachersService {
       return;
     }
     await removeMembership(this.prisma, teacher.membershipId);
+    this.events.memberRemoved(teacher.membershipId);
   }
 
   private async assertQuota(tenantId: string) {

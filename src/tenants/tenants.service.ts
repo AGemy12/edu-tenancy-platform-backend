@@ -1,10 +1,16 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { AuthService } from '../auth/auth.service.js';
+import { unusablePassword } from '../auth/passwords.js';
 import type { JwtUser } from '../common/decorators/current-user.decorator.js';
-import type { UpdateSubscriptionDto, UpdateTenantDto } from './dto/tenant.dto.js';
+import type { Locale } from '../i18n/locale.js';
+import type { BulkPlatformFeeDto, CreateTenantByAdminDto, UpdateSubscriptionDto, UpdateTenantDto } from './dto/tenant.dto.js';
 import { SubscriptionAccess } from './subscription.guard.js';
 import { isExpired } from './subscription.js';
+import { recordSubscriptionChange } from './subscription-history.js';
 import { msg } from '../i18n/i18n.js';
+import { NotificationEvents } from '../notifications/notification-events.js';
 
 const CURRENCIES = new Set(Intl.supportedValuesOf('currency'));
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -16,6 +22,9 @@ const ownerSelect = {
   take: 1,
   select: { user: { select: { fullName: true, email: true, lastLoginAt: true } } },
 };
+
+/** Prisma Decimal → number, keeping null. */
+const percentOf = (d: { toString(): string } | null | undefined) => (d == null ? null : Number(d));
 
 function isTimeZone(zone: string) {
   try {
@@ -31,6 +40,8 @@ export class TenantsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly access: SubscriptionAccess,
+    private readonly auth: AuthService,
+    private readonly events: NotificationEvents,
   ) {}
 
   async me(tenantId: string) {
@@ -89,10 +100,73 @@ export class TenantsService {
     ]);
     return rows.map(({ memberships, ...t }) => ({
       ...t,
+      platformFeePercent: percentOf(t.platformFeePercent),
       owner: memberships[0]?.user ?? null,
       storageBytes: storage.get(t.id) ?? 0,
       subscriptionExpired: isExpired(t.subscription),
     }));
+  }
+
+  /**
+   * Super admin: sets up a center with its package and owner. An email that already has an account
+   * gets the center added to it; a new one gets an account and a welcome email to choose a password.
+   */
+  async create(dto: CreateTenantByAdminDto, actorId: string, locale?: Locale) {
+    if (await this.prisma.tenant.findUnique({ where: { slug: dto.slug }, select: { id: true } })) {
+      throw new ConflictException(msg('auth.slugTaken'));
+    }
+    if (dto.timezone !== undefined && !isTimeZone(dto.timezone)) throw new BadRequestException(msg('tenants.invalidTimezone'));
+    const currency = dto.currency?.toUpperCase();
+    if (currency !== undefined && !CURRENCIES.has(currency)) throw new BadRequestException(msg('tenants.invalidCurrency'));
+    const plan = await this.prisma.plan.findUnique({ where: { id: dto.planId }, select: { isActive: true } });
+    if (!plan) throw new NotFoundException(msg('plans.notFound'));
+    if (!plan.isActive) throw new BadRequestException(msg('tenants.planInactive'));
+
+    const email = dto.ownerEmail.trim().toLowerCase();
+    const existing = await this.prisma.user.findUnique({ where: { email }, select: { id: true } });
+    const passwordHash = existing ? null : await bcrypt.hash(unusablePassword(), 10);
+    const { tenantId, membershipId } = await this.prisma.$transaction(async (tx) => {
+      const userId =
+        existing?.id ??
+        (await tx.user.create({ data: { email, passwordHash: passwordHash!, fullName: dto.ownerName.trim(), phone: dto.ownerPhone?.trim() || null }, select: { id: true } }))
+          .id;
+      const tenant = await tx.tenant.create({
+        data: {
+          name: dto.name.trim(),
+          slug: dto.slug,
+          timezone: dto.timezone,
+          currency,
+          subscription: { create: { planId: dto.planId, status: dto.status, currentPeriodEnd: dto.currentPeriodEnd ? new Date(dto.currentPeriodEnd) : null } },
+        },
+        select: { id: true },
+      });
+      await recordSubscriptionChange(tx, tenant.id, actorId);
+      const membership = await tx.membership.create({ data: { userId, tenantId: tenant.id, role: 'TENANT_ADMIN' }, select: { id: true } });
+      if (!existing) await tx.user.update({ where: { id: userId }, data: { lastMembershipId: membership.id } });
+      return { tenantId: tenant.id, membershipId: membership.id };
+    });
+    await this.auth.sendWelcome(membershipId, { existingAccount: Boolean(existing) }, locale);
+    return (await this.listAll()).find((t) => t.id === tenantId);
+  }
+
+  /** Super admin: set or remove (null) the platform's commission on one center. */
+  async setPlatformFee(id: string, percent: number | null) {
+    await this.getTenant(id);
+    const t = await this.prisma.tenant.update({ where: { id }, data: { platformFeePercent: percent }, select: { id: true, platformFeePercent: true } });
+    return { id: t.id, platformFeePercent: percentOf(t.platformFeePercent) };
+  }
+
+  /**
+   * Super admin: the same commission on a chosen set of centers, or on every center except some.
+   * Returns how many were changed.
+   */
+  async bulkPlatformFee(dto: BulkPlatformFeeDto) {
+    const ids = dto.tenantIds && [...new Set(dto.tenantIds)];
+    const except = dto.except ?? [];
+    if (ids && ids.length === 0) throw new BadRequestException(msg('tenants.platformFeeNoTargets'));
+    const where = ids ? { id: { in: ids.filter((id) => !except.includes(id)) } } : except.length ? { id: { notIn: except } } : {};
+    const res = await this.prisma.tenant.updateMany({ where, data: { platformFeePercent: dto.percent } });
+    return { updated: res.count, percent: dto.percent };
   }
 
   /** Super admin: the platform at a glance and what needs attention soon. */
@@ -177,6 +251,7 @@ export class TenantsService {
     const lastLoginAt = logins.length ? new Date(Math.max(...logins)) : null;
     return {
       ...rest,
+      platformFeePercent: percentOf(rest.platformFeePercent),
       subscriptionExpired: isExpired(subscription),
       subscription: subscription && {
         status: subscription.status,
@@ -219,8 +294,11 @@ export class TenantsService {
     return this.prisma.tenant.update({ where: { id }, data: { status } });
   }
 
-  /** Super admin: switch package, status or end date; creates the subscription if the center has none. */
-  async updateSubscription(id: string, dto: UpdateSubscriptionDto) {
+  /**
+   * Super admin: switch package, status or end date; creates the subscription if the center has none.
+   * Every change is appended to the center's subscription history.
+   */
+  async updateSubscription(id: string, dto: UpdateSubscriptionDto, actorId: string | null = null) {
     await this.getTenant(id);
     if (dto.planId) {
       const plan = await this.prisma.plan.findUnique({ where: { id: dto.planId } });
@@ -231,17 +309,21 @@ export class TenantsService {
     const existing = await this.prisma.subscription.findUnique({ where: { tenantId: id } });
     if (!existing && (!dto.planId || end === undefined)) throw new BadRequestException(msg('tenants.subscriptionNeedsPlan'));
 
-    if (existing) {
-      await this.prisma.subscription.update({
-        where: { tenantId: id },
-        data: { planId: dto.planId, status: dto.status, currentPeriodEnd: end },
-      });
-    } else {
-      await this.prisma.subscription.create({
-        data: { tenantId: id, planId: dto.planId!, status: dto.status ?? 'ACTIVE', currentPeriodEnd: end ?? null },
-      });
-    }
+    await this.prisma.$transaction(async (tx) => {
+      if (existing) {
+        await tx.subscription.update({
+          where: { tenantId: id },
+          data: { planId: dto.planId, status: dto.status, currentPeriodEnd: end },
+        });
+      } else {
+        await tx.subscription.create({
+          data: { tenantId: id, planId: dto.planId!, status: dto.status ?? 'ACTIVE', currentPeriodEnd: end ?? null },
+        });
+      }
+      await recordSubscriptionChange(tx, id, actorId);
+    });
     this.access.forget(id);
+    void this.events.subscriptionChanged(id, actorId);
     return (await this.listAll()).find((t) => t.id === id);
   }
 

@@ -13,7 +13,7 @@ const noRecord = { enrollments: 0, attendances: 0, examResults: 0, schedules: 0,
 function setup(count = noRecord, otherCenters = 0) {
   const prisma = {
     student: {
-      findFirst: vi.fn().mockResolvedValue({ id: 's1', userId: 'u-s1', membershipId: 'ms1', teachers: [{ teacher: { id: 'tc1' } }], _count: count }),
+      findFirst: vi.fn().mockResolvedValue({ id: 's1', userId: 'u-s1', membershipId: 'ms1', membership: { status: 'ACTIVE' }, teachers: [{ teacher: { id: 'tc1' } }], _count: count }),
     },
     membership: {
       update: vi.fn(),
@@ -23,7 +23,8 @@ function setup(count = noRecord, otherCenters = 0) {
     user: { delete: vi.fn() },
     refreshToken: { updateMany: vi.fn() },
   };
-  return { prisma, service: new StudentsService(prisma as unknown as PrismaService, {} as AuthService) };
+  const events = { accountStatus: vi.fn(), memberRemoved: vi.fn(), teacherLinked: vi.fn(), memberAdded: vi.fn() };
+  return { prisma, events, service: new StudentsService(prisma as unknown as PrismaService, {} as AuthService, events as never) };
 }
 
 describe('hasStudyRecord', () => {
@@ -39,8 +40,9 @@ describe('StudentsService.setStatus', () => {
   const teacher: JwtUser = { ...admin, id: 'u-tc', role: 'TEACHER', teacherId: 'tc1' };
 
   it("lets a teacher suspend their own student in this center, but not someone else's", async () => {
-    const { prisma, service } = setup();
+    const { prisma, events, service } = setup();
     await service.setStatus(teacher, 's1', { status: 'SUSPENDED', reason: 'Missed 3 sessions' });
+    expect(events.accountStatus).toHaveBeenCalledWith('ms1', 'SUSPENDED', 'Missed 3 sessions', 'u-tc');
     expect(prisma.membership.update).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: 'ms1' }, data: expect.objectContaining({ status: 'SUSPENDED', statusChangedById: 'u-tc' }) }),
     );

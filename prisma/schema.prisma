@@ -71,6 +71,7 @@ enum AttendanceStatus {
   PRESENT
   LATE
   ABSENT
+  EXCUSED // absent with the teacher's leave: shown apart and not counted against the student
 }
 
 enum EnrollmentStatus {
@@ -86,12 +87,13 @@ enum ExamStatus {
 }
 
 enum RateKind {
-  STUDENT_FEE // what a student is charged for an hour of sessions
+  STUDENT_FEE // what a student is charged for sessions (the center's price list)
   TEACHER_PAY // what the center pays the teacher
 }
 
 enum RateBasis {
   PER_HOUR
+  PER_SESSION // a flat amount per session, whatever its length
   PERCENT // TEACHER_PAY only: a share of the fees charged to the session's students
 }
 
@@ -124,33 +126,116 @@ enum FileCategory {
   OTHER
 }
 
+/// What happened. The client renders the text from the type (and `params.variant`) in its own
+/// language; see notifications/notification-catalog.ts for each type's category and channels.
+enum NotificationType {
+  SESSION_SCHEDULED
+  SESSION_RESCHEDULED
+  SESSION_CANCELED
+  SESSION_LIVE
+  SESSION_REMINDER
+  SESSION_EVALUATED
+  SCHEDULE_CREATED
+  EXAM_PUBLISHED
+  EXAM_GRADED
+  FILES_SHARED
+  TEACHER_ASSIGNED
+  STUDENT_ASSIGNED
+  ACCOUNT_STATUS
+  SUBSCRIPTION_CHANGED
+  SUBSCRIPTION_EXPIRING
+  SUBSCRIPTION_EXPIRED
+  SUPPORT_REQUESTED
+  SUPPORT_DECIDED
+  TENANT_REGISTERED
+  ANNOUNCEMENT
+  MEMBER_ADDED // center activity only: a teacher or student joined the center
+  MEETING_ACCOUNT_NEEDED // an admin asks a teacher to link the Zoom or Google account their sessions run on
+}
+
+/// Groups of notification types; preferences (in-app, email) are set per category.
+enum NotificationCategory {
+  SESSIONS
+  EXAMS
+  LIBRARY
+  PEOPLE
+  ACCOUNT
+  SUBSCRIPTION
+  SUPPORT
+  PLATFORM
+  ANNOUNCEMENTS
+  ACTIVITY // the center's admins' copy of everything that happens in their center
+}
+
+/// Who a center or platform announcement goes to.
+enum AnnouncementAudience {
+  EVERYONE // center: every member; platform: every member of every center
+  ADMINS // center admins (platform: the admins of every center)
+  TEACHERS
+  STUDENTS
+}
+
+enum ConversationKind {
+  DIRECT // two members; one conversation per pair
+  GROUP // a named group, optionally a course's class group
+}
+
+enum MessageKind {
+  TEXT
+  SYSTEM // "created the group", "added …": text built by the client from `params`
+  CALL // a call placed in the chat; its state lives on `call`
+}
+
+enum CallStatus {
+  RINGING // placed; the other side hasn't picked up (MISSED once it rang too long, see call-rules.ts)
+  ACTIVE // picked up, or the meeting started
+  ENDED
+  MISSED // nobody picked up, or it was declined or called off
+}
+
 // ───────────────────────── Tenancy ─────────────────────────
 
 model Tenant {
-  id        String       @id @default(uuid())
-  name      String
-  slug      String       @unique
-  status    TenantStatus @default(ACTIVE)
-  timezone  String       @default("Africa/Cairo")
-  currency  String       @default("EGP") // ISO 4217, used for session billing
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id                 String       @id @default(uuid())
+  name               String
+  slug               String       @unique
+  status             TenantStatus @default(ACTIVE)
+  timezone           String       @default("Africa/Cairo")
+  currency           String       @default("EGP") // ISO 4217, used for session billing
+  /// Storage key of the center's logo (a PNG made from the upload), shown on its reports.
+  logoKey            String?
+  /// The platform's commission on this center's student fees (0..100). null = none. Set by SUPER_ADMIN,
+  /// per center or in bulk, so a package can be free-with-commission or paid-without.
+  platformFeePercent Decimal?     @db.Decimal(5, 2)
+  /// The last subscription notice sent to the admins ("EXPIRING:<period end>" / "EXPIRED:<period end>"),
+  /// claimed atomically so each notice goes out once per period.
+  expiryNotice       String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 
-  subscription Subscription?
-  billingRates BillingRate[]
-  memberships  Membership[]
-  teachers     Teacher[]
-  students     Student[]
-  courses      Course[]
-  enrollments  Enrollment[]
-  sessions     Session[]
-  exams        Exam[]
-  integrations Integration[]
-  folders      LibraryFolder[]
-  files        LibraryFile[]
-  blobs        StoredBlob[]
-  addOns       StorageAddOn[]
-  schedules    StudentSchedule[]
+  subscription        Subscription?
+  subscriptionChanges SubscriptionChange[]
+  billingRates        BillingRate[]
+  memberships         Membership[]
+  teachers            Teacher[]
+  students            Student[]
+  courses             Course[]
+  enrollments         Enrollment[]
+  sessions            Session[]
+  exams               Exam[]
+  integrations        Integration[]
+  folders             LibraryFolder[]
+  files               LibraryFile[]
+  blobs               StoredBlob[]
+  addOns              StorageAddOn[]
+  schedules           StudentSchedule[]
+  supportSessions     SupportSession[]
+  supportRequests     SupportRequest[]
+  notifications       Notification[]
+  announcements       Announcement[]
+  conversations       Conversation[]
+  messages            Message[]
+  calls               SessionCall[]
 }
 
 /// A package in the catalog. Limits are read from here (data, not code), so packages can be
@@ -175,7 +260,8 @@ model Plan {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  subscriptions Subscription[]
+  subscriptions       Subscription[]
+  subscriptionChanges SubscriptionChange[]
 }
 
 model Subscription {
@@ -190,6 +276,25 @@ model Subscription {
   currentPeriodEnd   DateTime?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
+}
+
+/// The subscription as it stood from `createdAt` on: one row per change (sign-up trial, renewal,
+/// package or status change). Platform metrics (MRR, churn, trial conversion) replay these rows,
+/// so the price is copied at the time and later re-pricing of the package leaves history alone.
+model SubscriptionChange {
+  id               String             @id @default(uuid())
+  tenantId         String
+  tenant           Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  planId           String?
+  plan             Plan?              @relation(fields: [planId], references: [id], onDelete: SetNull)
+  status           SubscriptionStatus
+  currentPeriodEnd DateTime?
+  priceMonthly     Decimal?           @db.Decimal(10, 2)
+  currency         String
+  actorId          String? // the platform admin who made the change; null for sign-up
+  createdAt        DateTime           @default(now())
+
+  @@index([tenantId, createdAt])
 }
 
 // ───────────────────────── Users ─────────────────────────
@@ -207,6 +312,8 @@ model User {
   lastLoginAt      DateTime?
   /// The center opened last; where the next sign-in lands.
   lastMembershipId String?
+  /// The language the person last used the app in ("ar" | "en"); emails sent on their behalf use it.
+  locale           String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -220,6 +327,13 @@ model User {
   chargedBlobs        StoredBlob[]
   teachers            Teacher[]
   students            Student[]
+  supportSessions     SupportSession[]
+  supportRequests     SupportRequest[]         @relation("SupportRequester")
+  supportDecisions    SupportRequest[]         @relation("SupportDecider")
+  notifications       Notification[]
+  causedNotifications Notification[]           @relation("NotificationActor")
+  notificationPrefs   NotificationPreference[]
+  announcements       Announcement[]
 }
 
 /// A user's place in one center: their role there, the state of that account, and their
@@ -237,12 +351,19 @@ model Membership {
   statusChangedById String? // the admin or teacher who last changed the status
   /// Personal library allocation set by the center admin; null = the package default.
   storageQuotaMb    Int?
+  /// When the member's last real-time connection in this center closed ("last seen" in messages).
+  lastSeenAt        DateTime?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  teacher       Teacher?
-  student       Student?
-  refreshTokens RefreshToken[]
+  teacher         Teacher?
+  student         Student?
+  refreshTokens   RefreshToken[]
+  supportSessions SupportSession[]
+  supportRequests SupportRequest[]
+  notifications   Notification[]
+  conversations   ConversationParticipant[]
+  messages        Message[]
 
   @@unique([userId, tenantId])
   @@index([tenantId, role])
@@ -261,20 +382,102 @@ model PasswordResetToken {
 }
 
 model RefreshToken {
-  id           String      @id @default(uuid())
-  userId       String
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String          @id @default(uuid())
+  userId           String
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   /// The center this session is signed into; null for the platform admin console.
-  membershipId String?
-  membership   Membership? @relation(fields: [membershipId], references: [id], onDelete: Cascade)
-  tokenHash    String      @unique
-  expiresAt    DateTime
-  revokedAt    DateTime?
-  remember     Boolean     @default(false) // "remember me": long-lived, sliding expiry
-  createdAt    DateTime    @default(now())
+  membershipId     String?
+  membership       Membership?     @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  tokenHash        String          @unique
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  remember         Boolean         @default(false) // "remember me": long-lived, sliding expiry
+  /// Set when a platform admin works inside the center as this member (support mode).
+  supportSessionId String?
+  supportSession   SupportSession? @relation(fields: [supportSessionId], references: [id], onDelete: Cascade)
+  createdAt        DateTime        @default(now())
 
   @@index([userId])
   @@index([membershipId])
+  @@index([supportSessionId])
+}
+
+enum SupportRequestStatus {
+  PENDING // waiting for the center's admin
+  APPROVED // open until accessUntil, unless revoked
+  DENIED
+  CANCELED // withdrawn by the platform
+  REVOKED // approved, then closed early by the center
+}
+
+/// The platform asks a center to let support in as one of its members; the center's admin decides.
+/// Approval opens a window (accessUntil) in which support may enter, as that member only.
+model SupportRequest {
+  id            String               @id @default(uuid())
+  tenantId      String
+  tenant        Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  requestedById String
+  requestedBy   User                 @relation("SupportRequester", fields: [requestedById], references: [id], onDelete: Cascade)
+  /// Who support will enter as (the center's admin when not chosen), resolved when asked.
+  membershipId  String?
+  membership    Membership?          @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+  targetName    String
+  targetEmail   String
+  targetRole    Role
+  reason        String
+  /// Length of each support session.
+  minutes       Int
+  status        SupportRequestStatus @default(PENDING)
+  decidedById   String?
+  decidedBy     User?                @relation("SupportDecider", fields: [decidedById], references: [id], onDelete: SetNull)
+  decidedAt     DateTime?
+  accessUntil   DateTime?
+  createdAt     DateTime             @default(now())
+
+  sessions SupportSession[]
+
+  @@index([tenantId, createdAt])
+}
+
+/// A platform admin working inside a center as one of its members, to solve a problem (support
+/// mode), under a request the center approved. Time-limited; every write is kept in SupportAction.
+model SupportSession {
+  id           String          @id @default(uuid())
+  actorId      String
+  actor        User            @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  tenantId     String
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  membershipId String?
+  membership   Membership?     @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+  /// Who was impersonated, kept even if the membership is later removed.
+  targetName   String
+  targetEmail  String
+  targetRole   Role
+  reason       String
+  requestId    String?
+  request      SupportRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  startedAt    DateTime        @default(now())
+  expiresAt    DateTime
+  endedAt      DateTime?
+
+  actions       SupportAction[]
+  refreshTokens RefreshToken[]
+
+  @@index([tenantId, startedAt])
+  @@index([actorId])
+}
+
+/// One write (POST/PATCH/PUT/DELETE) made during a support session, with its outcome.
+model SupportAction {
+  id        String         @id @default(uuid())
+  sessionId String
+  session   SupportSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  method    String
+  path      String
+  status    Int
+  createdAt DateTime       @default(now())
+
+  @@index([sessionId, createdAt])
 }
 
 // ───────────────────────── Teachers & Students ─────────────────────────
@@ -364,6 +567,7 @@ model Course {
   exams        Exam[]
   billingRates BillingRate[]
   schedules    StudentSchedule[]
+  groups       Conversation[]
 
   @@index([tenantId])
   @@index([teacherId])
@@ -405,12 +609,15 @@ model Session {
   notes             String?
   startedAt         DateTime? // when it actually went live (provider event or the host pressing start)
   endedAt           DateTime? // when it actually ended
+  /// Set when the "starting soon" reminder is claimed, so it goes out once.
+  reminderSentAt    DateTime?
   scheduleId        String? // generated from a student's monthly schedule
   schedule          StudentSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 
   attendees SessionAttendee[]
+  calls     SessionCall[]
 
   @@index([tenantId, startAt])
   @@index([teacherId])
@@ -485,24 +692,29 @@ model SessionAttendee {
 /// overridden for one student; the most specific rate in effect when the session starts wins.
 /// Changing a price adds a row with a later `effectiveFrom`, so past sessions keep their price.
 /// Amounts are computed from these rows when read (see billing/billing.ts), never stored.
+/// One line of the rate card. STUDENT_FEE is the center's price list: a center-wide default
+/// (no teacher, course or student), or a price for a course, a student, or a student in a course;
+/// optionally narrowed to one teacher's sessions. TEACHER_PAY always names the teacher and may be
+/// narrowed to one course. The most specific line in effect at a session's start wins.
 model BillingRate {
   id            String    @id @default(uuid())
   tenantId      String
   tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   kind          RateKind
   basis         RateBasis @default(PER_HOUR)
-  teacherId     String
-  teacher       Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId     String? // required for TEACHER_PAY, optional for STUDENT_FEE
+  teacher       Teacher?  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   courseId      String?
   course        Course?   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   studentId     String? // STUDENT_FEE only
   student       Student?  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  amount        Decimal   @db.Decimal(10, 2) // money per hour, or a percentage (0..100)
+  amount        Decimal   @db.Decimal(10, 2) // money per hour or per session, or a percentage (0..100)
   effectiveFrom DateTime
   note          String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  @@index([tenantId, kind])
   @@index([tenantId, teacherId, kind])
 }
 
@@ -656,4 +868,179 @@ model StorageAddOn {
   createdAt DateTime    @default(now())
 
   @@index([tenantId, userId])
+}
+
+// ───────────────────────── Notifications ─────────────────────────
+
+/// One thing one person should know about, in one of their spaces. Stored as a type plus values
+/// (`params`), never as text, so it reads in whatever language the person uses. Real-time delivery
+/// (socket) and email are best effort on top of this row, which stays the source of truth.
+model Notification {
+  id           String           @id @default(uuid())
+  /// The recipient's account.
+  userId       String
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// The space it belongs to: shown only while signed into that membership. null = platform console.
+  membershipId String?
+  membership   Membership?      @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  tenantId     String?
+  tenant       Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  type         NotificationType
+  /// Template values: names, titles, ISO dates, and `variant` for types with several texts.
+  params       Json             @default("{}")
+  /// In-app path without the locale prefix (e.g. /dashboard/sessions).
+  link         String?
+  /// Who caused it; null = the system (reminders, expiry).
+  actorId      String?
+  actor        User?            @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  /// Unique per event and recipient, so a job that runs twice (or on two servers) notifies once.
+  dedupeKey    String?          @unique
+  /// The center admins' copy of an event that concerned others ("Ahmed canceled Sara's session"):
+  /// told in the third person, and filed under ACTIVITY so it can be muted on its own.
+  oversight    Boolean          @default(false)
+  readAt       DateTime?
+  createdAt    DateTime         @default(now())
+
+  @@index([userId, membershipId, createdAt])
+  @@index([userId, membershipId, readAt])
+  @@index([createdAt])
+}
+
+/// A person's channel choices for one category (every space). No row = the category's defaults.
+model NotificationPreference {
+  userId    String
+  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category  NotificationCategory
+  inApp     Boolean
+  email     Boolean
+  updatedAt DateTime             @updatedAt
+
+  @@id([userId, category])
+}
+
+/// A message from a center's admin to its members, or from the platform to centers. Delivered as
+/// ANNOUNCEMENT notifications; this row is the sender's record of it.
+model Announcement {
+  id         String               @id @default(uuid())
+  /// null = sent by the platform.
+  tenantId   String?
+  tenant     Tenant?              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  authorId   String?
+  author     User?                @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  audience   AnnouncementAudience
+  title      String
+  body       String
+  recipients Int                  @default(0)
+  createdAt  DateTime             @default(now())
+
+  @@index([tenantId, createdAt])
+}
+
+// ───────────────────────── Messaging ─────────────────────────
+
+/// A chat inside one center. DIRECT is between two members (one per pair, see `directKey`);
+/// GROUP has a title and admins, and may be a course's class group.
+model Conversation {
+  id            String           @id @default(uuid())
+  tenantId      String
+  tenant        Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  kind          ConversationKind
+  /// DIRECT only: both membership ids, sorted and joined with ":".
+  directKey     String?          @unique
+  title         String?
+  courseId      String?
+  course        Course?          @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  /// GROUP only: only the group's admins may post (an announcement channel).
+  adminsOnly    Boolean          @default(false)
+  createdById   String?
+  /// Sorts the inbox; moved by every new message.
+  lastMessageAt DateTime         @default(now())
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  participants ConversationParticipant[]
+  messages     Message[]
+  calls        SessionCall[]
+
+  @@index([tenantId, lastMessageAt])
+  @@index([courseId])
+}
+
+/// A member in a conversation, with their read position. `unreadCount` is kept in step with
+/// messages in the same transaction (cheap inbox badges); `lastReadAt` drives "seen" receipts.
+model ConversationParticipant {
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  membershipId   String
+  membership     Membership   @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  isAdmin        Boolean      @default(false)
+  unreadCount    Int          @default(0)
+  lastReadAt     DateTime?
+  /// No toasts or desktop alerts for this conversation (the badge still counts).
+  muted          Boolean      @default(false)
+  /// Hidden from the inbox until the next message arrives.
+  archivedAt     DateTime?
+  joinedAt       DateTime     @default(now())
+
+  @@id([conversationId, membershipId])
+  @@index([membershipId])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  tenantId       String
+  tenant         Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  /// null once the sender leaves the center; the message stays.
+  senderId       String?
+  sender         Membership?  @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  kind           MessageKind  @default(TEXT)
+  body           String
+  /// SYSTEM messages: what happened and to whom.
+  params         Json?
+  replyToId      String?
+  replyTo        Message?     @relation("MessageReply", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies        Message[]    @relation("MessageReply")
+  /// Chosen by the sender's device, so a resent message (flaky network) is stored once.
+  clientId       String?
+  editedAt       DateTime?
+  /// Deleted for everyone: the body is cleared, the row stays as a placeholder.
+  deletedAt      DateTime?
+  /// CALL messages: the call this card shows.
+  callId         String?      @unique
+  call           SessionCall? @relation(fields: [callId], references: [id], onDelete: SetNull)
+  createdAt      DateTime     @default(now())
+
+  @@unique([senderId, clientId])
+  @@index([conversationId, createdAt])
+}
+
+/// A call placed from a teacher–student direct chat during one of their one-to-one sessions
+/// (see sessions/call-rules.ts). Each call has its own meeting: a fresh Zoom meeting on the
+/// teacher's account, or the session's Meet or pasted link. When a meeting drops (a free Zoom
+/// meeting stops after 40 minutes), either of them calls again from the same chat, and the
+/// session goes on: it stays live until its planned end, so attendance and billing see one class.
+model SessionCall {
+  id                String       @id @default(uuid())
+  tenantId          String
+  tenant            Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sessionId         String
+  session           Session      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  conversationId    String
+  conversation      Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  /// The membership that placed it.
+  callerId          String
+  status            CallStatus   @default(RINGING)
+  joinUrl           String
+  /// ZOOM: the meeting made for this call only (matched by Zoom's webhook events).
+  externalMeetingId String?
+  answeredAt        DateTime?
+  endedAt           DateTime?
+  createdAt         DateTime     @default(now())
+
+  message Message?
+
+  @@index([sessionId, createdAt])
+  @@index([externalMeetingId])
 }

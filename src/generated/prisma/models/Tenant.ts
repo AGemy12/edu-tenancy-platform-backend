@@ -20,8 +20,18 @@ export type TenantModel = runtime.Types.Result.DefaultSelection<Prisma.$TenantPa
 
 export type AggregateTenant = {
   _count: TenantCountAggregateOutputType | null
+  _avg: TenantAvgAggregateOutputType | null
+  _sum: TenantSumAggregateOutputType | null
   _min: TenantMinAggregateOutputType | null
   _max: TenantMaxAggregateOutputType | null
+}
+
+export type TenantAvgAggregateOutputType = {
+  platformFeePercent: runtime.Decimal | null
+}
+
+export type TenantSumAggregateOutputType = {
+  platformFeePercent: runtime.Decimal | null
 }
 
 export type TenantMinAggregateOutputType = {
@@ -31,6 +41,9 @@ export type TenantMinAggregateOutputType = {
   status: $Enums.TenantStatus | null
   timezone: string | null
   currency: string | null
+  logoKey: string | null
+  platformFeePercent: runtime.Decimal | null
+  expiryNotice: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -42,6 +55,9 @@ export type TenantMaxAggregateOutputType = {
   status: $Enums.TenantStatus | null
   timezone: string | null
   currency: string | null
+  logoKey: string | null
+  platformFeePercent: runtime.Decimal | null
+  expiryNotice: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -53,11 +69,22 @@ export type TenantCountAggregateOutputType = {
   status: number
   timezone: number
   currency: number
+  logoKey: number
+  platformFeePercent: number
+  expiryNotice: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
+
+export type TenantAvgAggregateInputType = {
+  platformFeePercent?: true
+}
+
+export type TenantSumAggregateInputType = {
+  platformFeePercent?: true
+}
 
 export type TenantMinAggregateInputType = {
   id?: true
@@ -66,6 +93,9 @@ export type TenantMinAggregateInputType = {
   status?: true
   timezone?: true
   currency?: true
+  logoKey?: true
+  platformFeePercent?: true
+  expiryNotice?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -77,6 +107,9 @@ export type TenantMaxAggregateInputType = {
   status?: true
   timezone?: true
   currency?: true
+  logoKey?: true
+  platformFeePercent?: true
+  expiryNotice?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -88,6 +121,9 @@ export type TenantCountAggregateInputType = {
   status?: true
   timezone?: true
   currency?: true
+  logoKey?: true
+  platformFeePercent?: true
+  expiryNotice?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -131,6 +167,18 @@ export type TenantAggregateArgs<ExtArgs extends runtime.Types.Extensions.Interna
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: TenantAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: TenantSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: TenantMinAggregateInputType
@@ -161,6 +209,8 @@ export type TenantGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   _count?: TenantCountAggregateInputType | true
+  _avg?: TenantAvgAggregateInputType
+  _sum?: TenantSumAggregateInputType
   _min?: TenantMinAggregateInputType
   _max?: TenantMaxAggregateInputType
 }
@@ -172,9 +222,14 @@ export type TenantGroupByOutputType = {
   status: $Enums.TenantStatus
   timezone: string
   currency: string
+  logoKey: string | null
+  platformFeePercent: runtime.Decimal | null
+  expiryNotice: string | null
   createdAt: Date
   updatedAt: Date
   _count: TenantCountAggregateOutputType | null
+  _avg: TenantAvgAggregateOutputType | null
+  _sum: TenantSumAggregateOutputType | null
   _min: TenantMinAggregateOutputType | null
   _max: TenantMaxAggregateOutputType | null
 }
@@ -204,9 +259,13 @@ export type TenantWhereInput = {
   status?: Prisma.EnumTenantStatusFilter<"Tenant"> | $Enums.TenantStatus
   timezone?: Prisma.StringFilter<"Tenant"> | string
   currency?: Prisma.StringFilter<"Tenant"> | string
+  logoKey?: Prisma.StringNullableFilter<"Tenant"> | string | null
+  platformFeePercent?: Prisma.DecimalNullableFilter<"Tenant"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.StringNullableFilter<"Tenant"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
   subscription?: Prisma.XOR<Prisma.SubscriptionNullableScalarRelationFilter, Prisma.SubscriptionWhereInput> | null
+  subscriptionChanges?: Prisma.SubscriptionChangeListRelationFilter
   billingRates?: Prisma.BillingRateListRelationFilter
   memberships?: Prisma.MembershipListRelationFilter
   teachers?: Prisma.TeacherListRelationFilter
@@ -221,6 +280,13 @@ export type TenantWhereInput = {
   blobs?: Prisma.StoredBlobListRelationFilter
   addOns?: Prisma.StorageAddOnListRelationFilter
   schedules?: Prisma.StudentScheduleListRelationFilter
+  supportSessions?: Prisma.SupportSessionListRelationFilter
+  supportRequests?: Prisma.SupportRequestListRelationFilter
+  notifications?: Prisma.NotificationListRelationFilter
+  announcements?: Prisma.AnnouncementListRelationFilter
+  conversations?: Prisma.ConversationListRelationFilter
+  messages?: Prisma.MessageListRelationFilter
+  calls?: Prisma.SessionCallListRelationFilter
 }
 
 export type TenantOrderByWithRelationInput = {
@@ -230,9 +296,13 @@ export type TenantOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   timezone?: Prisma.SortOrder
   currency?: Prisma.SortOrder
+  logoKey?: Prisma.SortOrderInput | Prisma.SortOrder
+  platformFeePercent?: Prisma.SortOrderInput | Prisma.SortOrder
+  expiryNotice?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   subscription?: Prisma.SubscriptionOrderByWithRelationInput
+  subscriptionChanges?: Prisma.SubscriptionChangeOrderByRelationAggregateInput
   billingRates?: Prisma.BillingRateOrderByRelationAggregateInput
   memberships?: Prisma.MembershipOrderByRelationAggregateInput
   teachers?: Prisma.TeacherOrderByRelationAggregateInput
@@ -247,6 +317,13 @@ export type TenantOrderByWithRelationInput = {
   blobs?: Prisma.StoredBlobOrderByRelationAggregateInput
   addOns?: Prisma.StorageAddOnOrderByRelationAggregateInput
   schedules?: Prisma.StudentScheduleOrderByRelationAggregateInput
+  supportSessions?: Prisma.SupportSessionOrderByRelationAggregateInput
+  supportRequests?: Prisma.SupportRequestOrderByRelationAggregateInput
+  notifications?: Prisma.NotificationOrderByRelationAggregateInput
+  announcements?: Prisma.AnnouncementOrderByRelationAggregateInput
+  conversations?: Prisma.ConversationOrderByRelationAggregateInput
+  messages?: Prisma.MessageOrderByRelationAggregateInput
+  calls?: Prisma.SessionCallOrderByRelationAggregateInput
 }
 
 export type TenantWhereUniqueInput = Prisma.AtLeast<{
@@ -259,9 +336,13 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumTenantStatusFilter<"Tenant"> | $Enums.TenantStatus
   timezone?: Prisma.StringFilter<"Tenant"> | string
   currency?: Prisma.StringFilter<"Tenant"> | string
+  logoKey?: Prisma.StringNullableFilter<"Tenant"> | string | null
+  platformFeePercent?: Prisma.DecimalNullableFilter<"Tenant"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.StringNullableFilter<"Tenant"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
   subscription?: Prisma.XOR<Prisma.SubscriptionNullableScalarRelationFilter, Prisma.SubscriptionWhereInput> | null
+  subscriptionChanges?: Prisma.SubscriptionChangeListRelationFilter
   billingRates?: Prisma.BillingRateListRelationFilter
   memberships?: Prisma.MembershipListRelationFilter
   teachers?: Prisma.TeacherListRelationFilter
@@ -276,6 +357,13 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<{
   blobs?: Prisma.StoredBlobListRelationFilter
   addOns?: Prisma.StorageAddOnListRelationFilter
   schedules?: Prisma.StudentScheduleListRelationFilter
+  supportSessions?: Prisma.SupportSessionListRelationFilter
+  supportRequests?: Prisma.SupportRequestListRelationFilter
+  notifications?: Prisma.NotificationListRelationFilter
+  announcements?: Prisma.AnnouncementListRelationFilter
+  conversations?: Prisma.ConversationListRelationFilter
+  messages?: Prisma.MessageListRelationFilter
+  calls?: Prisma.SessionCallListRelationFilter
 }, "id" | "slug">
 
 export type TenantOrderByWithAggregationInput = {
@@ -285,11 +373,16 @@ export type TenantOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   timezone?: Prisma.SortOrder
   currency?: Prisma.SortOrder
+  logoKey?: Prisma.SortOrderInput | Prisma.SortOrder
+  platformFeePercent?: Prisma.SortOrderInput | Prisma.SortOrder
+  expiryNotice?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.TenantCountOrderByAggregateInput
+  _avg?: Prisma.TenantAvgOrderByAggregateInput
   _max?: Prisma.TenantMaxOrderByAggregateInput
   _min?: Prisma.TenantMinOrderByAggregateInput
+  _sum?: Prisma.TenantSumOrderByAggregateInput
 }
 
 export type TenantScalarWhereWithAggregatesInput = {
@@ -302,6 +395,9 @@ export type TenantScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumTenantStatusWithAggregatesFilter<"Tenant"> | $Enums.TenantStatus
   timezone?: Prisma.StringWithAggregatesFilter<"Tenant"> | string
   currency?: Prisma.StringWithAggregatesFilter<"Tenant"> | string
+  logoKey?: Prisma.StringNullableWithAggregatesFilter<"Tenant"> | string | null
+  platformFeePercent?: Prisma.DecimalNullableWithAggregatesFilter<"Tenant"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.StringNullableWithAggregatesFilter<"Tenant"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Tenant"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Tenant"> | Date | string
 }
@@ -313,9 +409,13 @@ export type TenantCreateInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
@@ -330,6 +430,13 @@ export type TenantCreateInput = {
   blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateInput = {
@@ -339,9 +446,13 @@ export type TenantUncheckedCreateInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
@@ -356,6 +467,13 @@ export type TenantUncheckedCreateInput = {
   blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUpdateInput = {
@@ -365,9 +483,13 @@ export type TenantUpdateInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
@@ -382,6 +504,13 @@ export type TenantUpdateInput = {
   blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateInput = {
@@ -391,9 +520,13 @@ export type TenantUncheckedUpdateInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
@@ -408,6 +541,13 @@ export type TenantUncheckedUpdateInput = {
   blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateManyInput = {
@@ -417,6 +557,9 @@ export type TenantCreateManyInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -428,6 +571,9 @@ export type TenantUpdateManyMutationInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -439,6 +585,9 @@ export type TenantUncheckedUpdateManyInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -450,8 +599,15 @@ export type TenantCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   timezone?: Prisma.SortOrder
   currency?: Prisma.SortOrder
+  logoKey?: Prisma.SortOrder
+  platformFeePercent?: Prisma.SortOrder
+  expiryNotice?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type TenantAvgOrderByAggregateInput = {
+  platformFeePercent?: Prisma.SortOrder
 }
 
 export type TenantMaxOrderByAggregateInput = {
@@ -461,6 +617,9 @@ export type TenantMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   timezone?: Prisma.SortOrder
   currency?: Prisma.SortOrder
+  logoKey?: Prisma.SortOrder
+  platformFeePercent?: Prisma.SortOrder
+  expiryNotice?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -472,13 +631,25 @@ export type TenantMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   timezone?: Prisma.SortOrder
   currency?: Prisma.SortOrder
+  logoKey?: Prisma.SortOrder
+  platformFeePercent?: Prisma.SortOrder
+  expiryNotice?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type TenantSumOrderByAggregateInput = {
+  platformFeePercent?: Prisma.SortOrder
 }
 
 export type TenantScalarRelationFilter = {
   is?: Prisma.TenantWhereInput
   isNot?: Prisma.TenantWhereInput
+}
+
+export type TenantNullableScalarRelationFilter = {
+  is?: Prisma.TenantWhereInput | null
+  isNot?: Prisma.TenantWhereInput | null
 }
 
 export type StringFieldUpdateOperationsInput = {
@@ -487,6 +658,18 @@ export type StringFieldUpdateOperationsInput = {
 
 export type EnumTenantStatusFieldUpdateOperationsInput = {
   set?: $Enums.TenantStatus
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
+export type NullableDecimalFieldUpdateOperationsInput = {
+  set?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -507,6 +690,20 @@ export type TenantUpdateOneRequiredWithoutSubscriptionNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutSubscriptionInput, Prisma.TenantUpdateWithoutSubscriptionInput>, Prisma.TenantUncheckedUpdateWithoutSubscriptionInput>
 }
 
+export type TenantCreateNestedOneWithoutSubscriptionChangesInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutSubscriptionChangesInput, Prisma.TenantUncheckedCreateWithoutSubscriptionChangesInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutSubscriptionChangesInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutSubscriptionChangesNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutSubscriptionChangesInput, Prisma.TenantUncheckedCreateWithoutSubscriptionChangesInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutSubscriptionChangesInput
+  upsert?: Prisma.TenantUpsertWithoutSubscriptionChangesInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutSubscriptionChangesInput, Prisma.TenantUpdateWithoutSubscriptionChangesInput>, Prisma.TenantUncheckedUpdateWithoutSubscriptionChangesInput>
+}
+
 export type TenantCreateNestedOneWithoutMembershipsInput = {
   create?: Prisma.XOR<Prisma.TenantCreateWithoutMembershipsInput, Prisma.TenantUncheckedCreateWithoutMembershipsInput>
   connectOrCreate?: Prisma.TenantCreateOrConnectWithoutMembershipsInput
@@ -519,6 +716,34 @@ export type TenantUpdateOneRequiredWithoutMembershipsNestedInput = {
   upsert?: Prisma.TenantUpsertWithoutMembershipsInput
   connect?: Prisma.TenantWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutMembershipsInput, Prisma.TenantUpdateWithoutMembershipsInput>, Prisma.TenantUncheckedUpdateWithoutMembershipsInput>
+}
+
+export type TenantCreateNestedOneWithoutSupportRequestsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutSupportRequestsInput, Prisma.TenantUncheckedCreateWithoutSupportRequestsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutSupportRequestsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutSupportRequestsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutSupportRequestsInput, Prisma.TenantUncheckedCreateWithoutSupportRequestsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutSupportRequestsInput
+  upsert?: Prisma.TenantUpsertWithoutSupportRequestsInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutSupportRequestsInput, Prisma.TenantUpdateWithoutSupportRequestsInput>, Prisma.TenantUncheckedUpdateWithoutSupportRequestsInput>
+}
+
+export type TenantCreateNestedOneWithoutSupportSessionsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutSupportSessionsInput, Prisma.TenantUncheckedCreateWithoutSupportSessionsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutSupportSessionsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutSupportSessionsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutSupportSessionsInput, Prisma.TenantUncheckedCreateWithoutSupportSessionsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutSupportSessionsInput
+  upsert?: Prisma.TenantUpsertWithoutSupportSessionsInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutSupportSessionsInput, Prisma.TenantUpdateWithoutSupportSessionsInput>, Prisma.TenantUncheckedUpdateWithoutSupportSessionsInput>
 }
 
 export type TenantCreateNestedOneWithoutTeachersInput = {
@@ -703,6 +928,80 @@ export type TenantUpdateOneRequiredWithoutAddOnsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutAddOnsInput, Prisma.TenantUpdateWithoutAddOnsInput>, Prisma.TenantUncheckedUpdateWithoutAddOnsInput>
 }
 
+export type TenantCreateNestedOneWithoutNotificationsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutNotificationsInput, Prisma.TenantUncheckedCreateWithoutNotificationsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutNotificationsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneWithoutNotificationsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutNotificationsInput, Prisma.TenantUncheckedCreateWithoutNotificationsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutNotificationsInput
+  upsert?: Prisma.TenantUpsertWithoutNotificationsInput
+  disconnect?: Prisma.TenantWhereInput | boolean
+  delete?: Prisma.TenantWhereInput | boolean
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutNotificationsInput, Prisma.TenantUpdateWithoutNotificationsInput>, Prisma.TenantUncheckedUpdateWithoutNotificationsInput>
+}
+
+export type TenantCreateNestedOneWithoutAnnouncementsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutAnnouncementsInput, Prisma.TenantUncheckedCreateWithoutAnnouncementsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutAnnouncementsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneWithoutAnnouncementsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutAnnouncementsInput, Prisma.TenantUncheckedCreateWithoutAnnouncementsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutAnnouncementsInput
+  upsert?: Prisma.TenantUpsertWithoutAnnouncementsInput
+  disconnect?: Prisma.TenantWhereInput | boolean
+  delete?: Prisma.TenantWhereInput | boolean
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutAnnouncementsInput, Prisma.TenantUpdateWithoutAnnouncementsInput>, Prisma.TenantUncheckedUpdateWithoutAnnouncementsInput>
+}
+
+export type TenantCreateNestedOneWithoutConversationsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutConversationsInput, Prisma.TenantUncheckedCreateWithoutConversationsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutConversationsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutConversationsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutConversationsInput, Prisma.TenantUncheckedCreateWithoutConversationsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutConversationsInput
+  upsert?: Prisma.TenantUpsertWithoutConversationsInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutConversationsInput, Prisma.TenantUpdateWithoutConversationsInput>, Prisma.TenantUncheckedUpdateWithoutConversationsInput>
+}
+
+export type TenantCreateNestedOneWithoutMessagesInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutMessagesInput, Prisma.TenantUncheckedCreateWithoutMessagesInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutMessagesInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutMessagesNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutMessagesInput, Prisma.TenantUncheckedCreateWithoutMessagesInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutMessagesInput
+  upsert?: Prisma.TenantUpsertWithoutMessagesInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutMessagesInput, Prisma.TenantUpdateWithoutMessagesInput>, Prisma.TenantUncheckedUpdateWithoutMessagesInput>
+}
+
+export type TenantCreateNestedOneWithoutCallsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutCallsInput, Prisma.TenantUncheckedCreateWithoutCallsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutCallsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutCallsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutCallsInput, Prisma.TenantUncheckedCreateWithoutCallsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutCallsInput
+  upsert?: Prisma.TenantUpsertWithoutCallsInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutCallsInput, Prisma.TenantUpdateWithoutCallsInput>, Prisma.TenantUncheckedUpdateWithoutCallsInput>
+}
+
 export type TenantCreateWithoutSubscriptionInput = {
   id?: string
   name: string
@@ -710,8 +1009,12 @@ export type TenantCreateWithoutSubscriptionInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
@@ -726,6 +1029,13 @@ export type TenantCreateWithoutSubscriptionInput = {
   blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutSubscriptionInput = {
@@ -735,8 +1045,12 @@ export type TenantUncheckedCreateWithoutSubscriptionInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
@@ -751,6 +1065,13 @@ export type TenantUncheckedCreateWithoutSubscriptionInput = {
   blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutSubscriptionInput = {
@@ -776,8 +1097,12 @@ export type TenantUpdateWithoutSubscriptionInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
@@ -792,6 +1117,13 @@ export type TenantUpdateWithoutSubscriptionInput = {
   blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutSubscriptionInput = {
@@ -801,8 +1133,12 @@ export type TenantUncheckedUpdateWithoutSubscriptionInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
@@ -817,6 +1153,173 @@ export type TenantUncheckedUpdateWithoutSubscriptionInput = {
   blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutSubscriptionChangesInput = {
+  id?: string
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
+  memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
+  teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
+  students?: Prisma.StudentCreateNestedManyWithoutTenantInput
+  courses?: Prisma.CourseCreateNestedManyWithoutTenantInput
+  enrollments?: Prisma.EnrollmentCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutTenantInput
+  exams?: Prisma.ExamCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
+  folders?: Prisma.LibraryFolderCreateNestedManyWithoutTenantInput
+  files?: Prisma.LibraryFileCreateNestedManyWithoutTenantInput
+  blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
+  addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
+  schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutSubscriptionChangesInput = {
+  id?: string
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
+  teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutTenantInput
+  courses?: Prisma.CourseUncheckedCreateNestedManyWithoutTenantInput
+  enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutTenantInput
+  exams?: Prisma.ExamUncheckedCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
+  folders?: Prisma.LibraryFolderUncheckedCreateNestedManyWithoutTenantInput
+  files?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutTenantInput
+  blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
+  addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
+  schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutSubscriptionChangesInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutSubscriptionChangesInput, Prisma.TenantUncheckedCreateWithoutSubscriptionChangesInput>
+}
+
+export type TenantUpsertWithoutSubscriptionChangesInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutSubscriptionChangesInput, Prisma.TenantUncheckedUpdateWithoutSubscriptionChangesInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutSubscriptionChangesInput, Prisma.TenantUncheckedCreateWithoutSubscriptionChangesInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutSubscriptionChangesInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutSubscriptionChangesInput, Prisma.TenantUncheckedUpdateWithoutSubscriptionChangesInput>
+}
+
+export type TenantUpdateWithoutSubscriptionChangesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
+  memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
+  teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
+  students?: Prisma.StudentUpdateManyWithoutTenantNestedInput
+  courses?: Prisma.CourseUpdateManyWithoutTenantNestedInput
+  enrollments?: Prisma.EnrollmentUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutTenantNestedInput
+  exams?: Prisma.ExamUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
+  folders?: Prisma.LibraryFolderUpdateManyWithoutTenantNestedInput
+  files?: Prisma.LibraryFileUpdateManyWithoutTenantNestedInput
+  blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
+  addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
+  schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutSubscriptionChangesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
+  teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutTenantNestedInput
+  courses?: Prisma.CourseUncheckedUpdateManyWithoutTenantNestedInput
+  enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutTenantNestedInput
+  exams?: Prisma.ExamUncheckedUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+  folders?: Prisma.LibraryFolderUncheckedUpdateManyWithoutTenantNestedInput
+  files?: Prisma.LibraryFileUncheckedUpdateManyWithoutTenantNestedInput
+  blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
+  addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
+  schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutMembershipsInput = {
@@ -826,9 +1329,13 @@ export type TenantCreateWithoutMembershipsInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
   students?: Prisma.StudentCreateNestedManyWithoutTenantInput
@@ -842,6 +1349,13 @@ export type TenantCreateWithoutMembershipsInput = {
   blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutMembershipsInput = {
@@ -851,9 +1365,13 @@ export type TenantUncheckedCreateWithoutMembershipsInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
   students?: Prisma.StudentUncheckedCreateNestedManyWithoutTenantInput
@@ -867,6 +1385,13 @@ export type TenantUncheckedCreateWithoutMembershipsInput = {
   blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutMembershipsInput = {
@@ -892,9 +1417,13 @@ export type TenantUpdateWithoutMembershipsInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
   students?: Prisma.StudentUpdateManyWithoutTenantNestedInput
@@ -908,6 +1437,13 @@ export type TenantUpdateWithoutMembershipsInput = {
   blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutMembershipsInput = {
@@ -917,9 +1453,13 @@ export type TenantUncheckedUpdateWithoutMembershipsInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
   students?: Prisma.StudentUncheckedUpdateManyWithoutTenantNestedInput
@@ -933,6 +1473,333 @@ export type TenantUncheckedUpdateWithoutMembershipsInput = {
   blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutSupportRequestsInput = {
+  id?: string
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
+  billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
+  memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
+  teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
+  students?: Prisma.StudentCreateNestedManyWithoutTenantInput
+  courses?: Prisma.CourseCreateNestedManyWithoutTenantInput
+  enrollments?: Prisma.EnrollmentCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutTenantInput
+  exams?: Prisma.ExamCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
+  folders?: Prisma.LibraryFolderCreateNestedManyWithoutTenantInput
+  files?: Prisma.LibraryFileCreateNestedManyWithoutTenantInput
+  blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
+  addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
+  schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutSupportRequestsInput = {
+  id?: string
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
+  billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
+  teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutTenantInput
+  courses?: Prisma.CourseUncheckedCreateNestedManyWithoutTenantInput
+  enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutTenantInput
+  exams?: Prisma.ExamUncheckedCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
+  folders?: Prisma.LibraryFolderUncheckedCreateNestedManyWithoutTenantInput
+  files?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutTenantInput
+  blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
+  addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
+  schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutSupportRequestsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutSupportRequestsInput, Prisma.TenantUncheckedCreateWithoutSupportRequestsInput>
+}
+
+export type TenantUpsertWithoutSupportRequestsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutSupportRequestsInput, Prisma.TenantUncheckedUpdateWithoutSupportRequestsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutSupportRequestsInput, Prisma.TenantUncheckedCreateWithoutSupportRequestsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutSupportRequestsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutSupportRequestsInput, Prisma.TenantUncheckedUpdateWithoutSupportRequestsInput>
+}
+
+export type TenantUpdateWithoutSupportRequestsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
+  billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
+  memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
+  teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
+  students?: Prisma.StudentUpdateManyWithoutTenantNestedInput
+  courses?: Prisma.CourseUpdateManyWithoutTenantNestedInput
+  enrollments?: Prisma.EnrollmentUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutTenantNestedInput
+  exams?: Prisma.ExamUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
+  folders?: Prisma.LibraryFolderUpdateManyWithoutTenantNestedInput
+  files?: Prisma.LibraryFileUpdateManyWithoutTenantNestedInput
+  blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
+  addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
+  schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutSupportRequestsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
+  billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
+  teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutTenantNestedInput
+  courses?: Prisma.CourseUncheckedUpdateManyWithoutTenantNestedInput
+  enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutTenantNestedInput
+  exams?: Prisma.ExamUncheckedUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+  folders?: Prisma.LibraryFolderUncheckedUpdateManyWithoutTenantNestedInput
+  files?: Prisma.LibraryFileUncheckedUpdateManyWithoutTenantNestedInput
+  blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
+  addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
+  schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutSupportSessionsInput = {
+  id?: string
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
+  billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
+  memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
+  teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
+  students?: Prisma.StudentCreateNestedManyWithoutTenantInput
+  courses?: Prisma.CourseCreateNestedManyWithoutTenantInput
+  enrollments?: Prisma.EnrollmentCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutTenantInput
+  exams?: Prisma.ExamCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
+  folders?: Prisma.LibraryFolderCreateNestedManyWithoutTenantInput
+  files?: Prisma.LibraryFileCreateNestedManyWithoutTenantInput
+  blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
+  addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
+  schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutSupportSessionsInput = {
+  id?: string
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
+  billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
+  teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutTenantInput
+  courses?: Prisma.CourseUncheckedCreateNestedManyWithoutTenantInput
+  enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutTenantInput
+  exams?: Prisma.ExamUncheckedCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
+  folders?: Prisma.LibraryFolderUncheckedCreateNestedManyWithoutTenantInput
+  files?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutTenantInput
+  blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
+  addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
+  schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutSupportSessionsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutSupportSessionsInput, Prisma.TenantUncheckedCreateWithoutSupportSessionsInput>
+}
+
+export type TenantUpsertWithoutSupportSessionsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutSupportSessionsInput, Prisma.TenantUncheckedUpdateWithoutSupportSessionsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutSupportSessionsInput, Prisma.TenantUncheckedCreateWithoutSupportSessionsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutSupportSessionsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutSupportSessionsInput, Prisma.TenantUncheckedUpdateWithoutSupportSessionsInput>
+}
+
+export type TenantUpdateWithoutSupportSessionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
+  billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
+  memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
+  teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
+  students?: Prisma.StudentUpdateManyWithoutTenantNestedInput
+  courses?: Prisma.CourseUpdateManyWithoutTenantNestedInput
+  enrollments?: Prisma.EnrollmentUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutTenantNestedInput
+  exams?: Prisma.ExamUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
+  folders?: Prisma.LibraryFolderUpdateManyWithoutTenantNestedInput
+  files?: Prisma.LibraryFileUpdateManyWithoutTenantNestedInput
+  blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
+  addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
+  schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutSupportSessionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
+  billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
+  teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutTenantNestedInput
+  courses?: Prisma.CourseUncheckedUpdateManyWithoutTenantNestedInput
+  enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutTenantNestedInput
+  exams?: Prisma.ExamUncheckedUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+  folders?: Prisma.LibraryFolderUncheckedUpdateManyWithoutTenantNestedInput
+  files?: Prisma.LibraryFileUncheckedUpdateManyWithoutTenantNestedInput
+  blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
+  addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
+  schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutTeachersInput = {
@@ -942,9 +1809,13 @@ export type TenantCreateWithoutTeachersInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
   students?: Prisma.StudentCreateNestedManyWithoutTenantInput
@@ -958,6 +1829,13 @@ export type TenantCreateWithoutTeachersInput = {
   blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutTeachersInput = {
@@ -967,9 +1845,13 @@ export type TenantUncheckedCreateWithoutTeachersInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
   students?: Prisma.StudentUncheckedCreateNestedManyWithoutTenantInput
@@ -983,6 +1865,13 @@ export type TenantUncheckedCreateWithoutTeachersInput = {
   blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutTeachersInput = {
@@ -1008,9 +1897,13 @@ export type TenantUpdateWithoutTeachersInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
   students?: Prisma.StudentUpdateManyWithoutTenantNestedInput
@@ -1024,6 +1917,13 @@ export type TenantUpdateWithoutTeachersInput = {
   blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutTeachersInput = {
@@ -1033,9 +1933,13 @@ export type TenantUncheckedUpdateWithoutTeachersInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
   students?: Prisma.StudentUncheckedUpdateManyWithoutTenantNestedInput
@@ -1049,6 +1953,13 @@ export type TenantUncheckedUpdateWithoutTeachersInput = {
   blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutStudentsInput = {
@@ -1058,9 +1969,13 @@ export type TenantCreateWithoutStudentsInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
@@ -1074,6 +1989,13 @@ export type TenantCreateWithoutStudentsInput = {
   blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutStudentsInput = {
@@ -1083,9 +2005,13 @@ export type TenantUncheckedCreateWithoutStudentsInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
@@ -1099,6 +2025,13 @@ export type TenantUncheckedCreateWithoutStudentsInput = {
   blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutStudentsInput = {
@@ -1124,9 +2057,13 @@ export type TenantUpdateWithoutStudentsInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
@@ -1140,6 +2077,13 @@ export type TenantUpdateWithoutStudentsInput = {
   blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutStudentsInput = {
@@ -1149,9 +2093,13 @@ export type TenantUncheckedUpdateWithoutStudentsInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
@@ -1165,6 +2113,13 @@ export type TenantUncheckedUpdateWithoutStudentsInput = {
   blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutCoursesInput = {
@@ -1174,9 +2129,13 @@ export type TenantCreateWithoutCoursesInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
@@ -1190,6 +2149,13 @@ export type TenantCreateWithoutCoursesInput = {
   blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutCoursesInput = {
@@ -1199,9 +2165,13 @@ export type TenantUncheckedCreateWithoutCoursesInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
@@ -1215,6 +2185,13 @@ export type TenantUncheckedCreateWithoutCoursesInput = {
   blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutCoursesInput = {
@@ -1240,9 +2217,13 @@ export type TenantUpdateWithoutCoursesInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
@@ -1256,6 +2237,13 @@ export type TenantUpdateWithoutCoursesInput = {
   blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutCoursesInput = {
@@ -1265,9 +2253,13 @@ export type TenantUncheckedUpdateWithoutCoursesInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
@@ -1281,6 +2273,13 @@ export type TenantUncheckedUpdateWithoutCoursesInput = {
   blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutEnrollmentsInput = {
@@ -1290,9 +2289,13 @@ export type TenantCreateWithoutEnrollmentsInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
@@ -1306,6 +2309,13 @@ export type TenantCreateWithoutEnrollmentsInput = {
   blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutEnrollmentsInput = {
@@ -1315,9 +2325,13 @@ export type TenantUncheckedCreateWithoutEnrollmentsInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
@@ -1331,6 +2345,13 @@ export type TenantUncheckedCreateWithoutEnrollmentsInput = {
   blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutEnrollmentsInput = {
@@ -1356,9 +2377,13 @@ export type TenantUpdateWithoutEnrollmentsInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
@@ -1372,6 +2397,13 @@ export type TenantUpdateWithoutEnrollmentsInput = {
   blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutEnrollmentsInput = {
@@ -1381,9 +2413,13 @@ export type TenantUncheckedUpdateWithoutEnrollmentsInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
@@ -1397,6 +2433,13 @@ export type TenantUncheckedUpdateWithoutEnrollmentsInput = {
   blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutSessionsInput = {
@@ -1406,9 +2449,13 @@ export type TenantCreateWithoutSessionsInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
@@ -1422,6 +2469,13 @@ export type TenantCreateWithoutSessionsInput = {
   blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutSessionsInput = {
@@ -1431,9 +2485,13 @@ export type TenantUncheckedCreateWithoutSessionsInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
@@ -1447,6 +2505,13 @@ export type TenantUncheckedCreateWithoutSessionsInput = {
   blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutSessionsInput = {
@@ -1472,9 +2537,13 @@ export type TenantUpdateWithoutSessionsInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
@@ -1488,6 +2557,13 @@ export type TenantUpdateWithoutSessionsInput = {
   blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutSessionsInput = {
@@ -1497,9 +2573,13 @@ export type TenantUncheckedUpdateWithoutSessionsInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
@@ -1513,6 +2593,13 @@ export type TenantUncheckedUpdateWithoutSessionsInput = {
   blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutSchedulesInput = {
@@ -1522,9 +2609,13 @@ export type TenantCreateWithoutSchedulesInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
@@ -1538,6 +2629,13 @@ export type TenantCreateWithoutSchedulesInput = {
   files?: Prisma.LibraryFileCreateNestedManyWithoutTenantInput
   blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutSchedulesInput = {
@@ -1547,9 +2645,13 @@ export type TenantUncheckedCreateWithoutSchedulesInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
@@ -1563,6 +2665,13 @@ export type TenantUncheckedCreateWithoutSchedulesInput = {
   files?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutTenantInput
   blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutSchedulesInput = {
@@ -1588,9 +2697,13 @@ export type TenantUpdateWithoutSchedulesInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
@@ -1604,6 +2717,13 @@ export type TenantUpdateWithoutSchedulesInput = {
   files?: Prisma.LibraryFileUpdateManyWithoutTenantNestedInput
   blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutSchedulesInput = {
@@ -1613,9 +2733,13 @@ export type TenantUncheckedUpdateWithoutSchedulesInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
@@ -1629,6 +2753,13 @@ export type TenantUncheckedUpdateWithoutSchedulesInput = {
   files?: Prisma.LibraryFileUncheckedUpdateManyWithoutTenantNestedInput
   blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutBillingRatesInput = {
@@ -1638,9 +2769,13 @@ export type TenantCreateWithoutBillingRatesInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
   students?: Prisma.StudentCreateNestedManyWithoutTenantInput
@@ -1654,6 +2789,13 @@ export type TenantCreateWithoutBillingRatesInput = {
   blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutBillingRatesInput = {
@@ -1663,9 +2805,13 @@ export type TenantUncheckedCreateWithoutBillingRatesInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
   students?: Prisma.StudentUncheckedCreateNestedManyWithoutTenantInput
@@ -1679,6 +2825,13 @@ export type TenantUncheckedCreateWithoutBillingRatesInput = {
   blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutBillingRatesInput = {
@@ -1704,9 +2857,13 @@ export type TenantUpdateWithoutBillingRatesInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
   students?: Prisma.StudentUpdateManyWithoutTenantNestedInput
@@ -1720,6 +2877,13 @@ export type TenantUpdateWithoutBillingRatesInput = {
   blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutBillingRatesInput = {
@@ -1729,9 +2893,13 @@ export type TenantUncheckedUpdateWithoutBillingRatesInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
   students?: Prisma.StudentUncheckedUpdateManyWithoutTenantNestedInput
@@ -1745,6 +2913,13 @@ export type TenantUncheckedUpdateWithoutBillingRatesInput = {
   blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutExamsInput = {
@@ -1754,9 +2929,13 @@ export type TenantCreateWithoutExamsInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
@@ -1770,6 +2949,13 @@ export type TenantCreateWithoutExamsInput = {
   blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutExamsInput = {
@@ -1779,9 +2965,13 @@ export type TenantUncheckedCreateWithoutExamsInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
@@ -1795,6 +2985,13 @@ export type TenantUncheckedCreateWithoutExamsInput = {
   blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutExamsInput = {
@@ -1820,9 +3017,13 @@ export type TenantUpdateWithoutExamsInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
@@ -1836,6 +3037,13 @@ export type TenantUpdateWithoutExamsInput = {
   blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutExamsInput = {
@@ -1845,9 +3053,13 @@ export type TenantUncheckedUpdateWithoutExamsInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
@@ -1861,6 +3073,13 @@ export type TenantUncheckedUpdateWithoutExamsInput = {
   blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutIntegrationsInput = {
@@ -1870,9 +3089,13 @@ export type TenantCreateWithoutIntegrationsInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
@@ -1886,6 +3109,13 @@ export type TenantCreateWithoutIntegrationsInput = {
   blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutIntegrationsInput = {
@@ -1895,9 +3125,13 @@ export type TenantUncheckedCreateWithoutIntegrationsInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
@@ -1911,6 +3145,13 @@ export type TenantUncheckedCreateWithoutIntegrationsInput = {
   blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutIntegrationsInput = {
@@ -1936,9 +3177,13 @@ export type TenantUpdateWithoutIntegrationsInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
@@ -1952,6 +3197,13 @@ export type TenantUpdateWithoutIntegrationsInput = {
   blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutIntegrationsInput = {
@@ -1961,9 +3213,13 @@ export type TenantUncheckedUpdateWithoutIntegrationsInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
@@ -1977,6 +3233,13 @@ export type TenantUncheckedUpdateWithoutIntegrationsInput = {
   blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutFoldersInput = {
@@ -1986,9 +3249,13 @@ export type TenantCreateWithoutFoldersInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
@@ -2002,6 +3269,13 @@ export type TenantCreateWithoutFoldersInput = {
   blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutFoldersInput = {
@@ -2011,9 +3285,13 @@ export type TenantUncheckedCreateWithoutFoldersInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
@@ -2027,6 +3305,13 @@ export type TenantUncheckedCreateWithoutFoldersInput = {
   blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutFoldersInput = {
@@ -2052,9 +3337,13 @@ export type TenantUpdateWithoutFoldersInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
@@ -2068,6 +3357,13 @@ export type TenantUpdateWithoutFoldersInput = {
   blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutFoldersInput = {
@@ -2077,9 +3373,13 @@ export type TenantUncheckedUpdateWithoutFoldersInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
@@ -2093,6 +3393,13 @@ export type TenantUncheckedUpdateWithoutFoldersInput = {
   blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutFilesInput = {
@@ -2102,9 +3409,13 @@ export type TenantCreateWithoutFilesInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
@@ -2118,6 +3429,13 @@ export type TenantCreateWithoutFilesInput = {
   blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutFilesInput = {
@@ -2127,9 +3445,13 @@ export type TenantUncheckedCreateWithoutFilesInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
@@ -2143,6 +3465,13 @@ export type TenantUncheckedCreateWithoutFilesInput = {
   blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutFilesInput = {
@@ -2168,9 +3497,13 @@ export type TenantUpdateWithoutFilesInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
@@ -2184,6 +3517,13 @@ export type TenantUpdateWithoutFilesInput = {
   blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutFilesInput = {
@@ -2193,9 +3533,13 @@ export type TenantUncheckedUpdateWithoutFilesInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
@@ -2209,6 +3553,13 @@ export type TenantUncheckedUpdateWithoutFilesInput = {
   blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutBlobsInput = {
@@ -2218,9 +3569,13 @@ export type TenantCreateWithoutBlobsInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
@@ -2234,6 +3589,13 @@ export type TenantCreateWithoutBlobsInput = {
   files?: Prisma.LibraryFileCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutBlobsInput = {
@@ -2243,9 +3605,13 @@ export type TenantUncheckedCreateWithoutBlobsInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
@@ -2259,6 +3625,13 @@ export type TenantUncheckedCreateWithoutBlobsInput = {
   files?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutTenantInput
   addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutBlobsInput = {
@@ -2284,9 +3657,13 @@ export type TenantUpdateWithoutBlobsInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
@@ -2300,6 +3677,13 @@ export type TenantUpdateWithoutBlobsInput = {
   files?: Prisma.LibraryFileUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutBlobsInput = {
@@ -2309,9 +3693,13 @@ export type TenantUncheckedUpdateWithoutBlobsInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
@@ -2325,6 +3713,13 @@ export type TenantUncheckedUpdateWithoutBlobsInput = {
   files?: Prisma.LibraryFileUncheckedUpdateManyWithoutTenantNestedInput
   addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutAddOnsInput = {
@@ -2334,9 +3729,13 @@ export type TenantCreateWithoutAddOnsInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
@@ -2350,6 +3749,13 @@ export type TenantCreateWithoutAddOnsInput = {
   files?: Prisma.LibraryFileCreateNestedManyWithoutTenantInput
   blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutAddOnsInput = {
@@ -2359,9 +3765,13 @@ export type TenantUncheckedCreateWithoutAddOnsInput = {
   status?: $Enums.TenantStatus
   timezone?: string
   currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
   billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
   teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
@@ -2375,6 +3785,13 @@ export type TenantUncheckedCreateWithoutAddOnsInput = {
   files?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutTenantInput
   blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
   schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutAddOnsInput = {
@@ -2400,9 +3817,13 @@ export type TenantUpdateWithoutAddOnsInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
@@ -2416,6 +3837,13 @@ export type TenantUpdateWithoutAddOnsInput = {
   files?: Prisma.LibraryFileUpdateManyWithoutTenantNestedInput
   blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutAddOnsInput = {
@@ -2425,9 +3853,13 @@ export type TenantUncheckedUpdateWithoutAddOnsInput = {
   status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
   billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
   teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
@@ -2441,6 +3873,813 @@ export type TenantUncheckedUpdateWithoutAddOnsInput = {
   files?: Prisma.LibraryFileUncheckedUpdateManyWithoutTenantNestedInput
   blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
   schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutNotificationsInput = {
+  id?: string
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
+  billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
+  memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
+  teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
+  students?: Prisma.StudentCreateNestedManyWithoutTenantInput
+  courses?: Prisma.CourseCreateNestedManyWithoutTenantInput
+  enrollments?: Prisma.EnrollmentCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutTenantInput
+  exams?: Prisma.ExamCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
+  folders?: Prisma.LibraryFolderCreateNestedManyWithoutTenantInput
+  files?: Prisma.LibraryFileCreateNestedManyWithoutTenantInput
+  blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
+  addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
+  schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutNotificationsInput = {
+  id?: string
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
+  billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
+  teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutTenantInput
+  courses?: Prisma.CourseUncheckedCreateNestedManyWithoutTenantInput
+  enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutTenantInput
+  exams?: Prisma.ExamUncheckedCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
+  folders?: Prisma.LibraryFolderUncheckedCreateNestedManyWithoutTenantInput
+  files?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutTenantInput
+  blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
+  addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
+  schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutNotificationsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutNotificationsInput, Prisma.TenantUncheckedCreateWithoutNotificationsInput>
+}
+
+export type TenantUpsertWithoutNotificationsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutNotificationsInput, Prisma.TenantUncheckedUpdateWithoutNotificationsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutNotificationsInput, Prisma.TenantUncheckedCreateWithoutNotificationsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutNotificationsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutNotificationsInput, Prisma.TenantUncheckedUpdateWithoutNotificationsInput>
+}
+
+export type TenantUpdateWithoutNotificationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
+  billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
+  memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
+  teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
+  students?: Prisma.StudentUpdateManyWithoutTenantNestedInput
+  courses?: Prisma.CourseUpdateManyWithoutTenantNestedInput
+  enrollments?: Prisma.EnrollmentUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutTenantNestedInput
+  exams?: Prisma.ExamUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
+  folders?: Prisma.LibraryFolderUpdateManyWithoutTenantNestedInput
+  files?: Prisma.LibraryFileUpdateManyWithoutTenantNestedInput
+  blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
+  addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
+  schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutNotificationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
+  billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
+  teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutTenantNestedInput
+  courses?: Prisma.CourseUncheckedUpdateManyWithoutTenantNestedInput
+  enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutTenantNestedInput
+  exams?: Prisma.ExamUncheckedUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+  folders?: Prisma.LibraryFolderUncheckedUpdateManyWithoutTenantNestedInput
+  files?: Prisma.LibraryFileUncheckedUpdateManyWithoutTenantNestedInput
+  blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
+  addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
+  schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutAnnouncementsInput = {
+  id?: string
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
+  billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
+  memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
+  teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
+  students?: Prisma.StudentCreateNestedManyWithoutTenantInput
+  courses?: Prisma.CourseCreateNestedManyWithoutTenantInput
+  enrollments?: Prisma.EnrollmentCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutTenantInput
+  exams?: Prisma.ExamCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
+  folders?: Prisma.LibraryFolderCreateNestedManyWithoutTenantInput
+  files?: Prisma.LibraryFileCreateNestedManyWithoutTenantInput
+  blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
+  addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
+  schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutAnnouncementsInput = {
+  id?: string
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
+  billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
+  teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutTenantInput
+  courses?: Prisma.CourseUncheckedCreateNestedManyWithoutTenantInput
+  enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutTenantInput
+  exams?: Prisma.ExamUncheckedCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
+  folders?: Prisma.LibraryFolderUncheckedCreateNestedManyWithoutTenantInput
+  files?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutTenantInput
+  blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
+  addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
+  schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutAnnouncementsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutAnnouncementsInput, Prisma.TenantUncheckedCreateWithoutAnnouncementsInput>
+}
+
+export type TenantUpsertWithoutAnnouncementsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutAnnouncementsInput, Prisma.TenantUncheckedUpdateWithoutAnnouncementsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutAnnouncementsInput, Prisma.TenantUncheckedCreateWithoutAnnouncementsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutAnnouncementsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutAnnouncementsInput, Prisma.TenantUncheckedUpdateWithoutAnnouncementsInput>
+}
+
+export type TenantUpdateWithoutAnnouncementsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
+  billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
+  memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
+  teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
+  students?: Prisma.StudentUpdateManyWithoutTenantNestedInput
+  courses?: Prisma.CourseUpdateManyWithoutTenantNestedInput
+  enrollments?: Prisma.EnrollmentUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutTenantNestedInput
+  exams?: Prisma.ExamUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
+  folders?: Prisma.LibraryFolderUpdateManyWithoutTenantNestedInput
+  files?: Prisma.LibraryFileUpdateManyWithoutTenantNestedInput
+  blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
+  addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
+  schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutAnnouncementsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
+  billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
+  teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutTenantNestedInput
+  courses?: Prisma.CourseUncheckedUpdateManyWithoutTenantNestedInput
+  enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutTenantNestedInput
+  exams?: Prisma.ExamUncheckedUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+  folders?: Prisma.LibraryFolderUncheckedUpdateManyWithoutTenantNestedInput
+  files?: Prisma.LibraryFileUncheckedUpdateManyWithoutTenantNestedInput
+  blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
+  addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
+  schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutConversationsInput = {
+  id?: string
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
+  billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
+  memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
+  teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
+  students?: Prisma.StudentCreateNestedManyWithoutTenantInput
+  courses?: Prisma.CourseCreateNestedManyWithoutTenantInput
+  enrollments?: Prisma.EnrollmentCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutTenantInput
+  exams?: Prisma.ExamCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
+  folders?: Prisma.LibraryFolderCreateNestedManyWithoutTenantInput
+  files?: Prisma.LibraryFileCreateNestedManyWithoutTenantInput
+  blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
+  addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
+  schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutConversationsInput = {
+  id?: string
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
+  billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
+  teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutTenantInput
+  courses?: Prisma.CourseUncheckedCreateNestedManyWithoutTenantInput
+  enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutTenantInput
+  exams?: Prisma.ExamUncheckedCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
+  folders?: Prisma.LibraryFolderUncheckedCreateNestedManyWithoutTenantInput
+  files?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutTenantInput
+  blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
+  addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
+  schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutConversationsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutConversationsInput, Prisma.TenantUncheckedCreateWithoutConversationsInput>
+}
+
+export type TenantUpsertWithoutConversationsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutConversationsInput, Prisma.TenantUncheckedUpdateWithoutConversationsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutConversationsInput, Prisma.TenantUncheckedCreateWithoutConversationsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutConversationsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutConversationsInput, Prisma.TenantUncheckedUpdateWithoutConversationsInput>
+}
+
+export type TenantUpdateWithoutConversationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
+  billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
+  memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
+  teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
+  students?: Prisma.StudentUpdateManyWithoutTenantNestedInput
+  courses?: Prisma.CourseUpdateManyWithoutTenantNestedInput
+  enrollments?: Prisma.EnrollmentUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutTenantNestedInput
+  exams?: Prisma.ExamUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
+  folders?: Prisma.LibraryFolderUpdateManyWithoutTenantNestedInput
+  files?: Prisma.LibraryFileUpdateManyWithoutTenantNestedInput
+  blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
+  addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
+  schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutConversationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
+  billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
+  teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutTenantNestedInput
+  courses?: Prisma.CourseUncheckedUpdateManyWithoutTenantNestedInput
+  enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutTenantNestedInput
+  exams?: Prisma.ExamUncheckedUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+  folders?: Prisma.LibraryFolderUncheckedUpdateManyWithoutTenantNestedInput
+  files?: Prisma.LibraryFileUncheckedUpdateManyWithoutTenantNestedInput
+  blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
+  addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
+  schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutMessagesInput = {
+  id?: string
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
+  billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
+  memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
+  teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
+  students?: Prisma.StudentCreateNestedManyWithoutTenantInput
+  courses?: Prisma.CourseCreateNestedManyWithoutTenantInput
+  enrollments?: Prisma.EnrollmentCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutTenantInput
+  exams?: Prisma.ExamCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
+  folders?: Prisma.LibraryFolderCreateNestedManyWithoutTenantInput
+  files?: Prisma.LibraryFileCreateNestedManyWithoutTenantInput
+  blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
+  addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
+  schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutMessagesInput = {
+  id?: string
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
+  billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
+  teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutTenantInput
+  courses?: Prisma.CourseUncheckedCreateNestedManyWithoutTenantInput
+  enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutTenantInput
+  exams?: Prisma.ExamUncheckedCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
+  folders?: Prisma.LibraryFolderUncheckedCreateNestedManyWithoutTenantInput
+  files?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutTenantInput
+  blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
+  addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
+  schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  calls?: Prisma.SessionCallUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutMessagesInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutMessagesInput, Prisma.TenantUncheckedCreateWithoutMessagesInput>
+}
+
+export type TenantUpsertWithoutMessagesInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutMessagesInput, Prisma.TenantUncheckedUpdateWithoutMessagesInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutMessagesInput, Prisma.TenantUncheckedCreateWithoutMessagesInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutMessagesInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutMessagesInput, Prisma.TenantUncheckedUpdateWithoutMessagesInput>
+}
+
+export type TenantUpdateWithoutMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
+  billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
+  memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
+  teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
+  students?: Prisma.StudentUpdateManyWithoutTenantNestedInput
+  courses?: Prisma.CourseUpdateManyWithoutTenantNestedInput
+  enrollments?: Prisma.EnrollmentUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutTenantNestedInput
+  exams?: Prisma.ExamUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
+  folders?: Prisma.LibraryFolderUpdateManyWithoutTenantNestedInput
+  files?: Prisma.LibraryFileUpdateManyWithoutTenantNestedInput
+  blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
+  addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
+  schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
+  billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
+  teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutTenantNestedInput
+  courses?: Prisma.CourseUncheckedUpdateManyWithoutTenantNestedInput
+  enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutTenantNestedInput
+  exams?: Prisma.ExamUncheckedUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+  folders?: Prisma.LibraryFolderUncheckedUpdateManyWithoutTenantNestedInput
+  files?: Prisma.LibraryFileUncheckedUpdateManyWithoutTenantNestedInput
+  blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
+  addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
+  schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  calls?: Prisma.SessionCallUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutCallsInput = {
+  id?: string
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeCreateNestedManyWithoutTenantInput
+  billingRates?: Prisma.BillingRateCreateNestedManyWithoutTenantInput
+  memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
+  teachers?: Prisma.TeacherCreateNestedManyWithoutTenantInput
+  students?: Prisma.StudentCreateNestedManyWithoutTenantInput
+  courses?: Prisma.CourseCreateNestedManyWithoutTenantInput
+  enrollments?: Prisma.EnrollmentCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutTenantInput
+  exams?: Prisma.ExamCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationCreateNestedManyWithoutTenantInput
+  folders?: Prisma.LibraryFolderCreateNestedManyWithoutTenantInput
+  files?: Prisma.LibraryFileCreateNestedManyWithoutTenantInput
+  blobs?: Prisma.StoredBlobCreateNestedManyWithoutTenantInput
+  addOns?: Prisma.StorageAddOnCreateNestedManyWithoutTenantInput
+  schedules?: Prisma.StudentScheduleCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutCallsInput = {
+  id?: string
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  logoKey?: string | null
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedCreateNestedManyWithoutTenantInput
+  billingRates?: Prisma.BillingRateUncheckedCreateNestedManyWithoutTenantInput
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
+  teachers?: Prisma.TeacherUncheckedCreateNestedManyWithoutTenantInput
+  students?: Prisma.StudentUncheckedCreateNestedManyWithoutTenantInput
+  courses?: Prisma.CourseUncheckedCreateNestedManyWithoutTenantInput
+  enrollments?: Prisma.EnrollmentUncheckedCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutTenantInput
+  exams?: Prisma.ExamUncheckedCreateNestedManyWithoutTenantInput
+  integrations?: Prisma.IntegrationUncheckedCreateNestedManyWithoutTenantInput
+  folders?: Prisma.LibraryFolderUncheckedCreateNestedManyWithoutTenantInput
+  files?: Prisma.LibraryFileUncheckedCreateNestedManyWithoutTenantInput
+  blobs?: Prisma.StoredBlobUncheckedCreateNestedManyWithoutTenantInput
+  addOns?: Prisma.StorageAddOnUncheckedCreateNestedManyWithoutTenantInput
+  schedules?: Prisma.StudentScheduleUncheckedCreateNestedManyWithoutTenantInput
+  supportSessions?: Prisma.SupportSessionUncheckedCreateNestedManyWithoutTenantInput
+  supportRequests?: Prisma.SupportRequestUncheckedCreateNestedManyWithoutTenantInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutTenantInput
+  announcements?: Prisma.AnnouncementUncheckedCreateNestedManyWithoutTenantInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutTenantInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutCallsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutCallsInput, Prisma.TenantUncheckedCreateWithoutCallsInput>
+}
+
+export type TenantUpsertWithoutCallsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutCallsInput, Prisma.TenantUncheckedUpdateWithoutCallsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutCallsInput, Prisma.TenantUncheckedCreateWithoutCallsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutCallsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutCallsInput, Prisma.TenantUncheckedUpdateWithoutCallsInput>
+}
+
+export type TenantUpdateWithoutCallsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUpdateManyWithoutTenantNestedInput
+  billingRates?: Prisma.BillingRateUpdateManyWithoutTenantNestedInput
+  memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
+  teachers?: Prisma.TeacherUpdateManyWithoutTenantNestedInput
+  students?: Prisma.StudentUpdateManyWithoutTenantNestedInput
+  courses?: Prisma.CourseUpdateManyWithoutTenantNestedInput
+  enrollments?: Prisma.EnrollmentUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutTenantNestedInput
+  exams?: Prisma.ExamUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUpdateManyWithoutTenantNestedInput
+  folders?: Prisma.LibraryFolderUpdateManyWithoutTenantNestedInput
+  files?: Prisma.LibraryFileUpdateManyWithoutTenantNestedInput
+  blobs?: Prisma.StoredBlobUpdateManyWithoutTenantNestedInput
+  addOns?: Prisma.StorageAddOnUpdateManyWithoutTenantNestedInput
+  schedules?: Prisma.StudentScheduleUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutCallsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  subscriptionChanges?: Prisma.SubscriptionChangeUncheckedUpdateManyWithoutTenantNestedInput
+  billingRates?: Prisma.BillingRateUncheckedUpdateManyWithoutTenantNestedInput
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
+  teachers?: Prisma.TeacherUncheckedUpdateManyWithoutTenantNestedInput
+  students?: Prisma.StudentUncheckedUpdateManyWithoutTenantNestedInput
+  courses?: Prisma.CourseUncheckedUpdateManyWithoutTenantNestedInput
+  enrollments?: Prisma.EnrollmentUncheckedUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutTenantNestedInput
+  exams?: Prisma.ExamUncheckedUpdateManyWithoutTenantNestedInput
+  integrations?: Prisma.IntegrationUncheckedUpdateManyWithoutTenantNestedInput
+  folders?: Prisma.LibraryFolderUncheckedUpdateManyWithoutTenantNestedInput
+  files?: Prisma.LibraryFileUncheckedUpdateManyWithoutTenantNestedInput
+  blobs?: Prisma.StoredBlobUncheckedUpdateManyWithoutTenantNestedInput
+  addOns?: Prisma.StorageAddOnUncheckedUpdateManyWithoutTenantNestedInput
+  schedules?: Prisma.StudentScheduleUncheckedUpdateManyWithoutTenantNestedInput
+  supportSessions?: Prisma.SupportSessionUncheckedUpdateManyWithoutTenantNestedInput
+  supportRequests?: Prisma.SupportRequestUncheckedUpdateManyWithoutTenantNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutTenantNestedInput
+  announcements?: Prisma.AnnouncementUncheckedUpdateManyWithoutTenantNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutTenantNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 
@@ -2449,6 +4688,7 @@ export type TenantUncheckedUpdateWithoutAddOnsInput = {
  */
 
 export type TenantCountOutputType = {
+  subscriptionChanges: number
   billingRates: number
   memberships: number
   teachers: number
@@ -2463,9 +4703,17 @@ export type TenantCountOutputType = {
   blobs: number
   addOns: number
   schedules: number
+  supportSessions: number
+  supportRequests: number
+  notifications: number
+  announcements: number
+  conversations: number
+  messages: number
+  calls: number
 }
 
 export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  subscriptionChanges?: boolean | TenantCountOutputTypeCountSubscriptionChangesArgs
   billingRates?: boolean | TenantCountOutputTypeCountBillingRatesArgs
   memberships?: boolean | TenantCountOutputTypeCountMembershipsArgs
   teachers?: boolean | TenantCountOutputTypeCountTeachersArgs
@@ -2480,6 +4728,13 @@ export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   blobs?: boolean | TenantCountOutputTypeCountBlobsArgs
   addOns?: boolean | TenantCountOutputTypeCountAddOnsArgs
   schedules?: boolean | TenantCountOutputTypeCountSchedulesArgs
+  supportSessions?: boolean | TenantCountOutputTypeCountSupportSessionsArgs
+  supportRequests?: boolean | TenantCountOutputTypeCountSupportRequestsArgs
+  notifications?: boolean | TenantCountOutputTypeCountNotificationsArgs
+  announcements?: boolean | TenantCountOutputTypeCountAnnouncementsArgs
+  conversations?: boolean | TenantCountOutputTypeCountConversationsArgs
+  messages?: boolean | TenantCountOutputTypeCountMessagesArgs
+  calls?: boolean | TenantCountOutputTypeCountCallsArgs
 }
 
 /**
@@ -2490,6 +4745,13 @@ export type TenantCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exten
    * Select specific fields to fetch from the TenantCountOutputType
    */
   select?: Prisma.TenantCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountSubscriptionChangesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SubscriptionChangeWhereInput
 }
 
 /**
@@ -2590,6 +4852,55 @@ export type TenantCountOutputTypeCountSchedulesArgs<ExtArgs extends runtime.Type
   where?: Prisma.StudentScheduleWhereInput
 }
 
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountSupportSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SupportSessionWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountSupportRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SupportRequestWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.NotificationWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountAnnouncementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AnnouncementWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountConversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ConversationWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MessageWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountCallsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SessionCallWhereInput
+}
+
 
 export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2598,9 +4909,13 @@ export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   status?: boolean
   timezone?: boolean
   currency?: boolean
+  logoKey?: boolean
+  platformFeePercent?: boolean
+  expiryNotice?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   subscription?: boolean | Prisma.Tenant$subscriptionArgs<ExtArgs>
+  subscriptionChanges?: boolean | Prisma.Tenant$subscriptionChangesArgs<ExtArgs>
   billingRates?: boolean | Prisma.Tenant$billingRatesArgs<ExtArgs>
   memberships?: boolean | Prisma.Tenant$membershipsArgs<ExtArgs>
   teachers?: boolean | Prisma.Tenant$teachersArgs<ExtArgs>
@@ -2615,6 +4930,13 @@ export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   blobs?: boolean | Prisma.Tenant$blobsArgs<ExtArgs>
   addOns?: boolean | Prisma.Tenant$addOnsArgs<ExtArgs>
   schedules?: boolean | Prisma.Tenant$schedulesArgs<ExtArgs>
+  supportSessions?: boolean | Prisma.Tenant$supportSessionsArgs<ExtArgs>
+  supportRequests?: boolean | Prisma.Tenant$supportRequestsArgs<ExtArgs>
+  notifications?: boolean | Prisma.Tenant$notificationsArgs<ExtArgs>
+  announcements?: boolean | Prisma.Tenant$announcementsArgs<ExtArgs>
+  conversations?: boolean | Prisma.Tenant$conversationsArgs<ExtArgs>
+  messages?: boolean | Prisma.Tenant$messagesArgs<ExtArgs>
+  calls?: boolean | Prisma.Tenant$callsArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tenant"]>
 
@@ -2625,6 +4947,9 @@ export type TenantSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   status?: boolean
   timezone?: boolean
   currency?: boolean
+  logoKey?: boolean
+  platformFeePercent?: boolean
+  expiryNotice?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["tenant"]>
@@ -2636,6 +4961,9 @@ export type TenantSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   status?: boolean
   timezone?: boolean
   currency?: boolean
+  logoKey?: boolean
+  platformFeePercent?: boolean
+  expiryNotice?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["tenant"]>
@@ -2647,13 +4975,17 @@ export type TenantSelectScalar = {
   status?: boolean
   timezone?: boolean
   currency?: boolean
+  logoKey?: boolean
+  platformFeePercent?: boolean
+  expiryNotice?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type TenantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "status" | "timezone" | "currency" | "createdAt" | "updatedAt", ExtArgs["result"]["tenant"]>
+export type TenantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "status" | "timezone" | "currency" | "logoKey" | "platformFeePercent" | "expiryNotice" | "createdAt" | "updatedAt", ExtArgs["result"]["tenant"]>
 export type TenantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   subscription?: boolean | Prisma.Tenant$subscriptionArgs<ExtArgs>
+  subscriptionChanges?: boolean | Prisma.Tenant$subscriptionChangesArgs<ExtArgs>
   billingRates?: boolean | Prisma.Tenant$billingRatesArgs<ExtArgs>
   memberships?: boolean | Prisma.Tenant$membershipsArgs<ExtArgs>
   teachers?: boolean | Prisma.Tenant$teachersArgs<ExtArgs>
@@ -2668,6 +5000,13 @@ export type TenantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   blobs?: boolean | Prisma.Tenant$blobsArgs<ExtArgs>
   addOns?: boolean | Prisma.Tenant$addOnsArgs<ExtArgs>
   schedules?: boolean | Prisma.Tenant$schedulesArgs<ExtArgs>
+  supportSessions?: boolean | Prisma.Tenant$supportSessionsArgs<ExtArgs>
+  supportRequests?: boolean | Prisma.Tenant$supportRequestsArgs<ExtArgs>
+  notifications?: boolean | Prisma.Tenant$notificationsArgs<ExtArgs>
+  announcements?: boolean | Prisma.Tenant$announcementsArgs<ExtArgs>
+  conversations?: boolean | Prisma.Tenant$conversationsArgs<ExtArgs>
+  messages?: boolean | Prisma.Tenant$messagesArgs<ExtArgs>
+  calls?: boolean | Prisma.Tenant$callsArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TenantIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -2677,6 +5016,7 @@ export type $TenantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   name: "Tenant"
   objects: {
     subscription: Prisma.$SubscriptionPayload<ExtArgs> | null
+    subscriptionChanges: Prisma.$SubscriptionChangePayload<ExtArgs>[]
     billingRates: Prisma.$BillingRatePayload<ExtArgs>[]
     memberships: Prisma.$MembershipPayload<ExtArgs>[]
     teachers: Prisma.$TeacherPayload<ExtArgs>[]
@@ -2691,6 +5031,13 @@ export type $TenantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     blobs: Prisma.$StoredBlobPayload<ExtArgs>[]
     addOns: Prisma.$StorageAddOnPayload<ExtArgs>[]
     schedules: Prisma.$StudentSchedulePayload<ExtArgs>[]
+    supportSessions: Prisma.$SupportSessionPayload<ExtArgs>[]
+    supportRequests: Prisma.$SupportRequestPayload<ExtArgs>[]
+    notifications: Prisma.$NotificationPayload<ExtArgs>[]
+    announcements: Prisma.$AnnouncementPayload<ExtArgs>[]
+    conversations: Prisma.$ConversationPayload<ExtArgs>[]
+    messages: Prisma.$MessagePayload<ExtArgs>[]
+    calls: Prisma.$SessionCallPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2699,6 +5046,20 @@ export type $TenantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     status: $Enums.TenantStatus
     timezone: string
     currency: string
+    /**
+     * Storage key of the center's logo (a PNG made from the upload), shown on its reports.
+     */
+    logoKey: string | null
+    /**
+     * The platform's commission on this center's student fees (0..100). null = none. Set by SUPER_ADMIN,
+     * per center or in bulk, so a package can be free-with-commission or paid-without.
+     */
+    platformFeePercent: runtime.Decimal | null
+    /**
+     * The last subscription notice sent to the admins ("EXPIRING:<period end>" / "EXPIRED:<period end>"),
+     * claimed atomically so each notice goes out once per period.
+     */
+    expiryNotice: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["tenant"]>
@@ -3096,6 +5457,7 @@ readonly fields: TenantFieldRefs;
 export interface Prisma__TenantClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   subscription<T extends Prisma.Tenant$subscriptionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$subscriptionArgs<ExtArgs>>): Prisma.Prisma__SubscriptionClient<runtime.Types.Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  subscriptionChanges<T extends Prisma.Tenant$subscriptionChangesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$subscriptionChangesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SubscriptionChangePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   billingRates<T extends Prisma.Tenant$billingRatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$billingRatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BillingRatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   memberships<T extends Prisma.Tenant$membershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$membershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   teachers<T extends Prisma.Tenant$teachersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$teachersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3110,6 +5472,13 @@ export interface Prisma__TenantClient<T, Null = never, ExtArgs extends runtime.T
   blobs<T extends Prisma.Tenant$blobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$blobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StoredBlobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   addOns<T extends Prisma.Tenant$addOnsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$addOnsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StorageAddOnPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   schedules<T extends Prisma.Tenant$schedulesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$schedulesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StudentSchedulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  supportSessions<T extends Prisma.Tenant$supportSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$supportSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  supportRequests<T extends Prisma.Tenant$supportRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$supportRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  notifications<T extends Prisma.Tenant$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  announcements<T extends Prisma.Tenant$announcementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$announcementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AnnouncementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  conversations<T extends Prisma.Tenant$conversationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  messages<T extends Prisma.Tenant$messagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  calls<T extends Prisma.Tenant$callsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$callsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionCallPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3145,6 +5514,9 @@ export interface TenantFieldRefs {
   readonly status: Prisma.FieldRef<"Tenant", 'TenantStatus'>
   readonly timezone: Prisma.FieldRef<"Tenant", 'String'>
   readonly currency: Prisma.FieldRef<"Tenant", 'String'>
+  readonly logoKey: Prisma.FieldRef<"Tenant", 'String'>
+  readonly platformFeePercent: Prisma.FieldRef<"Tenant", 'Decimal'>
+  readonly expiryNotice: Prisma.FieldRef<"Tenant", 'String'>
   readonly createdAt: Prisma.FieldRef<"Tenant", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Tenant", 'DateTime'>
 }
@@ -3559,6 +5931,30 @@ export type Tenant$subscriptionArgs<ExtArgs extends runtime.Types.Extensions.Int
 }
 
 /**
+ * Tenant.subscriptionChanges
+ */
+export type Tenant$subscriptionChangesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SubscriptionChange
+   */
+  select?: Prisma.SubscriptionChangeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SubscriptionChange
+   */
+  omit?: Prisma.SubscriptionChangeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubscriptionChangeInclude<ExtArgs> | null
+  where?: Prisma.SubscriptionChangeWhereInput
+  orderBy?: Prisma.SubscriptionChangeOrderByWithRelationInput | Prisma.SubscriptionChangeOrderByWithRelationInput[]
+  cursor?: Prisma.SubscriptionChangeWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SubscriptionChangeScalarFieldEnum | Prisma.SubscriptionChangeScalarFieldEnum[]
+}
+
+/**
  * Tenant.billingRates
  */
 export type Tenant$billingRatesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3892,6 +6288,174 @@ export type Tenant$schedulesArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.StudentScheduleScalarFieldEnum | Prisma.StudentScheduleScalarFieldEnum[]
+}
+
+/**
+ * Tenant.supportSessions
+ */
+export type Tenant$supportSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SupportSession
+   */
+  select?: Prisma.SupportSessionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SupportSession
+   */
+  omit?: Prisma.SupportSessionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SupportSessionInclude<ExtArgs> | null
+  where?: Prisma.SupportSessionWhereInput
+  orderBy?: Prisma.SupportSessionOrderByWithRelationInput | Prisma.SupportSessionOrderByWithRelationInput[]
+  cursor?: Prisma.SupportSessionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SupportSessionScalarFieldEnum | Prisma.SupportSessionScalarFieldEnum[]
+}
+
+/**
+ * Tenant.supportRequests
+ */
+export type Tenant$supportRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SupportRequest
+   */
+  select?: Prisma.SupportRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SupportRequest
+   */
+  omit?: Prisma.SupportRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SupportRequestInclude<ExtArgs> | null
+  where?: Prisma.SupportRequestWhereInput
+  orderBy?: Prisma.SupportRequestOrderByWithRelationInput | Prisma.SupportRequestOrderByWithRelationInput[]
+  cursor?: Prisma.SupportRequestWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SupportRequestScalarFieldEnum | Prisma.SupportRequestScalarFieldEnum[]
+}
+
+/**
+ * Tenant.notifications
+ */
+export type Tenant$notificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Notification
+   */
+  select?: Prisma.NotificationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Notification
+   */
+  omit?: Prisma.NotificationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotificationInclude<ExtArgs> | null
+  where?: Prisma.NotificationWhereInput
+  orderBy?: Prisma.NotificationOrderByWithRelationInput | Prisma.NotificationOrderByWithRelationInput[]
+  cursor?: Prisma.NotificationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.NotificationScalarFieldEnum | Prisma.NotificationScalarFieldEnum[]
+}
+
+/**
+ * Tenant.announcements
+ */
+export type Tenant$announcementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Announcement
+   */
+  select?: Prisma.AnnouncementSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Announcement
+   */
+  omit?: Prisma.AnnouncementOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AnnouncementInclude<ExtArgs> | null
+  where?: Prisma.AnnouncementWhereInput
+  orderBy?: Prisma.AnnouncementOrderByWithRelationInput | Prisma.AnnouncementOrderByWithRelationInput[]
+  cursor?: Prisma.AnnouncementWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AnnouncementScalarFieldEnum | Prisma.AnnouncementScalarFieldEnum[]
+}
+
+/**
+ * Tenant.conversations
+ */
+export type Tenant$conversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Conversation
+   */
+  select?: Prisma.ConversationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Conversation
+   */
+  omit?: Prisma.ConversationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ConversationInclude<ExtArgs> | null
+  where?: Prisma.ConversationWhereInput
+  orderBy?: Prisma.ConversationOrderByWithRelationInput | Prisma.ConversationOrderByWithRelationInput[]
+  cursor?: Prisma.ConversationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ConversationScalarFieldEnum | Prisma.ConversationScalarFieldEnum[]
+}
+
+/**
+ * Tenant.messages
+ */
+export type Tenant$messagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Message
+   */
+  select?: Prisma.MessageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Message
+   */
+  omit?: Prisma.MessageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MessageInclude<ExtArgs> | null
+  where?: Prisma.MessageWhereInput
+  orderBy?: Prisma.MessageOrderByWithRelationInput | Prisma.MessageOrderByWithRelationInput[]
+  cursor?: Prisma.MessageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MessageScalarFieldEnum | Prisma.MessageScalarFieldEnum[]
+}
+
+/**
+ * Tenant.calls
+ */
+export type Tenant$callsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SessionCall
+   */
+  select?: Prisma.SessionCallSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SessionCall
+   */
+  omit?: Prisma.SessionCallOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SessionCallInclude<ExtArgs> | null
+  where?: Prisma.SessionCallWhereInput
+  orderBy?: Prisma.SessionCallOrderByWithRelationInput | Prisma.SessionCallOrderByWithRelationInput[]
+  cursor?: Prisma.SessionCallWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SessionCallScalarFieldEnum | Prisma.SessionCallScalarFieldEnum[]
 }
 
 /**

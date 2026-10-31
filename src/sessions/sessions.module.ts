@@ -5,11 +5,13 @@ import { ZoomWebhookController } from './zoom-webhook.controller.js';
 import { ZoomProvider } from './providers/zoom.provider.js';
 import { GoogleMeetProvider } from './providers/google-meet.provider.js';
 import { IntegrationsModule } from '../integrations/integrations.module.js';
+import { CallsController } from './calls.controller.js';
+import { CallsService } from './calls.service.js';
 
 @Module({
   imports: [IntegrationsModule],
-  controllers: [SessionsController, ZoomWebhookController],
-  providers: [SessionsService, ZoomProvider, GoogleMeetProvider],
+  controllers: [SessionsController, CallsController, ZoomWebhookController],
+  providers: [SessionsService, CallsService, ZoomProvider, GoogleMeetProvider],
   exports: [SessionsService],
 })
 export class SessionsModule {}

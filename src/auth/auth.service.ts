@@ -14,6 +14,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { MailService } from '../mail/mail.service.js';
 import { TRIAL_PLAN_CODE } from '../plans/plans.service.js';
+import { recordSubscriptionChange } from '../tenants/subscription-history.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import type { AccountStatus, Role } from '../generated/prisma/enums.js';
 import type { JwtUser } from '../common/decorators/current-user.decorator.js';
@@ -27,6 +28,7 @@ import type {
 } from './dto/auth.dto.js';
 import { msg } from '../i18n/i18n.js';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locale.js';
+import { NotificationEvents } from '../notifications/notification-events.js';
 
 /**
  * One sign-in, many centers. A `User` is the identity (email, password, name); each
@@ -73,13 +75,19 @@ export type SessionUser = {
   tenantId: string | null;
   tenant: TenantLite | null;
   memberships: { id: string; role: Role; status: AccountStatus; tenant: TenantLite; usable: boolean }[];
+  /** Support mode: a platform admin is working as this member. Null in every normal session. */
+  support: SupportInfo | null;
 };
+
+export type SupportInfo = { sessionId: string; reason: string; expiresAt: Date; actor: { fullName: string; email: string } };
 
 /** A center the user can sign into right now. */
 const usable = (m: MembershipRow) => m.status !== 'BLOCKED' && m.tenant.status === 'ACTIVE';
 
-function present(user: UserRow, membershipId: string | null): SessionUser {
+function present(user: UserRow, membershipId: string | null, support: SupportInfo | null = null): SessionUser {
   const active = membershipId ? (user.memberships.find((m) => m.id === membershipId) ?? null) : null;
+  // In support mode the admin sees only the center they entered, never the member's other centers.
+  const memberships = support ? user.memberships.filter((m) => m.id === membershipId) : user.memberships;
   const lite = (t: MembershipRow['tenant']): TenantLite => ({ id: t.id, name: t.name, slug: t.slug });
   return {
     id: user.id,
@@ -93,7 +101,8 @@ function present(user: UserRow, membershipId: string | null): SessionUser {
     statusReason: active?.statusReason ?? null,
     tenantId: active?.tenant.id ?? null,
     tenant: active ? lite(active.tenant) : null,
-    memberships: user.memberships.map((m) => ({ id: m.id, role: m.role, status: m.status, tenant: lite(m.tenant), usable: usable(m) })),
+    memberships: memberships.map((m) => ({ id: m.id, role: m.role, status: m.status, tenant: lite(m.tenant), usable: usable(m) })),
+    support,
   };
 }
 
@@ -110,6 +119,7 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
     private readonly mail: MailService,
+    private readonly events: NotificationEvents,
   ) {}
 
   /** A brand-new account and its first center. Someone who already has an account creates centers from inside it. */
@@ -120,11 +130,12 @@ export class AuthService {
     if (emailTaken) throw new ConflictException(msg('auth.emailRegistered'));
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
-    const membershipId = await this.prisma.$transaction(async (tx) => {
+    const membership = await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.create({ data: { email, passwordHash, fullName: dto.fullName }, select: { id: true } });
-      const membership = await this.createTenantFor(tx, user.id, dto);
-      return membership.id;
+      return this.createTenantFor(tx, user.id, dto);
     });
+    const membershipId = membership.id;
+    void this.events.tenantRegistered(membership.tenantId, membership.userId);
     const user = await this.prisma.user.findUniqueOrThrow({ where: { email }, select: userSelect });
     return this.issueTokens(user, membershipId, true);
   }
@@ -147,6 +158,7 @@ export class AuthService {
       throw new ConflictException(msg('auth.trialInProgress'));
     }
     const membership = await this.prisma.$transaction((tx) => this.createTenantFor(tx, user.id, dto));
+    void this.events.tenantRegistered(membership.tenantId, user.id);
     return this.switch(user, { membershipId: membership.id, refreshToken: dto.refreshToken });
   }
 
@@ -166,6 +178,7 @@ export class AuthService {
         subscription: { create: { currentPeriodEnd: periodEnd, plan: { connect: { code: TRIAL_PLAN_CODE } } } },
       },
     });
+    await recordSubscriptionChange(tx, tenant.id);
     const membership = await tx.membership.create({ data: { userId, tenantId: tenant.id, role: 'TENANT_ADMIN' } });
     await tx.user.update({ where: { id: userId }, data: { lastMembershipId: membership.id } });
     return membership;
@@ -244,9 +257,35 @@ export class AuthService {
     } else if (!stored.user.isPlatformAdmin) {
       throw new UnauthorizedException(msg('auth.invalidSession'));
     }
+    // A support session refreshes only while it is open; it never outlives its end time.
+    const support = stored.supportSessionId ? await this.supportInfo(stored.supportSessionId) : null;
+    if (stored.supportSessionId && !support) throw new UnauthorizedException(msg('support.sessionEnded'));
     // Rotate: revoke old, issue new with the same "remember me" lifetime.
     await this.prisma.refreshToken.update({ where: { id: stored.id }, data: { revokedAt: new Date() } });
-    return this.issueTokens(stored.user, stored.membershipId, stored.remember);
+    return this.issueTokens(stored.user, stored.membershipId, stored.remember, support);
+  }
+
+  /**
+   * Support mode: a token pair that signs a platform admin in as one member of a center, tied to
+   * an open support session. The caller has already created the session and checked the target.
+   */
+  async issueSupportTokens(userId: string, membershipId: string, sessionId: string) {
+    const [user, support] = await Promise.all([
+      this.prisma.user.findUniqueOrThrow({ where: { id: userId }, select: userSelect }),
+      this.supportInfo(sessionId),
+    ]);
+    if (!support) throw new UnauthorizedException(msg('support.sessionEnded'));
+    return this.issueTokens(user, membershipId, false, support);
+  }
+
+  /** The open support session's banner details, or null once it is closed or over. */
+  private async supportInfo(sessionId: string): Promise<SupportInfo | null> {
+    const s = await this.prisma.supportSession.findUnique({
+      where: { id: sessionId },
+      select: { id: true, reason: true, expiresAt: true, endedAt: true, actor: { select: { fullName: true, email: true, isPlatformAdmin: true } } },
+    });
+    if (!s || s.endedAt || s.expiresAt <= new Date() || !s.actor.isPlatformAdmin) return null;
+    return { sessionId: s.id, reason: s.reason, expiresAt: s.expiresAt, actor: { fullName: s.actor.fullName, email: s.actor.email } };
   }
 
   async logout(rawToken: string) {
@@ -259,7 +298,8 @@ export class AuthService {
 
   async me(user: JwtUser) {
     const row = await this.prisma.user.findUniqueOrThrow({ where: { id: user.id }, select: userSelect });
-    return present(row, user.membershipId);
+    const support = user.supportSessionId ? await this.supportInfo(user.supportSessionId) : null;
+    return present(row, user.membershipId, support);
   }
 
   /** Name and phone are free to change; the login email needs the current password. */
@@ -326,7 +366,7 @@ export class AuthService {
   }
 
   /**
-   * Tells a new teacher or student about their place in the center: a link to choose a password
+   * Tells a new member (a teacher, a student, or an owner the platform set up) about their place in the center: a link to choose a password
    * for a brand-new account, or just "sign in as usual" when they already had one.
    * Best effort: a mail failure is logged and never undoes the account.
    */
@@ -336,7 +376,7 @@ export class AuthService {
         where: { id: membershipId },
         select: { role: true, user: { select: { id: true, email: true, fullName: true } }, tenant: { select: { name: true } } },
       });
-      if (m.role !== 'TEACHER' && m.role !== 'STUDENT') return;
+      if (m.role === 'SUPER_ADMIN') return;
       const url = opts.existingAccount ? null : await this.passwordLink(m.user.id, WELCOME_TOKEN_DAYS * 24 * 60, locale);
       await this.mail.sendWelcome(
         {
@@ -393,9 +433,9 @@ export class AuthService {
     return { ok: true };
   }
 
-  private async issueTokens(user: UserRow, membershipId: string | null, remember: boolean) {
+  private async issueTokens(user: UserRow, membershipId: string | null, remember: boolean, support: SupportInfo | null = null) {
     const accessToken = await this.jwt.signAsync(
-      { sub: user.id, mid: membershipId },
+      { sub: user.id, mid: membershipId, ...(support && { sid: support.sessionId }) },
       {
         secret: this.config.getOrThrow<string>('JWT_ACCESS_SECRET'),
         expiresIn: (this.config.get<string>('JWT_ACCESS_TTL') ?? '15m') as JwtSignOptions['expiresIn'],
@@ -406,11 +446,12 @@ export class AuthService {
     const days = Number(this.config.get('JWT_REFRESH_TTL_DAYS') ?? 30);
     const hours = Number(this.config.get('JWT_REFRESH_SESSION_TTL_HOURS') ?? 24);
     const ttlMs = remember ? days * 24 * 60 * 60 * 1000 : hours * 60 * 60 * 1000;
+    const expiresAt = new Date(Math.min(Date.now() + ttlMs, support?.expiresAt.getTime() ?? Infinity));
     await this.prisma.refreshToken.create({
-      data: { userId: user.id, membershipId, tokenHash: this.hash(refreshToken), expiresAt: new Date(Date.now() + ttlMs), remember },
+      data: { userId: user.id, membershipId, tokenHash: this.hash(refreshToken), expiresAt, remember, supportSessionId: support?.sessionId ?? null },
     });
 
-    return { accessToken, refreshToken, user: present(user, membershipId), rememberMe: remember };
+    return { accessToken, refreshToken, user: present(user, membershipId, support), rememberMe: remember };
   }
 
   private hash(value: string) {

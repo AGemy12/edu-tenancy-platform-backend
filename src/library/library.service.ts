@@ -21,6 +21,7 @@ import type {
   UploadFileDto,
 } from './dto/library.dto.js';
 import { msg } from '../i18n/i18n.js';
+import { NotificationEvents } from '../notifications/notification-events.js';
 
 /** The parts of a multer upload this service needs (multer writes it to a temp file). */
 export type UploadedTempFile = { path: string; originalname: string; size: number };
@@ -64,6 +65,7 @@ export class LibraryService {
     private readonly storage: StorageService,
     private readonly quota: QuotaService,
     private readonly plans: PlansService,
+    private readonly events: NotificationEvents,
     config: ConfigService,
   ) {
     this.urlSecret = config.get<string>('FILES_URL_SECRET') || config.getOrThrow<string>('JWT_ACCESS_SECRET');
@@ -367,6 +369,7 @@ export class LibraryService {
 
     let sent = 0;
     let skipped = 0;
+    const perStudent = new Map<string, number>();
     for (const studentId of studentIds) {
       const root = await this.ensureStudentFolder(user, studentId);
       const already = await this.prisma.libraryFile.findMany({
@@ -379,7 +382,9 @@ export class LibraryService {
       if (fresh.length === 0) continue;
       await this.prisma.libraryFile.createMany({ data: fresh.map((f) => copyOf(f, { ownerId: user.id, folderId: root.id })) });
       sent += fresh.length;
+      perStudent.set(studentId, fresh.length);
     }
+    void this.events.filesShared(perStudent, user.id);
     return { sent, skipped, students: studentIds.length };
   }
 
