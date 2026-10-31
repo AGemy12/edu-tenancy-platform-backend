@@ -14,7 +14,8 @@ services:
     # disk (uploaded library files are lost on every deploy), no pre-deploy step. Upgrade in place later.
     plan: free
     region: frankfurt
-    buildCommand: npm ci && npx prisma generate && npm run build
+    # --include=dev: NODE_ENV=production would otherwise skip the Nest CLI, TypeScript and the Prisma CLI.
+    buildCommand: npm ci --include=dev && npx prisma generate && npm run build
     # No pre-deploy step on the free plan: migrations run at start; the first start also creates the platform admin.
     startCommand: npm run start:migrate
     healthCheckPath: /api/health
