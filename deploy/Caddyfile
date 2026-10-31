@@ -1,0 +1,5 @@
+# HTTPS certificate is issued and renewed automatically once API_DOMAIN points at this server.
+# WebSockets (socket.io), large uploads and video range requests pass through as-is.
+{$API_DOMAIN} {
+	reverse_proxy api:4000
+}
