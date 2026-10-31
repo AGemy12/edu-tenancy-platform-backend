@@ -1,5 +1,8 @@
-# Production stack for one VPS: Postgres, the API and Caddy (HTTPS from Let's Encrypt).
-# Run from this folder: `docker compose up -d --build`. Settings come from ./.env (see .env.example).
+# Production stack for one VPS: Postgres and the API, plus Caddy (HTTPS from Let's Encrypt) when
+# nothing else on the server owns ports 80/443. Settings come from ./.env (see .env.example).
+#   Server already runs nginx (or another proxy): `docker compose up -d --build`, then proxy the
+#     API host to 127.0.0.1:${API_PORT} (see README.md).
+#   Empty server: `docker compose --profile caddy up -d --build`.
 
 services:
   db:
@@ -23,7 +26,9 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgresql://edu:${POSTGRES_PASSWORD}@db:5432/edu?schema=public
-      TRUST_PROXY: "1" # Caddy, so rate limits see the client's IP
+      TRUST_PROXY: "1" # the reverse proxy, so rate limits see the client's IP
+    ports:
+      - "127.0.0.1:${API_PORT:-4100}:4000" # this machine only; the proxy is the public door
     volumes:
       - storage:/app/storage # library files survive rebuilds
     depends_on:
@@ -32,13 +37,14 @@ services:
 
   caddy:
     image: caddy:2-alpine
+    profiles: [caddy]
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
       - "443:443/udp"
     environment:
-      API_DOMAIN: ${API_DOMAIN:?set API_DOMAIN in .env}
+      API_DOMAIN: ${API_DOMAIN}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data

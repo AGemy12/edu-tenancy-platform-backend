@@ -1,0 +1,25 @@
+# nginx site for the API when the server already runs nginx. Set server_name and the port
+# (API_PORT in .env), then run certbot --nginx -d <server_name> to add HTTPS.
+server {
+    listen 80;
+    server_name edu-api.example.com;
+
+    # Library uploads (LIBRARY_MAX_FILE_MB); nginx's default is 1 MB.
+    client_max_body_size 1100m;
+
+    location / {
+        proxy_pass http://127.0.0.1:4100;
+        proxy_http_version 1.1;
+        # socket.io (notifications, messages)
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        # long uploads and PDF reports
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+        proxy_request_buffering off;
+    }
+}
