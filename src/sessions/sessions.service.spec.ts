@@ -6,6 +6,8 @@ import type { PrismaService } from '../prisma/prisma.service.js';
 import type { ConfigService } from '@nestjs/config';
 import type { ZoomProvider } from './providers/zoom.provider.js';
 import type { GoogleMeetProvider } from './providers/google-meet.provider.js';
+import type { RealtimeService } from '../realtime/realtime.service.js';
+import { RING_MS } from './call-rules.js';
 
 const base = { id: 'u', email: 'x@test', tenantId: 't1', teacherId: null, studentId: null, status: 'ACTIVE' as const, membershipId: 'm1' };
 const host: JwtUser = { ...base, id: 'u-host', role: 'TEACHER', teacherId: 'tc1' };
@@ -45,7 +47,7 @@ function setup(session = makeSession(), attendee: object | null = null) {
     },
     sessionAttendee: {
       findUnique: vi.fn().mockResolvedValue(attendee),
-      findMany: vi.fn().mockResolvedValue([{ studentId: 's1' }]),
+      findMany: vi.fn().mockResolvedValue([{ studentId: 's1', student: { membershipId: 'm-st' } }]),
       update: vi.fn(),
     },
     teacher: {
@@ -63,14 +65,16 @@ function setup(session = makeSession(), attendee: object | null = null) {
     hostUrl: vi.fn().mockResolvedValue('https://zoom.us/s/1?zak=fresh'),
   };
   const config = { get: vi.fn() };
+  const realtime = { toMembers: vi.fn() };
   const service = new SessionsService(
     prisma as unknown as PrismaService,
     config as unknown as ConfigService,
     zoom as unknown as ZoomProvider,
     {} as GoogleMeetProvider,
     new Proxy({}, { get: () => vi.fn() }) as never,
+    realtime as unknown as RealtimeService,
   );
-  return { prisma, zoom, service };
+  return { prisma, zoom, realtime, service };
 }
 
 describe('start', () => {
@@ -184,6 +188,50 @@ describe('join', () => {
     expect(row.meetingUrl).toBeNull();
     const detail = await service.get(suspended, 'ses1');
     expect(detail.meetingUrl).toBeNull();
+  });
+});
+
+describe('ringing', () => {
+  const now = new Date('2026-11-01T16:00:00Z');
+  const row = (over: Record<string, unknown> = {}) => ({
+    attended: false,
+    session: { id: 'ses1', title: 'Algebra', status: 'LIVE', startedAt: new Date(now.getTime() - 30_000), endedAt: null, teacher: { user: { fullName: 'Ahmed' } }, ...over },
+  });
+
+  it("calls a student into their live session, within their center, for what's left of the ring", async () => {
+    const { prisma, service } = setup();
+    prisma.sessionAttendee.findMany.mockResolvedValue([row()]);
+    await expect(service.ringing(student, now)).resolves.toEqual({
+      session: { id: 'ses1', title: 'Algebra', teacherName: 'Ahmed', startedAt: expect.any(Date), ringMs: RING_MS - 30_000 },
+    });
+    expect(prisma.sessionAttendee.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { studentId: 's1', attended: false, session: { tenantId: 't1', status: 'LIVE', endedAt: null } } }),
+    );
+  });
+
+  it('turns into the banner once the ring is over', async () => {
+    const { prisma, service } = setup();
+    prisma.sessionAttendee.findMany.mockResolvedValue([row({ startedAt: new Date(now.getTime() - RING_MS - 1) })]);
+    const { session } = await service.ringing(student, now);
+    expect(session?.ringMs).toBe(0);
+  });
+
+  it('calls nobody but active students', async () => {
+    const { prisma, service } = setup();
+    await expect(service.ringing(host, now)).resolves.toEqual({ session: null });
+    await expect(service.ringing({ ...student, status: 'SUSPENDED' }, now)).resolves.toEqual({ session: null });
+    expect(prisma.sessionAttendee.findMany).not.toHaveBeenCalled();
+  });
+
+  it("rings the session's students when it goes live, and stops a student's other tabs once they join", async () => {
+    const started = setup();
+    await started.service.start(host, 'ses1');
+    await vi.waitFor(() => expect(started.realtime.toMembers).toHaveBeenCalledWith(['m-st'], 'session:ring', { sessionId: 'ses1' }));
+
+    const joined = setup(makeSession({ status: 'LIVE' }), { studentId: 's1', attended: false, joinedAt: null });
+    await joined.service.join(student, 'ses1');
+    await vi.waitFor(() => expect(joined.realtime.toMembers).toHaveBeenCalled());
+    expect(joined.prisma.sessionAttendee.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { sessionId: 'ses1', studentId: { in: ['s1'] } } }));
   });
 });
 

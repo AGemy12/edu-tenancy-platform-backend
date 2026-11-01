@@ -31,6 +31,9 @@ import {
 import { msg } from '../i18n/i18n.js';
 import { assertFree, lockPeople } from './session-clashes.js';
 import { NotificationEvents } from '../notifications/notification-events.js';
+import { RealtimeService } from '../realtime/realtime.service.js';
+import { RealtimeEvent } from '../realtime/rooms.js';
+import { ringLeftMs, sessionCalling } from './session-ring.js';
 
 const sessionInclude = {
   teacher: { select: { id: true, userId: true, user: { select: { fullName: true } } } },
@@ -56,6 +59,7 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
     private readonly zoom: ZoomProvider,
     private readonly google: GoogleMeetProvider,
     private readonly events: NotificationEvents,
+    private readonly realtime: RealtimeService,
   ) {}
 
   onModuleInit() {
@@ -286,12 +290,14 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
     if (session.status !== 'LIVE' && session.startAt > new Date()) {
       throw new BadRequestException(msg('sessions.notStartedYet'));
     }
-    return this.prisma.session.update({
+    const completed = await this.prisma.session.update({
       where: { id },
       // A live session whose meeting dropped ended when it dropped, not when the host closed it.
       data: { status: 'COMPLETED', endedAt: session.status === 'LIVE' ? (session.endedAt ?? new Date()) : session.endedAt },
       include: sessionInclude,
     });
+    void this.pushRing(id);
+    return completed;
   }
 
   async cancel(user: JwtUser, id: string) {
@@ -302,6 +308,7 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
     }
     const canceled = await this.prisma.session.update({ where: { id }, data: { status: 'CANCELED' }, include: sessionInclude });
     void this.events.sessionCanceled(id, user.id);
+    void this.pushRing(id);
     return canceled;
   }
 
@@ -348,8 +355,39 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
         where: { sessionId_studentId: { sessionId: id, studentId: attendee.studentId } },
         data: { attended: true, joinedAt: attendee.joinedAt ?? new Date() },
       });
+      // Answered here: the student's other tabs and devices stop ringing.
+      void this.pushRing(id, [attendee.studentId]);
     }
     return { url: session.meetingUrl };
+  }
+
+  /**
+   * The live session calling this student now, if any (see session-ring.ts): the web shows it as
+   * an incoming call for `ringMs`, then as a "join now" banner. Suspended members can't join, so
+   * nothing calls them.
+   */
+  async ringing(user: JwtUser, now = new Date()) {
+    if (user.role !== 'STUDENT' || !user.studentId || user.status === 'SUSPENDED') return { session: null };
+    const rows = await this.prisma.sessionAttendee.findMany({
+      where: { studentId: user.studentId, attended: false, session: { tenantId: user.tenantId!, status: 'LIVE', endedAt: null } },
+      select: {
+        attended: true,
+        session: {
+          select: { id: true, title: true, status: true, startedAt: true, endedAt: true, teacher: { select: { user: { select: { fullName: true } } } } },
+        },
+      },
+    });
+    const calling = sessionCalling(rows.map((r) => ({ ...r.session, attended: r.attended })));
+    if (!calling) return { session: null };
+    return {
+      session: {
+        id: calling.id,
+        title: calling.title,
+        teacherName: calling.teacher.user.fullName,
+        startedAt: calling.startedAt,
+        ringMs: ringLeftMs(calling.startedAt, now),
+      },
+    };
   }
 
   async markAttendance(user: JwtUser, id: string, studentId: string, attended: boolean) {
@@ -358,10 +396,12 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
       where: { sessionId_studentId: { sessionId: id, studentId } },
     });
     if (!row) throw new NotFoundException(msg('sessions.studentNotInSession'));
-    return this.prisma.sessionAttendee.update({
+    const updated = await this.prisma.sessionAttendee.update({
       where: { sessionId_studentId: { sessionId: id, studentId } },
       data: { attended, joinedAt: attended ? (row.joinedAt ?? new Date()) : null },
     });
+    void this.pushRing(id, [studentId]);
+    return updated;
   }
 
   /**
@@ -410,8 +450,11 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
    */
   async meetingStarted(session: MeetingFacts, at: Date, actorId: string | null) {
     if (session.status === 'LIVE') {
-      // Back after a drop.
-      if (session.endedAt) await this.prisma.session.update({ where: { id: session.id }, data: { endedAt: null } });
+      // Back after a drop: the "join now" banner returns (it rang when the session first started).
+      if (session.endedAt) {
+        await this.prisma.session.update({ where: { id: session.id }, data: { endedAt: null } });
+        void this.pushRing(session.id);
+      }
       return;
     }
     // A meeting reported as started after we gave up on it (MISSED) did happen after all.
@@ -421,6 +464,8 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
       data: { status: 'LIVE', startedAt: session.startedAt ?? at, endedAt: null },
     });
     if (session.status === 'SCHEDULED') void this.events.sessionLive(session.id, actorId);
+    // Each student who hasn't entered gets an incoming call.
+    void this.pushRing(session.id);
   }
 
   /** A meeting of the session ended: the class is over, or (before the planned end) it dropped. */
@@ -430,13 +475,14 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
       where: { id: session.id },
       data: { status: afterMeetingEnded(session, endedAt), startedAt: session.startedAt ?? startedAt ?? undefined, endedAt },
     });
+    void this.pushRing(session.id);
   }
 
   /** Marks a student present when a Zoom participant signs in with the student's email. */
   async providerParticipantJoined(provider: SessionProvider, externalMeetingId: string, email: string, at: Date) {
     const session = await this.findByMeeting(provider, externalMeetingId);
     if (!session) return;
-    await this.prisma.sessionAttendee.updateMany({
+    const { count } = await this.prisma.sessionAttendee.updateMany({
       where: {
         sessionId: session.id,
         attended: false,
@@ -444,6 +490,8 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
       },
       data: { attended: true, joinedAt: at },
     });
+    // Entered straight from Zoom: stop ringing on the platform.
+    if (count) void this.pushRing(session.id);
   }
 
   /** Closes sessions whose time has passed without a start or end (runs every few minutes). */
@@ -480,6 +528,26 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
   }
 
   // ───────── helpers ─────────
+
+  /**
+   * Tells the session's students (or these of them), on every tab and device, that what calls them
+   * may have changed; they fetch `ringing` again. A hint after the commit, never the record.
+   */
+  private async pushRing(sessionId: string, studentIds?: string[]) {
+    try {
+      const rows = await this.prisma.sessionAttendee.findMany({
+        where: { sessionId, ...(studentIds ? { studentId: { in: studentIds } } : {}) },
+        select: { student: { select: { membershipId: true } } },
+      });
+      this.realtime.toMembers(
+        rows.map((r) => r.student.membershipId),
+        RealtimeEvent.sessionRing,
+        { sessionId },
+      );
+    } catch (err) {
+      this.logger.warn(`Pushing the ring of session ${sessionId} failed: ${String(err)}`);
+    }
+  }
 
   /**
    * Students never get the link from lists: they go through `join`, which records attendance.

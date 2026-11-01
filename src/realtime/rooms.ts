@@ -31,6 +31,8 @@ export const RealtimeEvent = {
   conversationRemoved: 'conversation:removed',
   typing: 'typing',
   presence: 'presence',
+  /** What calls a student into a live session may have changed: fetch `/sessions/ringing` again. */
+  sessionRing: 'session:ring',
   /** The access token ran out: refresh it and reconnect. */
   authExpired: 'auth:expired',
 } as const;

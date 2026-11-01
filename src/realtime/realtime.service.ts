@@ -24,6 +24,11 @@ export class RealtimeService {
     this.emit([inboxRoom(target)], event, payload);
   }
 
+  /** Every socket of these members' spaces (support mode too: send only ids, nothing private). */
+  toMembers(membershipIds: Iterable<string>, event: string, payload: unknown) {
+    this.emit([...new Set(membershipIds)].map(memberRoom), event, payload);
+  }
+
   /** The chat sockets of these members (every tab and device). */
   toChat(membershipIds: Iterable<string>, event: string, payload: unknown) {
     this.emit([...new Set(membershipIds)].map(chatRoom), event, payload);

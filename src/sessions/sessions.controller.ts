@@ -20,6 +20,13 @@ export class SessionsController {
     });
   }
 
+  /** The live session calling this student now: { session: { id, title, teacherName, startedAt, ringMs } | null }. */
+  @Get('ringing')
+  @Roles('STUDENT')
+  ringing(@CurrentUser() user: JwtUser) {
+    return this.sessions.ringing(user);
+  }
+
   @Get(':id')
   @Roles('TENANT_ADMIN', 'TEACHER', 'STUDENT')
   get(@CurrentUser() user: JwtUser, @Param('id') id: string) {
