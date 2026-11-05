@@ -31,6 +31,8 @@ export class PlansService {
       description: (locale === 'en' ? p.descriptionEn : p.descriptionAr) ?? null,
       priceMonthly: p.priceMonthly?.toString() ?? null,
       currency: p.currency,
+      // Centers see what each package takes from their sessions before they choose it.
+      platformFeePercent: p.platformFeePercent == null ? null : Number(p.platformFeePercent),
       maxTeachers: p.maxTeachers,
       maxStudents: p.maxStudents,
       isCurrent: p.id === current?.planId,
@@ -73,8 +75,13 @@ export class PlansService {
     return plan;
   }
 
-  private adminRow({ _count, priceMonthly, ...p }: Plan & { _count: { subscriptions: number } }) {
-    return { ...p, priceMonthly: priceMonthly?.toString() ?? null, tenants: _count.subscriptions };
+  private adminRow({ _count, priceMonthly, platformFeePercent, ...p }: Plan & { _count: { subscriptions: number } }) {
+    return {
+      ...p,
+      priceMonthly: priceMonthly?.toString() ?? null,
+      platformFeePercent: platformFeePercent == null ? null : Number(platformFeePercent),
+      tenants: _count.subscriptions,
+    };
   }
 
   summary(plan: Plan, locale: Locale) {

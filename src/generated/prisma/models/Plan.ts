@@ -29,6 +29,7 @@ export type AggregatePlan = {
 
 export type PlanAvgAggregateOutputType = {
   priceMonthly: runtime.Decimal | null
+  platformFeePercent: runtime.Decimal | null
   sortOrder: number | null
   maxTeachers: number | null
   maxStudents: number | null
@@ -39,6 +40,7 @@ export type PlanAvgAggregateOutputType = {
 
 export type PlanSumAggregateOutputType = {
   priceMonthly: runtime.Decimal | null
+  platformFeePercent: runtime.Decimal | null
   sortOrder: number | null
   maxTeachers: number | null
   maxStudents: number | null
@@ -56,6 +58,7 @@ export type PlanMinAggregateOutputType = {
   descriptionEn: string | null
   priceMonthly: runtime.Decimal | null
   currency: string | null
+  platformFeePercent: runtime.Decimal | null
   isPublic: boolean | null
   isActive: boolean | null
   sortOrder: number | null
@@ -77,6 +80,7 @@ export type PlanMaxAggregateOutputType = {
   descriptionEn: string | null
   priceMonthly: runtime.Decimal | null
   currency: string | null
+  platformFeePercent: runtime.Decimal | null
   isPublic: boolean | null
   isActive: boolean | null
   sortOrder: number | null
@@ -98,6 +102,7 @@ export type PlanCountAggregateOutputType = {
   descriptionEn: number
   priceMonthly: number
   currency: number
+  platformFeePercent: number
   isPublic: number
   isActive: number
   sortOrder: number
@@ -114,6 +119,7 @@ export type PlanCountAggregateOutputType = {
 
 export type PlanAvgAggregateInputType = {
   priceMonthly?: true
+  platformFeePercent?: true
   sortOrder?: true
   maxTeachers?: true
   maxStudents?: true
@@ -124,6 +130,7 @@ export type PlanAvgAggregateInputType = {
 
 export type PlanSumAggregateInputType = {
   priceMonthly?: true
+  platformFeePercent?: true
   sortOrder?: true
   maxTeachers?: true
   maxStudents?: true
@@ -141,6 +148,7 @@ export type PlanMinAggregateInputType = {
   descriptionEn?: true
   priceMonthly?: true
   currency?: true
+  platformFeePercent?: true
   isPublic?: true
   isActive?: true
   sortOrder?: true
@@ -162,6 +170,7 @@ export type PlanMaxAggregateInputType = {
   descriptionEn?: true
   priceMonthly?: true
   currency?: true
+  platformFeePercent?: true
   isPublic?: true
   isActive?: true
   sortOrder?: true
@@ -183,6 +192,7 @@ export type PlanCountAggregateInputType = {
   descriptionEn?: true
   priceMonthly?: true
   currency?: true
+  platformFeePercent?: true
   isPublic?: true
   isActive?: true
   sortOrder?: true
@@ -291,6 +301,7 @@ export type PlanGroupByOutputType = {
   descriptionEn: string | null
   priceMonthly: runtime.Decimal | null
   currency: string
+  platformFeePercent: runtime.Decimal | null
   isPublic: boolean
   isActive: boolean
   sortOrder: number
@@ -335,6 +346,7 @@ export type PlanWhereInput = {
   descriptionEn?: Prisma.StringNullableFilter<"Plan"> | string | null
   priceMonthly?: Prisma.DecimalNullableFilter<"Plan"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: Prisma.StringFilter<"Plan"> | string
+  platformFeePercent?: Prisma.DecimalNullableFilter<"Plan"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: Prisma.BoolFilter<"Plan"> | boolean
   isActive?: Prisma.BoolFilter<"Plan"> | boolean
   sortOrder?: Prisma.IntFilter<"Plan"> | number
@@ -358,6 +370,7 @@ export type PlanOrderByWithRelationInput = {
   descriptionEn?: Prisma.SortOrderInput | Prisma.SortOrder
   priceMonthly?: Prisma.SortOrderInput | Prisma.SortOrder
   currency?: Prisma.SortOrder
+  platformFeePercent?: Prisma.SortOrderInput | Prisma.SortOrder
   isPublic?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -384,6 +397,7 @@ export type PlanWhereUniqueInput = Prisma.AtLeast<{
   descriptionEn?: Prisma.StringNullableFilter<"Plan"> | string | null
   priceMonthly?: Prisma.DecimalNullableFilter<"Plan"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: Prisma.StringFilter<"Plan"> | string
+  platformFeePercent?: Prisma.DecimalNullableFilter<"Plan"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: Prisma.BoolFilter<"Plan"> | boolean
   isActive?: Prisma.BoolFilter<"Plan"> | boolean
   sortOrder?: Prisma.IntFilter<"Plan"> | number
@@ -407,6 +421,7 @@ export type PlanOrderByWithAggregationInput = {
   descriptionEn?: Prisma.SortOrderInput | Prisma.SortOrder
   priceMonthly?: Prisma.SortOrderInput | Prisma.SortOrder
   currency?: Prisma.SortOrder
+  platformFeePercent?: Prisma.SortOrderInput | Prisma.SortOrder
   isPublic?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -436,6 +451,7 @@ export type PlanScalarWhereWithAggregatesInput = {
   descriptionEn?: Prisma.StringNullableWithAggregatesFilter<"Plan"> | string | null
   priceMonthly?: Prisma.DecimalNullableWithAggregatesFilter<"Plan"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: Prisma.StringWithAggregatesFilter<"Plan"> | string
+  platformFeePercent?: Prisma.DecimalNullableWithAggregatesFilter<"Plan"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: Prisma.BoolWithAggregatesFilter<"Plan"> | boolean
   isActive?: Prisma.BoolWithAggregatesFilter<"Plan"> | boolean
   sortOrder?: Prisma.IntWithAggregatesFilter<"Plan"> | number
@@ -457,6 +473,7 @@ export type PlanCreateInput = {
   descriptionEn?: string | null
   priceMonthly?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: string
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -480,6 +497,7 @@ export type PlanUncheckedCreateInput = {
   descriptionEn?: string | null
   priceMonthly?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: string
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -503,6 +521,7 @@ export type PlanUpdateInput = {
   descriptionEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priceMonthly?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -526,6 +545,7 @@ export type PlanUncheckedUpdateInput = {
   descriptionEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priceMonthly?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -549,6 +569,7 @@ export type PlanCreateManyInput = {
   descriptionEn?: string | null
   priceMonthly?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: string
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -570,6 +591,7 @@ export type PlanUpdateManyMutationInput = {
   descriptionEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priceMonthly?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -591,6 +613,7 @@ export type PlanUncheckedUpdateManyInput = {
   descriptionEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priceMonthly?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -612,6 +635,7 @@ export type PlanCountOrderByAggregateInput = {
   descriptionEn?: Prisma.SortOrder
   priceMonthly?: Prisma.SortOrder
   currency?: Prisma.SortOrder
+  platformFeePercent?: Prisma.SortOrder
   isPublic?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -626,6 +650,7 @@ export type PlanCountOrderByAggregateInput = {
 
 export type PlanAvgOrderByAggregateInput = {
   priceMonthly?: Prisma.SortOrder
+  platformFeePercent?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   maxTeachers?: Prisma.SortOrder
   maxStudents?: Prisma.SortOrder
@@ -643,6 +668,7 @@ export type PlanMaxOrderByAggregateInput = {
   descriptionEn?: Prisma.SortOrder
   priceMonthly?: Prisma.SortOrder
   currency?: Prisma.SortOrder
+  platformFeePercent?: Prisma.SortOrder
   isPublic?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -664,6 +690,7 @@ export type PlanMinOrderByAggregateInput = {
   descriptionEn?: Prisma.SortOrder
   priceMonthly?: Prisma.SortOrder
   currency?: Prisma.SortOrder
+  platformFeePercent?: Prisma.SortOrder
   isPublic?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -678,6 +705,7 @@ export type PlanMinOrderByAggregateInput = {
 
 export type PlanSumOrderByAggregateInput = {
   priceMonthly?: Prisma.SortOrder
+  platformFeePercent?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   maxTeachers?: Prisma.SortOrder
   maxStudents?: Prisma.SortOrder
@@ -694,10 +722,6 @@ export type PlanScalarRelationFilter = {
 export type PlanNullableScalarRelationFilter = {
   is?: Prisma.PlanWhereInput | null
   isNot?: Prisma.PlanWhereInput | null
-}
-
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
 }
 
 export type IntFieldUpdateOperationsInput = {
@@ -747,6 +771,7 @@ export type PlanCreateWithoutSubscriptionsInput = {
   descriptionEn?: string | null
   priceMonthly?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: string
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -769,6 +794,7 @@ export type PlanUncheckedCreateWithoutSubscriptionsInput = {
   descriptionEn?: string | null
   priceMonthly?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: string
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -807,6 +833,7 @@ export type PlanUpdateWithoutSubscriptionsInput = {
   descriptionEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priceMonthly?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -829,6 +856,7 @@ export type PlanUncheckedUpdateWithoutSubscriptionsInput = {
   descriptionEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priceMonthly?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -851,6 +879,7 @@ export type PlanCreateWithoutSubscriptionChangesInput = {
   descriptionEn?: string | null
   priceMonthly?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: string
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -873,6 +902,7 @@ export type PlanUncheckedCreateWithoutSubscriptionChangesInput = {
   descriptionEn?: string | null
   priceMonthly?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: string
+  platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: boolean
   isActive?: boolean
   sortOrder?: number
@@ -911,6 +941,7 @@ export type PlanUpdateWithoutSubscriptionChangesInput = {
   descriptionEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priceMonthly?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -933,6 +964,7 @@ export type PlanUncheckedUpdateWithoutSubscriptionChangesInput = {
   descriptionEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priceMonthly?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
@@ -995,6 +1027,7 @@ export type PlanSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   descriptionEn?: boolean
   priceMonthly?: boolean
   currency?: boolean
+  platformFeePercent?: boolean
   isPublic?: boolean
   isActive?: boolean
   sortOrder?: boolean
@@ -1019,6 +1052,7 @@ export type PlanSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   descriptionEn?: boolean
   priceMonthly?: boolean
   currency?: boolean
+  platformFeePercent?: boolean
   isPublic?: boolean
   isActive?: boolean
   sortOrder?: boolean
@@ -1040,6 +1074,7 @@ export type PlanSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   descriptionEn?: boolean
   priceMonthly?: boolean
   currency?: boolean
+  platformFeePercent?: boolean
   isPublic?: boolean
   isActive?: boolean
   sortOrder?: boolean
@@ -1061,6 +1096,7 @@ export type PlanSelectScalar = {
   descriptionEn?: boolean
   priceMonthly?: boolean
   currency?: boolean
+  platformFeePercent?: boolean
   isPublic?: boolean
   isActive?: boolean
   sortOrder?: boolean
@@ -1073,7 +1109,7 @@ export type PlanSelectScalar = {
   updatedAt?: boolean
 }
 
-export type PlanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "nameAr" | "nameEn" | "descriptionAr" | "descriptionEn" | "priceMonthly" | "currency" | "isPublic" | "isActive" | "sortOrder" | "maxTeachers" | "maxStudents" | "storagePerTeacherMb" | "sharedStorageMb" | "maxFileMb" | "createdAt" | "updatedAt", ExtArgs["result"]["plan"]>
+export type PlanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "nameAr" | "nameEn" | "descriptionAr" | "descriptionEn" | "priceMonthly" | "currency" | "platformFeePercent" | "isPublic" | "isActive" | "sortOrder" | "maxTeachers" | "maxStudents" | "storagePerTeacherMb" | "sharedStorageMb" | "maxFileMb" | "createdAt" | "updatedAt", ExtArgs["result"]["plan"]>
 export type PlanInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   subscriptions?: boolean | Prisma.Plan$subscriptionsArgs<ExtArgs>
   subscriptionChanges?: boolean | Prisma.Plan$subscriptionChangesArgs<ExtArgs>
@@ -1097,6 +1133,11 @@ export type $PlanPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     descriptionEn: string | null
     priceMonthly: runtime.Decimal | null
     currency: string
+    /**
+     * The platform's commission on every session of a center on this package (0..100); null = none.
+     * A center's own `Tenant.platformFeePercent` overrides it.
+     */
+    platformFeePercent: runtime.Decimal | null
     isPublic: boolean
     isActive: boolean
     sortOrder: number
@@ -1540,6 +1581,7 @@ export interface PlanFieldRefs {
   readonly descriptionEn: Prisma.FieldRef<"Plan", 'String'>
   readonly priceMonthly: Prisma.FieldRef<"Plan", 'Decimal'>
   readonly currency: Prisma.FieldRef<"Plan", 'String'>
+  readonly platformFeePercent: Prisma.FieldRef<"Plan", 'Decimal'>
   readonly isPublic: Prisma.FieldRef<"Plan", 'Boolean'>
   readonly isActive: Prisma.FieldRef<"Plan", 'Boolean'>
   readonly sortOrder: Prisma.FieldRef<"Plan", 'Int'>

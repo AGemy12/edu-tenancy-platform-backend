@@ -51,7 +51,8 @@ function setup({
   prisma.$transaction.mockImplementation((fn: (tx: typeof prisma) => unknown) => fn(prisma));
   const auth = { sendWelcome: vi.fn() };
   const events = new Proxy({} as Record<string, ReturnType<typeof vi.fn>>, { get: (fns, k: string) => (fns[k] ??= vi.fn()) });
-  return { prisma, auth, events, service: new TeachersService(prisma as unknown as PrismaService, auth as unknown as AuthService, events as never) };
+  const prices = { teacherPays: vi.fn().mockResolvedValue(new Map([['tc1', { basis: 'PER_SESSION', amount: 90 }]])), setTeacherPay: vi.fn() };
+  return { prisma, auth, events, prices, service: new TeachersService(prisma as unknown as PrismaService, auth as unknown as AuthService, events as never, prices as never) };
 }
 
 describe('teachers and their meeting accounts', () => {
@@ -75,14 +76,32 @@ describe('teachers and their meeting accounts', () => {
     ]);
   });
 
-  it('tells teachers and students nothing about them', async () => {
+  it('tells teachers and students nothing about them, or about pay', async () => {
     for (const role of ['TEACHER', 'STUDENT'] as const) {
-      const { prisma, service } = setup({ integrations });
+      const { prisma, prices, service } = setup({ integrations });
       prisma.teacher.findMany.mockResolvedValue(rows);
       const list = await service.list({ ...admin, role });
-      expect(list.some((t) => 'meetingAccounts' in t)).toBe(false);
+      expect(list.some((t) => 'meetingAccounts' in t || 'pay' in t)).toBe(false);
       expect(prisma.integration.findMany).not.toHaveBeenCalled();
+      expect(prices.teacherPays).not.toHaveBeenCalled();
     }
+  });
+
+  it("shows the admin each teacher's pay per session", async () => {
+    const { prisma, service } = setup({ integrations });
+    prisma.teacher.findMany.mockResolvedValue(rows);
+    const list = await service.list(admin);
+    expect(list.map((t) => (t as { pay?: object | null }).pay)).toEqual([{ basis: 'PER_SESSION', amount: 90 }, null]);
+  });
+
+  it('saves the pay sent with the form, and leaves it alone when omitted', async () => {
+    const { prices, service } = setup({ row: rows[0] });
+    await service.update('t1', 'tc1', { fullName: 'X' });
+    expect(prices.setTeacherPay).not.toHaveBeenCalled();
+    await service.update('t1', 'tc1', { payBasis: 'PERCENT', payAmount: 50 });
+    expect(prices.setTeacherPay).toHaveBeenLastCalledWith('t1', 'tc1', { basis: 'PERCENT', amount: 50 });
+    await service.update('t1', 'tc1', { payAmount: null });
+    expect(prices.setTeacherPay).toHaveBeenLastCalledWith('t1', 'tc1', null);
   });
 
   it('reminds a teacher to link an account they lack, and refuses one they already linked', async () => {

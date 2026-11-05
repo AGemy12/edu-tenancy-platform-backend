@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { vi } from 'vitest';
 import { BillingService } from './billing.service.js';
 import type { JwtUser } from '../common/decorators/current-user.decorator.js';
@@ -12,9 +12,10 @@ const student: JwtUser = { ...base, id: 'u-st', role: 'STUDENT', studentId: 's1'
 const range = { from: '2026-10-01T00:00:00Z', to: '2026-11-01T00:00:00Z' };
 const decimal = (n: number) => n as unknown as never;
 
-const attendee = (studentId: string, name: string, attended: boolean) => ({
+const attendee = (studentId: string, name: string, attended: boolean, status: string | null = null) => ({
   studentId,
   attended,
+  status,
   joinedAt: attended ? new Date('2026-10-05T10:02:00Z') : null,
   student: { user: { fullName: name } },
 });
@@ -36,70 +37,87 @@ const session = {
   attendees: [attendee('s1', 'Sara', true), attendee('s2', 'Omar', false)],
 };
 
-// The center's default price, one student's own price, and the teacher's share.
+// The center's default price per session, one student's special price in the course, and the teacher's share.
 const rates = [
-  { id: 'r1', kind: 'STUDENT_FEE', basis: 'PER_HOUR', teacherId: null, courseId: null, studentId: null, amount: decimal(100), effectiveFrom: new Date('2026-01-01') },
-  { id: 'r2', kind: 'STUDENT_FEE', basis: 'PER_HOUR', teacherId: null, courseId: null, studentId: 's2', amount: decimal(80), effectiveFrom: new Date('2026-01-01') },
-  { id: 'r3', kind: 'TEACHER_PAY', basis: 'PERCENT', teacherId: 'tc1', courseId: null, studentId: null, amount: decimal(50), effectiveFrom: new Date('2026-01-01') },
+  { id: 'r1', kind: 'STUDENT_FEE', basis: 'PER_SESSION', teacherId: null, courseId: null, studentId: null, amount: decimal(100), cleared: false, effectiveFrom: new Date('2026-01-01') },
+  { id: 'r2', kind: 'STUDENT_FEE', basis: 'PER_SESSION', teacherId: null, courseId: 'c1', studentId: 's2', amount: decimal(80), cleared: false, effectiveFrom: new Date('2026-01-01') },
+  { id: 'r3', kind: 'TEACHER_PAY', basis: 'PERCENT', teacherId: 'tc1', courseId: null, studentId: null, amount: decimal(50), cleared: false, effectiveFrom: new Date('2026-01-01') },
 ];
 
-function setup(sessions = [session], platformFeePercent: number | null = null) {
+function setup(sessions = [session], platformFeePercent: number | null = null, opts: { planFee?: number; chargeAbsent?: boolean } = {}) {
   const prisma = {
     tenant: {
-      findUnique: vi.fn().mockResolvedValue({ currency: 'EGP', timezone: 'Africa/Cairo', platformFeePercent: platformFeePercent === null ? null : decimal(platformFeePercent) }),
+      findUnique: vi.fn().mockResolvedValue({
+        currency: 'EGP',
+        timezone: 'Africa/Cairo',
+        chargeAbsent: opts.chargeAbsent ?? true,
+        platformFeePercent: platformFeePercent === null ? null : decimal(platformFeePercent),
+        subscription: { plan: { platformFeePercent: opts.planFee === undefined ? null : decimal(opts.planFee) } },
+      }),
       findMany: vi.fn(),
     },
     session: { findMany: vi.fn().mockResolvedValue(sessions) },
     billingRate: {
       findMany: vi.fn().mockResolvedValue(rates),
-      findFirst: vi.fn().mockResolvedValue(null),
-      create: vi.fn().mockImplementation(({ data }) =>
-        Promise.resolve({
-          id: 'new',
-          ...data,
-          teacher: data.teacherId ? { id: data.teacherId, user: { fullName: 'T' } } : null,
-          course: null,
-          student: null,
-        }),
-      ),
     },
-    teacher: { findFirst: vi.fn().mockResolvedValue({ id: 'tc1' }) },
-    course: { findFirst: vi.fn().mockResolvedValue({ id: 'c1' }) },
-    student: { findFirst: vi.fn().mockResolvedValue({ id: 's1' }) },
   };
   return { prisma, service: new BillingService(prisma as unknown as PrismaService) };
 }
 
 describe('BillingService.sessions', () => {
-  it('charges every student on a held session, present or not', async () => {
+  it('charges each student on a held session its price per session, present or not before evaluation', async () => {
     const { service } = setup();
     const res = await service.sessions(admin, range);
     const row = res.rows[0];
     expect(row.minutes).toBe(90);
     expect(row.actualMinutes).toBe(79);
-    // Sara: the center's 100/h × 1.5h; Omar: his own 80/h × 1.5h, though he didn't join.
-    expect(row.students.map((s) => [s.name, s.fee, s.rateSource])).toEqual([
-      ['Sara', 150, 'CENTER'],
-      ['Omar', 120, 'STUDENT'],
+    // Sara: the center's 100 per session; Omar: his special 80 in this course, though he didn't join.
+    expect(row.students.map((s) => [s.name, s.fee, s.rateSource, s.charged])).toEqual([
+      ['Sara', 100, 'CENTER', true],
+      ['Omar', 80, 'STUDENT', true],
     ]);
-    expect(row.fees).toBe(270);
-    expect(row.teacherPay).toEqual({ amount: 135, basis: 'PERCENT', rate: 50, source: 'TEACHER' });
+    expect(row.fees).toBe(180);
+    expect(row.teacherPay).toEqual({ amount: 90, basis: 'PERCENT', rate: 50, source: 'TEACHER' });
     expect(row.platformFee).toBe(0);
-    expect(row.net).toBe(135);
+    expect(row.net).toBe(90);
     expect(res.platformFeePercent).toBeNull();
-    expect(res.totals).toMatchObject({ sessions: 1, minutes: 90, studentMinutes: 180, fees: 270, teacherPay: 135, platformFee: 0, net: 135 });
+    expect(res.totals).toMatchObject({ sessions: 1, minutes: 90, studentMinutes: 180, fees: 180, teacherPay: 90, platformFee: 0, net: 90, freeSeats: 0 });
+  });
+
+  it('leaves excused students out, and absent ones when the center charges no absences', async () => {
+    const evaluated = { ...session, attendees: [attendee('s1', 'Sara', true, 'PRESENT'), attendee('s2', 'Omar', false, 'ABSENT')] };
+    const charged = await setup([evaluated]).service.sessions(admin, range);
+    expect(charged.rows[0].fees).toBe(180);
+    const free = await setup([evaluated], null, { chargeAbsent: false }).service.sessions(admin, range);
+    expect(free.rows[0].students.map((s) => [s.name, s.fee, s.free])).toEqual([
+      ['Sara', 100, null],
+      ['Omar', 0, 'ABSENT'],
+    ]);
+    expect(free.totals).toMatchObject({ fees: 100, teacherPay: 50, freeSeats: 1 });
+    const excused = { ...session, attendees: [attendee('s1', 'Sara', false, 'EXCUSED')] };
+    const none = await setup([excused]).service.sessions(admin, range);
+    expect(none.rows[0]).toMatchObject({ fees: 0, teacherPay: { amount: 0 } });
+  });
+
+  it('takes the package fee when the center has none of its own', async () => {
+    const { service } = setup([session], null, { planFee: 10 });
+    const res = await service.sessions(admin, range);
+    expect(res.platformFeePercent).toBe(10);
+    expect(res.rows[0]).toMatchObject({ platformFee: 18, net: 72 });
+    const own = await setup([session], 0, { planFee: 10 }).service.sessions(admin, range);
+    expect(own.platformFeePercent).toBeNull();
   });
 
   it("takes the platform's commission out of the center's net, not the teacher's pay", async () => {
     const { service } = setup([session], 10);
     const res = await service.sessions(admin, range);
     expect(res.platformFeePercent).toBe(10);
-    // 10% of 270 = 27; net = 270 − 135 − 27.
-    expect(res.rows[0]).toMatchObject({ fees: 270, platformFee: 27, net: 108 });
-    expect(res.rows[0].teacherPay?.amount).toBe(135);
-    expect(res.totals).toMatchObject({ platformFee: 27, net: 108 });
+    // 10% of 180 = 18; net = 180 − 90 − 18.
+    expect(res.rows[0]).toMatchObject({ fees: 180, platformFee: 18, net: 72 });
+    expect(res.rows[0].teacherPay?.amount).toBe(90);
+    expect(res.totals).toMatchObject({ platformFee: 18, net: 72 });
     const summary = await service.summary(admin, { ...range, groupBy: 'teacher' });
-    expect(summary.groups[0]).toMatchObject({ fees: 270, teacherPay: 135, platformFee: 27, net: 108 });
+    expect(summary.groups[0]).toMatchObject({ fees: 180, teacherPay: 90, platformFee: 18, net: 72 });
   });
 
   it('never shows the commission to teachers or students', async () => {
@@ -133,7 +151,7 @@ describe('BillingService.sessions', () => {
     const where = prisma.session.findMany.mock.calls[0][0].where;
     expect(where.attendees).toEqual({ some: { studentId: 's1' } });
     expect(res.rows[0].students.map((s) => s.name)).toEqual(['Sara']);
-    expect(res.rows[0].fees).toBe(150);
+    expect(res.rows[0].fees).toBe(100);
     expect(res.rows[0]).not.toHaveProperty('teacherPay');
     expect(res.totals).not.toHaveProperty('teacherPay');
   });
@@ -141,8 +159,8 @@ describe('BillingService.sessions', () => {
   it("keeps the teacher's share on the whole session when one student is filtered", async () => {
     const { service } = setup();
     const res = await service.sessions(admin, { ...range, studentId: 's1' });
-    expect(res.rows[0].fees).toBe(150);
-    expect(res.rows[0].teacherPay?.amount).toBe(135);
+    expect(res.rows[0].fees).toBe(100);
+    expect(res.rows[0].teacherPay?.amount).toBe(90);
     expect(res.rows[0]).not.toHaveProperty('net');
   });
 
@@ -174,8 +192,8 @@ describe('BillingService.summary', () => {
     const { service } = setup();
     const res = await service.summary(admin, { ...range, groupBy: 'student' });
     expect(res.groups.map((g) => [g.label, g.minutes, g.fees])).toEqual([
-      ['Sara', 90, 150],
-      ['Omar', 90, 120],
+      ['Sara', 90, 100],
+      ['Omar', 90, 80],
     ]);
     expect(res.groups[0]).not.toHaveProperty('teacherPay');
   });
@@ -183,80 +201,35 @@ describe('BillingService.summary', () => {
   it('groups by month in the center time zone', async () => {
     const { service } = setup();
     const res = await service.summary(admin, { ...range, groupBy: 'month' });
-    expect(res.groups).toEqual([{ key: '2026-10', label: null, sessions: 1, minutes: 90, fees: 270, teacherPay: 135, platformFee: 0, net: 135 }]);
+    expect(res.groups).toEqual([{ key: '2026-10', label: null, sessions: 1, minutes: 90, fees: 180, teacherPay: 90, platformFee: 0, net: 90 }]);
   });
 });
 
 describe('BillingService.platform', () => {
-  it("sums each center's fees and commission with its own percentage, per currency", async () => {
+  it("sums each center's fees and its fee (its own percentage, else its package's), per currency", async () => {
     const { prisma, service } = setup();
-    const pricing = { status: 'COMPLETED', startAt: session.startAt, endAt: session.endAt, teacherId: 'tc1', courseId: 'c1', attendees: [{ studentId: 's1' }, { studentId: 's2' }] };
-    const plan = { nameAr: 'احترافية', nameEn: 'Pro', priceMonthly: decimal(499), currency: 'EGP' };
+    const pricing = { status: 'COMPLETED', startAt: session.startAt, teacherId: 'tc1', courseId: 'c1', attendees: [{ studentId: 's1', status: null }, { studentId: 's2', status: null }] };
+    const plan = { nameAr: 'احترافية', nameEn: 'Pro', priceMonthly: decimal(499), currency: 'EGP', platformFeePercent: decimal(5) };
+    const fees = rates.filter((r) => r.kind === 'STUDENT_FEE');
+    const center = { status: 'ACTIVE', chargeAbsent: true };
     prisma.tenant.findMany.mockResolvedValue([
-      { id: 't1', name: 'A', slug: 'a', status: 'ACTIVE', currency: 'EGP', platformFeePercent: decimal(10), subscription: { status: 'ACTIVE', currentPeriodEnd: null, plan }, billingRates: rates.filter((r) => r.kind === 'STUDENT_FEE'), sessions: [pricing] },
-      { id: 't2', name: 'B', slug: 'b', status: 'ACTIVE', currency: 'EGP', platformFeePercent: null, subscription: null, billingRates: rates.filter((r) => r.kind === 'STUDENT_FEE'), sessions: [pricing, pricing] },
-      { id: 't3', name: 'C', slug: 'c', status: 'ACTIVE', currency: 'SAR', platformFeePercent: decimal(5), subscription: null, billingRates: [], sessions: [pricing] },
+      { ...center, id: 't1', name: 'A', slug: 'a', currency: 'EGP', platformFeePercent: decimal(10), subscription: { status: 'ACTIVE', currentPeriodEnd: null, plan }, billingRates: fees, sessions: [pricing] },
+      { ...center, id: 't2', name: 'B', slug: 'b', currency: 'EGP', platformFeePercent: null, subscription: null, billingRates: fees, sessions: [pricing, pricing] },
+      { ...center, id: 't3', name: 'C', slug: 'c', currency: 'SAR', platformFeePercent: decimal(5), subscription: null, billingRates: [], sessions: [pricing] },
+      { ...center, id: 't4', name: 'D', slug: 'd', currency: 'EGP', platformFeePercent: null, subscription: { status: 'ACTIVE', currentPeriodEnd: null, plan }, billingRates: fees, sessions: [pricing] },
     ]);
     const res = await service.platform(range);
-    expect(res.tenants.map((t) => [t.id, t.sessions, t.fees, t.platformFee])).toEqual([
-      ['t1', 1, 270, 27],
-      ['t2', 2, 540, 0],
-      ['t3', 1, 0, 0],
+    expect(res.tenants.map((t) => [t.id, t.sessions, t.fees, t.platformFee, t.platformFeeFromPlan])).toEqual([
+      ['t1', 1, 180, 18, false],
+      ['t4', 1, 180, 9, true],
+      ['t2', 2, 360, 0, true],
+      ['t3', 1, 0, 0, false],
     ]);
     expect(res.tenants[0].subscription?.plan).toMatchObject({ priceMonthly: 499, currency: 'EGP' });
     expect(res.tenants[0].subscription?.expired).toBe(false);
     expect(res.totals).toEqual([
-      { currency: 'EGP', centers: 2, withFee: 1, sessions: 3, fees: 810, platformFee: 27 },
+      { currency: 'EGP', centers: 3, withFee: 2, sessions: 4, fees: 720, platformFee: 27 },
       { currency: 'SAR', centers: 1, withFee: 1, sessions: 1, fees: 0, platformFee: 0 },
     ]);
-  });
-});
-
-describe('BillingService rates', () => {
-  const dto = { kind: 'STUDENT_FEE' as const, amount: 100, effectiveFrom: '2026-10-01T00:00:00Z' };
-
-  it('rejects percentages for student fees, student-specific teacher pay, and teacher pay with no teacher', async () => {
-    const { service } = setup();
-    await expect(service.createRate(admin, { ...dto, basis: 'PERCENT' })).rejects.toBeInstanceOf(BadRequestException);
-    await expect(service.createRate(admin, { ...dto, kind: 'TEACHER_PAY', teacherId: 'tc1', basis: 'PERCENT', amount: 120 })).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
-    await expect(service.createRate(admin, { ...dto, kind: 'TEACHER_PAY', teacherId: 'tc1', studentId: 's1' })).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
-    await expect(service.createRate(admin, { ...dto, kind: 'TEACHER_PAY' })).rejects.toBeInstanceOf(BadRequestException);
-  });
-
-  it('stores a center-wide student price with no teacher', async () => {
-    const { prisma, service } = setup();
-    const row = await service.createRate(admin, dto);
-    expect(prisma.billingRate.create.mock.calls[0][0].data).toMatchObject({ tenantId: 't1', teacherId: null, courseId: null, studentId: null });
-    expect(row).toMatchObject({ source: 'CENTER', teacher: null });
-  });
-
-  it('refuses a second price for the same scope and start date', async () => {
-    const { prisma, service } = setup();
-    prisma.billingRate.findFirst.mockResolvedValueOnce({ id: 'twin' });
-    await expect(service.createRate(admin, dto)).rejects.toBeInstanceOf(ConflictException);
-  });
-
-  it('checks a course price names a course in this center, and of the teacher when one is given', async () => {
-    const { prisma, service } = setup();
-    await service.createRate(admin, { ...dto, courseId: 'c1' });
-    expect(prisma.course.findFirst).toHaveBeenLastCalledWith({ where: { id: 'c1', tenantId: 't1' } });
-    await service.createRate(admin, { ...dto, courseId: 'c1', teacherId: 'tc1' });
-    expect(prisma.course.findFirst).toHaveBeenLastCalledWith({ where: { id: 'c1', tenantId: 't1', teacherId: 'tc1' } });
-    expect(prisma.billingRate.create.mock.calls[0][0].data).toMatchObject({ tenantId: 't1', courseId: 'c1', studentId: null, basis: 'PER_HOUR' });
-  });
-
-  it('shows a teacher their pay and every student price that can reach their sessions', async () => {
-    const { prisma, service } = setup();
-    prisma.billingRate.findMany.mockResolvedValueOnce([]);
-    await service.listRates(teacher, {});
-    expect(prisma.billingRate.findMany.mock.calls[0][0].where).toEqual({
-      tenantId: 't1',
-      kind: undefined,
-      OR: [{ teacherId: 'tc1' }, { teacherId: null, courseId: null }, { teacherId: null, course: { teacherId: 'tc1' } }],
-    });
   });
 });

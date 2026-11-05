@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuthService } from '../auth/auth.service.js';
@@ -11,6 +11,8 @@ import { msg } from '../i18n/i18n.js';
 import { NotificationEvents } from '../notifications/notification-events.js';
 import type { Locale } from '../i18n/locale.js';
 import { MEETING_ACCOUNT, linkedAccounts, type HostedProvider } from '../integrations/meeting-accounts.js';
+import { PricesService } from '../billing/prices.service.js';
+import type { RateBasis } from '../generated/prisma/enums.js';
 
 const teacherInclude = {
   user: { select: { id: true, fullName: true, email: true, phone: true } },
@@ -33,6 +35,7 @@ export class TeachersService {
     private readonly prisma: PrismaService,
     private readonly auth: AuthService,
     private readonly events: NotificationEvents,
+    private readonly prices: PricesService,
   ) {}
 
   /** Admins also see which meeting accounts each teacher has linked (sessions run on them). */
@@ -67,17 +70,28 @@ export class TeachersService {
     void this.events.meetingAccountNeeded(teacher.membershipId, provider, user.id);
   }
 
-  private async withMeetingAccounts<T extends { userId: string }>(viewer: JwtUser, teachers: T[]) {
-    // Teachers and students don't need to know about each other's accounts.
+  /** Admins also see each teacher's pay per session and linked meeting accounts. */
+  private async withMeetingAccounts<T extends { id: string; userId: string }>(viewer: JwtUser, teachers: T[]) {
+    // Teachers and students don't need to know about each other's accounts or pay.
     if (viewer.role !== 'TENANT_ADMIN') return teachers;
-    const rows = await this.prisma.integration.findMany({
-      where: { userId: { in: teachers.map((t) => t.userId) } },
-      select: { userId: true, provider: true },
-    });
+    const [rows, pays] = await Promise.all([
+      this.prisma.integration.findMany({
+        where: { userId: { in: teachers.map((t) => t.userId) } },
+        select: { userId: true, provider: true },
+      }),
+      this.prices.teacherPays(viewer.tenantId!),
+    ]);
     return teachers.map((t) => ({
       ...t,
+      pay: pays.get(t.id) ?? null,
       meetingAccounts: linkedAccounts(rows.filter((r) => r.userId === t.userId).map((r) => r.provider)),
     }));
+  }
+
+  /** Saves the pay sent with the form (omitted = unchanged). */
+  private async savePay(tenantId: string, teacherId: string, basis: RateBasis | undefined, amount: number | null | undefined) {
+    if (amount === undefined) return;
+    await this.prices.setTeacherPay(tenantId, teacherId, amount === null ? null : { basis: basis ?? 'PER_SESSION', amount });
   }
 
   /**
@@ -87,6 +101,7 @@ export class TeachersService {
    */
   async create(user: JwtUser, dto: CreateTeacherDto, locale?: Locale) {
     const tenantId = user.tenantId!;
+    if (dto.payBasis === 'PERCENT' && (dto.payAmount ?? 0) > 100) throw new BadRequestException(msg('billing.percentMax'));
     await this.assertQuota(tenantId);
     const email = dto.email.toLowerCase();
     const existing = await this.prisma.user.findUnique({
@@ -106,6 +121,7 @@ export class TeachersService {
         include: teacherInclude,
       });
     });
+    await this.savePay(tenantId, teacher.id, dto.payBasis, dto.payAmount);
     await this.auth.sendWelcome(teacher.membershipId, { existingAccount: Boolean(existing) }, locale);
     void this.events.memberAdded(teacher.membershipId, user.id);
     return teacher;
@@ -127,7 +143,8 @@ export class TeachersService {
 
   async update(tenantId: string, id: string, dto: UpdateTeacherDto) {
     await this.get(tenantId, id);
-    const { fullName, phone, ...teacherData } = dto;
+    const { fullName, phone, payBasis, payAmount, ...teacherData } = dto;
+    await this.savePay(tenantId, id, payBasis, payAmount);
     return this.prisma.teacher.update({
       where: { id },
       data: {

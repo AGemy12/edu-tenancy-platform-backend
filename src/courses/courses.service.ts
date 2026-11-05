@@ -4,6 +4,7 @@ import type { JwtUser } from '../common/decorators/current-user.decorator.js';
 import type { CreateCourseDto, UpdateCourseDto } from './dto/course.dto.js';
 import { msg } from '../i18n/i18n.js';
 import { MessagingService } from '../messaging/messaging.service.js';
+import { PricesService } from '../billing/prices.service.js';
 
 const courseInclude = {
   teacher: { select: { id: true, user: { select: { fullName: true } } } },
@@ -15,9 +16,10 @@ export class CoursesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly messaging: MessagingService,
+    private readonly prices: PricesService,
   ) {}
 
-  list(user: JwtUser) {
+  async list(user: JwtUser) {
     const tenantId = user.tenantId!;
     const where =
       user.role === 'TEACHER'
@@ -25,7 +27,15 @@ export class CoursesService {
         : user.role === 'STUDENT'
           ? { tenantId, enrollments: { some: { studentId: user.studentId! } } }
           : { tenantId };
-    return this.prisma.course.findMany({ where, include: courseInclude, orderBy: { createdAt: 'desc' } });
+    const courses = await this.prisma.course.findMany({ where, include: courseInclude, orderBy: { createdAt: 'desc' } });
+    return this.withPrices(user, courses);
+  }
+
+  /** Admins and teachers see each course's session price; a student's own price may differ, so they don't. */
+  private async withPrices<T extends { id: string }>(user: JwtUser, courses: T[]) {
+    if (user.role === 'STUDENT') return courses;
+    const prices = await this.prices.coursePrices(user.tenantId!);
+    return courses.map((c) => ({ ...c, sessionPrice: prices.get(c.id) ?? null }));
   }
 
   async get(user: JwtUser, id: string) {
@@ -50,13 +60,25 @@ export class CoursesService {
     const teacher = await this.prisma.teacher.findFirst({ where: { id: teacherId, tenantId } });
     if (!teacher) throw new NotFoundException(msg('teachers.notFound'));
 
-    const { teacherId: _t, ...data } = dto;
-    return this.prisma.course.create({ data: { ...data, tenantId, teacherId }, include: courseInclude });
+    const { teacherId: _t, sessionPrice, ...data } = dto;
+    assertCanPrice(user, sessionPrice);
+    const course = await this.prisma.course.create({ data: { ...data, tenantId, teacherId }, include: courseInclude });
+    await this.savePrice(user, course.id, sessionPrice);
+    return (await this.withPrices(user, [course]))[0];
   }
 
   async update(user: JwtUser, id: string, dto: UpdateCourseDto) {
     await this.getOwned(user, id);
-    return this.prisma.course.update({ where: { id }, data: dto, include: courseInclude });
+    const { sessionPrice, ...data } = dto;
+    assertCanPrice(user, sessionPrice);
+    const course = await this.prisma.course.update({ where: { id }, data, include: courseInclude });
+    await this.savePrice(user, id, sessionPrice);
+    return (await this.withPrices(user, [course]))[0];
+  }
+
+  private async savePrice(user: JwtUser, courseId: string, price: number | null | undefined) {
+    if (price === undefined) return;
+    await this.prices.setCoursePrice(user.tenantId!, courseId, price);
   }
 
   async remove(user: JwtUser, id: string) {
@@ -104,4 +126,9 @@ export class CoursesService {
     if (user.role === 'TEACHER' && teacherId !== user.teacherId) throw new ForbiddenException();
     if (user.role === 'STUDENT' && !studentIds.includes(user.studentId!)) throw new ForbiddenException();
   }
+}
+
+/** The center sets prices: a teacher's course gets its price from the admin. */
+function assertCanPrice(user: JwtUser, price: number | null | undefined) {
+  if (price !== undefined && user.role !== 'TENANT_ADMIN') throw new ForbiddenException(msg('billing.pricesByCenter'));
 }

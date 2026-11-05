@@ -91,9 +91,9 @@ enum RateKind {
   TEACHER_PAY // what the center pays the teacher
 }
 
+/// Prices are per session, never per hour: a session costs the same whatever its length.
 enum RateBasis {
-  PER_HOUR
-  PER_SESSION // a flat amount per session, whatever its length
+  PER_SESSION // a flat amount per session
   PERCENT // TEACHER_PAY only: a share of the fees charged to the session's students
 }
 
@@ -204,9 +204,11 @@ model Tenant {
   currency           String       @default("EGP") // ISO 4217, used for session billing
   /// Storage key of the center's logo (a PNG made from the upload), shown on its reports.
   logoKey            String?
-  /// The platform's commission on this center's student fees (0..100). null = none. Set by SUPER_ADMIN,
-  /// per center or in bulk, so a package can be free-with-commission or paid-without.
+  /// The platform's commission on this center's session fees (0..100), overriding its package's
+  /// default. null = the package's. Set by SUPER_ADMIN, per center or in bulk; 0 = none.
   platformFeePercent Decimal?     @db.Decimal(5, 2)
+  /// Whether a student absent without an excuse still pays for the session (the teacher kept the slot).
+  chargeAbsent       Boolean      @default(true)
   /// The last subscription notice sent to the admins ("EXPIRING:<period end>" / "EXPIRED:<period end>"),
   /// claimed atomically so each notice goes out once per period.
   expiryNotice       String?
@@ -249,6 +251,9 @@ model Plan {
   descriptionEn       String?
   priceMonthly        Decimal? @db.Decimal(10, 2)
   currency            String   @default("EGP")
+  /// The platform's commission on every session of a center on this package (0..100); null = none.
+  /// A center's own `Tenant.platformFeePercent` overrides it.
+  platformFeePercent  Decimal? @db.Decimal(5, 2)
   isPublic            Boolean  @default(true) // listed on the upgrade screen
   isActive            Boolean  @default(true)
   sortOrder           Int      @default(0)
@@ -557,7 +562,6 @@ model Course {
   description String?
   subject     String?
   level       String?
-  price       Decimal? @db.Decimal(10, 2)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -688,27 +692,30 @@ model SessionAttendee {
 
 // ───────────────────────── Session billing ─────────────────────────
 
-/// One price on the rate card. Rates are tiered: a teacher's default, overridden for a course,
-/// overridden for one student; the most specific rate in effect when the session starts wins.
-/// Changing a price adds a row with a later `effectiveFrom`, so past sessions keep their price.
-/// Amounts are computed from these rows when read (see billing/billing.ts), never stored.
-/// One line of the rate card. STUDENT_FEE is the center's price list: a center-wide default
-/// (no teacher, course or student), or a price for a course, a student, or a student in a course;
-/// optionally narrowed to one teacher's sessions. TEACHER_PAY always names the teacher and may be
-/// narrowed to one course. The most specific line in effect at a session's start wins.
+/// The history of every price, one row per change (see billing/prices.ts). The center sees only
+/// the current value of four things:
+///   - STUDENT_FEE, no course or student: the center's default session price (sessions with no course);
+///   - STUDENT_FEE + courseId: the course's session price;
+///   - STUDENT_FEE + courseId + studentId: one student's special price in that course;
+///   - TEACHER_PAY + teacherId: the teacher's pay per session (an amount, or a % of its fees).
+/// Changing a price adds a row from now on (or corrects the current one if no session used it yet),
+/// so past sessions keep the price they were held at. `cleared` rows end a price: the scope stops
+/// applying from then. Amounts are computed from these rows when read (billing/billing.ts), never stored.
 model BillingRate {
   id            String    @id @default(uuid())
   tenantId      String
   tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   kind          RateKind
-  basis         RateBasis @default(PER_HOUR)
-  teacherId     String? // required for TEACHER_PAY, optional for STUDENT_FEE
+  basis         RateBasis @default(PER_SESSION)
+  teacherId     String? // TEACHER_PAY only
   teacher       Teacher?  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   courseId      String?
   course        Course?   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  studentId     String? // STUDENT_FEE only
+  studentId     String? // STUDENT_FEE with a course only
   student       Student?  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  amount        Decimal   @db.Decimal(10, 2) // money per hour or per session, or a percentage (0..100)
+  amount        Decimal   @db.Decimal(10, 2) // money per session, or a percentage (0..100)
+  /// The price ends here: from `effectiveFrom` on, this scope no longer applies.
+  cleared       Boolean   @default(false)
   effectiveFrom DateTime
   note          String?
   createdAt     DateTime  @default(now())

@@ -1,5 +1,5 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
-import { IsBoolean, IsInt, IsNumber, IsOptional, IsString, Length, Matches, MaxLength, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsNumber, IsOptional, IsString, Length, Matches, Max, MaxLength, Min } from 'class-validator';
 import type { MessageKey } from '../../i18n/i18n.js';
 
 const CODE_FORMAT: MessageKey = 'plans.codeFormat';
@@ -39,6 +39,13 @@ export class CreatePlanDto {
   @IsString()
   @Length(3, 3)
   currency?: string;
+
+  /** The platform's fee on every session of a center on this package (0..100); null or 0 = none. */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(100)
+  platformFeePercent?: number | null;
 
   @IsInt()
   @Min(0)

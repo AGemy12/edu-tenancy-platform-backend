@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 
 export class CreateCourseDto {
   @IsString()
@@ -22,10 +22,12 @@ export class CreateCourseDto {
   @IsString()
   level?: string;
 
+  /** Admins only: what a student pays per session of this course (null = the center's default price). */
   @IsOptional()
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
-  price?: number;
+  @Max(99_999_999)
+  sessionPrice?: number | null;
 }
 
 export class UpdateCourseDto {
@@ -46,10 +48,12 @@ export class UpdateCourseDto {
   @IsString()
   level?: string;
 
+  /** Admins only: what a student pays per session of this course (null = the center's default price). */
   @IsOptional()
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
-  price?: number;
+  @Max(99_999_999)
+  sessionPrice?: number | null;
 
   @IsOptional()
   @IsBoolean()

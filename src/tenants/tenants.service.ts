@@ -11,6 +11,7 @@ import { isExpired } from './subscription.js';
 import { recordSubscriptionChange } from './subscription-history.js';
 import { msg } from '../i18n/i18n.js';
 import { NotificationEvents } from '../notifications/notification-events.js';
+import { effectivePlatformFee } from '../billing/billing.js';
 
 const CURRENCIES = new Set(Intl.supportedValuesOf('currency'));
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -25,6 +26,15 @@ const ownerSelect = {
 
 /** Prisma Decimal → number, keeping null. */
 const percentOf = (d: { toString(): string } | null | undefined) => (d == null ? null : Number(d));
+
+/**
+ * The platform's fee on a center as the console shows it: what applies (its own percentage, else
+ * its package's), and the center's own override (null = it follows the package).
+ */
+function platformFee(t: { platformFeePercent: { toString(): string } | null; subscription: { plan: { platformFeePercent: { toString(): string } | null } } | null }) {
+  const own = percentOf(t.platformFeePercent);
+  return { platformFeePercent: effectivePlatformFee(own, percentOf(t.subscription?.plan.platformFeePercent)), platformFeeOverride: own };
+}
 
 function isTimeZone(zone: string) {
   try {
@@ -62,7 +72,7 @@ export class TenantsService {
     }
     await this.prisma.tenant.update({
       where: { id: tenantId },
-      data: { name: dto.name?.trim(), timezone: dto.timezone, currency },
+      data: { name: dto.name?.trim(), timezone: dto.timezone, currency, chargeAbsent: dto.chargeAbsent },
     });
     return this.me(tenantId);
   }
@@ -90,7 +100,9 @@ export class TenantsService {
     const [rows, storage] = await Promise.all([
       this.prisma.tenant.findMany({
         include: {
-          subscription: { include: { plan: { select: { id: true, code: true, nameAr: true, nameEn: true, maxTeachers: true, maxStudents: true } } } },
+          subscription: {
+            include: { plan: { select: { id: true, code: true, nameAr: true, nameEn: true, maxTeachers: true, maxStudents: true, platformFeePercent: true } } },
+          },
           memberships: ownerSelect,
           _count: { select: { memberships: true, teachers: true, students: true, courses: true, sessions: true } },
         },
@@ -100,7 +112,7 @@ export class TenantsService {
     ]);
     return rows.map(({ memberships, ...t }) => ({
       ...t,
-      platformFeePercent: percentOf(t.platformFeePercent),
+      ...platformFee(t),
       owner: memberships[0]?.user ?? null,
       storageBytes: storage.get(t.id) ?? 0,
       subscriptionExpired: isExpired(t.subscription),
@@ -149,15 +161,19 @@ export class TenantsService {
     return (await this.listAll()).find((t) => t.id === tenantId);
   }
 
-  /** Super admin: set or remove (null) the platform's commission on one center. */
+  /** Super admin: the platform's fee on one center (null = follow its package, 0 = none). */
   async setPlatformFee(id: string, percent: number | null) {
     await this.getTenant(id);
-    const t = await this.prisma.tenant.update({ where: { id }, data: { platformFeePercent: percent }, select: { id: true, platformFeePercent: true } });
-    return { id: t.id, platformFeePercent: percentOf(t.platformFeePercent) };
+    const t = await this.prisma.tenant.update({
+      where: { id },
+      data: { platformFeePercent: percent },
+      select: { id: true, platformFeePercent: true, subscription: { select: { plan: { select: { platformFeePercent: true } } } } },
+    });
+    return { id: t.id, ...platformFee(t) };
   }
 
   /**
-   * Super admin: the same commission on a chosen set of centers, or on every center except some.
+   * Super admin: the same fee on a chosen set of centers, or on every center except some (null = back to their packages').
    * Returns how many were changed.
    */
   async bulkPlatformFee(dto: BulkPlatformFeeDto) {
@@ -251,7 +267,7 @@ export class TenantsService {
     const lastLoginAt = logins.length ? new Date(Math.max(...logins)) : null;
     return {
       ...rest,
-      platformFeePercent: percentOf(rest.platformFeePercent),
+      ...platformFee({ ...rest, subscription }),
       subscriptionExpired: isExpired(subscription),
       subscription: subscription && {
         status: subscription.status,
@@ -269,6 +285,7 @@ export class TenantsService {
           maxFileMb: subscription.plan.maxFileMb,
           priceMonthly: subscription.plan.priceMonthly?.toString() ?? null,
           currency: subscription.plan.currency,
+          platformFeePercent: percentOf(subscription.plan.platformFeePercent),
         },
       },
       members: memberships.map((m) => ({ id: m.id, role: m.role, status: m.status, statusReason: m.statusReason, joinedAt: m.createdAt, user: m.user })),

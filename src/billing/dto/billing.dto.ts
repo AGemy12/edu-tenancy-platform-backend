@@ -13,8 +13,9 @@ import {
   Max,
   MaxLength,
   Min,
+  ValidateIf,
 } from 'class-validator';
-import { RateBasis, RateKind, SessionProvider, SessionStatus } from '../../generated/prisma/enums.js';
+import { RateBasis, SessionProvider, SessionStatus } from '../../generated/prisma/enums.js';
 
 /** `?status=LIVE,COMPLETED` or a repeated `?status=` both arrive as an array. */
 const toList = ({ value }: { value: unknown }) =>
@@ -61,7 +62,7 @@ export class BillingQueryDto {
   @IsEnum(SessionStatus, { each: true })
   status?: SessionStatus[];
 
-  /** Keep only students who joined, or only those who didn't (they're charged either way). */
+  /** Keep only students who joined, or only those who didn't. */
   @IsOptional()
   @IsIn(['attended', 'absent'])
   attendance?: 'attended' | 'absent';
@@ -118,74 +119,33 @@ export class PlatformBillingQueryDto {
   to: string;
 }
 
-export class RatesQueryDto {
-  @IsOptional()
-  @IsEnum(RateKind)
-  kind?: RateKind;
-
-  @IsOptional()
-  @IsUUID()
-  teacherId?: string;
+/** A session price in the center's currency, from now on. null removes it. */
+export class SetPriceDto {
+  @ValidateIf((o) => o.amount !== null)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(99_999_999)
+  amount: number | null;
 }
 
-export class CreateRateDto {
-  @IsEnum(RateKind)
-  kind: RateKind;
+/** One student's price in one course. null returns them to the course's price. */
+export class SetSpecialPriceDto extends SetPriceDto {
+  @IsUUID()
+  courseId: string;
 
+  @IsUUID()
+  studentId: string;
+}
+
+/** A teacher's pay per session: a fixed amount (PER_SESSION) or a % of the session's fees. null removes it. */
+export class SetTeacherPayDto {
   @IsOptional()
   @IsEnum(RateBasis)
   basis?: RateBasis;
 
-  /** Required for teacher pay. A student price without it applies to every teacher's sessions. */
-  @IsOptional()
-  @IsUUID()
-  teacherId?: string;
-
-  @IsOptional()
-  @IsUUID()
-  courseId?: string;
-
-  /** Student fees only. */
-  @IsOptional()
-  @IsUUID()
-  studentId?: string;
-
-  @Type(() => Number)
+  @ValidateIf((o) => o.amount !== null)
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   @Max(99_999_999)
-  amount: number;
-
-  @IsISO8601()
-  effectiveFrom: string;
-
-  @IsOptional()
-  @Transform(trimmed)
-  @IsString()
-  @MaxLength(500)
-  note?: string;
-}
-
-/** Who a rate applies to is fixed; to price someone else, add a rate. */
-export class UpdateRateDto {
-  @IsOptional()
-  @IsEnum(RateBasis)
-  basis?: RateBasis;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  @Max(99_999_999)
-  amount?: number;
-
-  @IsOptional()
-  @IsISO8601()
-  effectiveFrom?: string;
-
-  @IsOptional()
-  @Transform(trimmed)
-  @IsString()
-  @MaxLength(500)
-  note?: string;
+  amount: number | null;
 }

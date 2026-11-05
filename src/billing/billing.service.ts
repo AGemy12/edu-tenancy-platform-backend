@@ -1,36 +1,30 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { JwtUser } from '../common/decorators/current-user.decorator.js';
-import type { Prisma, RateBasis, RateKind } from '../generated/prisma/client.js';
+import type { AttendanceStatus, Prisma, RateBasis } from '../generated/prisma/client.js';
 import { msg } from '../i18n/i18n.js';
 import { isExpired } from '../tenants/subscription.js';
 import {
   BILLABLE_STATUSES,
   actualMinutes,
   bookedMinutes,
+  chargeOf,
+  effectivePlatformFee,
   fromCents,
   isBillable,
   monthKey,
   platformFeeCents,
   rateSource,
-  rateStatuses,
   resolveRate,
   sessionFeesCents,
   studentFeeCents,
+  teacherIsPaid,
   teacherPayCents,
-  type Rate,
+  type FreeReason,
   type RateSource,
 } from './billing.js';
-import type {
-  BillingGroup,
-  BillingQueryDto,
-  BillingSessionsQueryDto,
-  BillingSort,
-  CreateRateDto,
-  PlatformBillingQueryDto,
-  RatesQueryDto,
-  UpdateRateDto,
-} from './dto/billing.dto.js';
+import { toRate } from './prices.service.js';
+import type { BillingGroup, BillingQueryDto, BillingSessionsQueryDto, BillingSort, PlatformBillingQueryDto } from './dto/billing.dto.js';
 
 /** One report covers at most a year, so it can be computed in memory. */
 export const MAX_RANGE_DAYS = 366;
@@ -45,9 +39,13 @@ type Line = {
   name: string;
   attended: boolean;
   joinedAt: Date | null;
+  /** The teacher's evaluation; null until the session is evaluated. */
+  status: AttendanceStatus | null;
+  /** Whether this student pays for the session; `free` says why not. */
+  charged: boolean;
+  free: FreeReason | null;
   minutes: number;
   rate: number | null;
-  rateBasis: RateBasis | null;
   rateSource: RateSource | null;
   feeCents: number;
 };
@@ -79,21 +77,16 @@ type Row = {
   platformFeeCents: number;
 };
 
-const rateInclude = {
-  teacher: { select: { id: true, user: { select: { fullName: true } } } },
-  course: { select: { id: true, title: true } },
-  student: { select: { id: true, user: { select: { fullName: true } } } },
-} as const;
-
 /** Sessions with what's needed to price them, no names. */
 const pricingSelect = {
   status: true,
   startAt: true,
-  endAt: true,
   teacherId: true,
   courseId: true,
-  attendees: { select: { studentId: true } },
+  attendees: { select: { studentId: true, status: true } },
 } as const;
+
+const percentOf = (d: Prisma.Decimal | null | undefined) => (d == null ? null : Number(d));
 
 @Injectable()
 export class BillingService {
@@ -232,8 +225,15 @@ export class BillingService {
         slug: true,
         status: true,
         currency: true,
+        chargeAbsent: true,
         platformFeePercent: true,
-        subscription: { select: { status: true, currentPeriodEnd: true, plan: { select: { nameAr: true, nameEn: true, priceMonthly: true, currency: true } } } },
+        subscription: {
+          select: {
+            status: true,
+            currentPeriodEnd: true,
+            plan: { select: { nameAr: true, nameEn: true, priceMonthly: true, currency: true, platformFeePercent: true } },
+          },
+        },
         billingRates: { where: { kind: 'STUDENT_FEE' } },
         sessions: { where: { startAt: { gte: from, lt: to }, status: { in: BILLABLE_STATUSES } }, select: pricingSelect },
       },
@@ -242,8 +242,9 @@ export class BillingService {
 
     const rows = tenants.map((t) => {
       const rates = t.billingRates.map(toRate);
-      const percent = t.platformFeePercent === null ? null : Number(t.platformFeePercent);
-      const fees = t.sessions.reduce((sum, s) => sum + sessionFeesCents(s, rates), 0);
+      const own = percentOf(t.platformFeePercent);
+      const percent = effectivePlatformFee(own, percentOf(t.subscription?.plan.platformFeePercent));
+      const fees = t.sessions.reduce((sum, s) => sum + sessionFeesCents(s, rates, t.chargeAbsent), 0);
       return {
         id: t.id,
         name: t.name,
@@ -251,6 +252,8 @@ export class BillingService {
         status: t.status,
         currency: t.currency,
         platformFeePercent: percent,
+        /** The fee comes from the package (the center has no percentage of its own). */
+        platformFeeFromPlan: own === null,
         sessions: t.sessions.length,
         fees: fromCents(fees),
         platformFee: fromCents(platformFeeCents(fees, percent)),
@@ -288,85 +291,6 @@ export class BillingService {
     };
   }
 
-  // ───────── Rate card ─────────
-
-  async listRates(user: JwtUser, q: RatesQueryDto) {
-    const tenantId = user.tenantId!;
-    let scope: Prisma.BillingRateWhereInput = {};
-    if (user.role === 'TEACHER') {
-      // Their pay, plus every student price that can apply to their sessions.
-      const teacherId = user.teacherId!;
-      scope = { OR: [{ teacherId }, { teacherId: null, courseId: null }, { teacherId: null, course: { teacherId } }] };
-    } else if (q.teacherId) {
-      scope = { teacherId: q.teacherId };
-    }
-    const rows = await this.prisma.billingRate.findMany({
-      where: { tenantId, kind: q.kind, ...scope },
-      include: rateInclude,
-      orderBy: [{ kind: 'asc' }, { effectiveFrom: 'desc' }, { createdAt: 'desc' }],
-    });
-    const statuses = rateStatuses(rows.map(toRate), new Date());
-    return rows.map((r) => ({ ...serializeRate(r), state: statuses.get(r.id) }));
-  }
-
-  async createRate(user: JwtUser, dto: CreateRateDto) {
-    const tenantId = user.tenantId!;
-    const basis = dto.basis ?? 'PER_HOUR';
-    assertRateShape(dto.kind, basis, dto.amount, dto.teacherId, dto.studentId);
-
-    if (dto.teacherId) {
-      const teacher = await this.prisma.teacher.findFirst({ where: { id: dto.teacherId, tenantId }, select: { id: true } });
-      if (!teacher) throw new NotFoundException(msg('teachers.notFound'));
-    }
-    if (dto.courseId) {
-      const course = await this.prisma.course.findFirst({
-        where: { id: dto.courseId, tenantId, ...(dto.teacherId ? { teacherId: dto.teacherId } : {}) },
-      });
-      if (!course) throw new NotFoundException(msg('sessions.courseNotFound'));
-    }
-    if (dto.studentId) {
-      const student = await this.prisma.student.findFirst({ where: { id: dto.studentId, tenantId }, select: { id: true } });
-      if (!student) throw new NotFoundException(msg('students.notFound'));
-    }
-
-    const scope = {
-      tenantId,
-      kind: dto.kind,
-      teacherId: dto.teacherId ?? null,
-      courseId: dto.courseId ?? null,
-      studentId: dto.studentId ?? null,
-    };
-    const effectiveFrom = new Date(dto.effectiveFrom);
-    await this.assertNoTwin(scope, effectiveFrom);
-    const row = await this.prisma.billingRate.create({
-      data: { ...scope, basis, amount: dto.amount, effectiveFrom, note: dto.note },
-      include: rateInclude,
-    });
-    return serializeRate(row);
-  }
-
-  async updateRate(user: JwtUser, id: string, dto: UpdateRateDto) {
-    const rate = await this.getRate(user, id);
-    const basis = dto.basis ?? rate.basis;
-    assertRateShape(rate.kind, basis, dto.amount ?? Number(rate.amount), rate.teacherId, rate.studentId);
-    const effectiveFrom = dto.effectiveFrom ? new Date(dto.effectiveFrom) : undefined;
-    if (effectiveFrom && effectiveFrom.getTime() !== rate.effectiveFrom.getTime()) {
-      const { tenantId, kind, teacherId, courseId, studentId } = rate;
-      await this.assertNoTwin({ tenantId, kind, teacherId, courseId, studentId }, effectiveFrom, id);
-    }
-    const row = await this.prisma.billingRate.update({
-      where: { id },
-      data: { basis, amount: dto.amount, effectiveFrom, note: dto.note },
-      include: rateInclude,
-    });
-    return serializeRate(row);
-  }
-
-  async removeRate(user: JwtUser, id: string) {
-    await this.getRate(user, id);
-    await this.prisma.billingRate.delete({ where: { id } });
-  }
-
   // ───────── helpers ─────────
 
   /** Every session the viewer may see that matches the filters, priced. */
@@ -401,7 +325,16 @@ export class BillingService {
     };
 
     const [tenant, sessions, rateRows] = await Promise.all([
-      this.prisma.tenant.findUnique({ where: { id: tenantId }, select: { currency: true, timezone: true, platformFeePercent: true } }),
+      this.prisma.tenant.findUnique({
+        where: { id: tenantId },
+        select: {
+          currency: true,
+          timezone: true,
+          chargeAbsent: true,
+          platformFeePercent: true,
+          subscription: { select: { plan: { select: { platformFeePercent: true } } } },
+        },
+      }),
       this.prisma.session.findMany({
         where,
         orderBy: { startAt: 'desc' },
@@ -420,36 +353,42 @@ export class BillingService {
           course: { select: { id: true, title: true } },
           // All of them, even when one student is filtered: the teacher's share depends on the whole session.
           attendees: {
-            select: { studentId: true, attended: true, joinedAt: true, student: { select: { user: { select: { fullName: true } } } } },
+            select: { studentId: true, attended: true, joinedAt: true, status: true, student: { select: { user: { select: { fullName: true } } } } },
             orderBy: { student: { user: { fullName: 'asc' } } },
           },
         },
       }),
-      // The whole rate card: center-wide prices have no teacher, so they can't be narrowed by one.
+      // The whole rate card: the center's default price has no course, so it can't be narrowed by one.
       this.prisma.billingRate.findMany({ where: { tenantId } }),
     ]);
     const rates = rateRows.map(toRate);
-    // Only the center sees (and pays) the platform's commission.
-    const platformFeePercent = viewer === 'admin' && tenant?.platformFeePercent != null ? Number(tenant.platformFeePercent) : null;
+    const chargeAbsent = tenant?.chargeAbsent ?? true;
+    // Only the center sees (and pays) the platform's fee.
+    const platformFeePercent =
+      viewer === 'admin' ? effectivePlatformFee(percentOf(tenant?.platformFeePercent), percentOf(tenant?.subscription?.plan.platformFeePercent)) : null;
 
     const rows: Row[] = [];
     for (const s of sessions) {
       const billable = isBillable(s.status);
       const minutes = billable ? bookedMinutes(s) : 0;
       const all: Line[] = s.attendees.map((a) => {
+        const charge = billable ? chargeOf(a.status, chargeAbsent) : null;
         const rate = billable
           ? resolveRate(rates, { kind: 'STUDENT_FEE', teacherId: s.teacherId, courseId: s.courseId, studentId: a.studentId, at: s.startAt })
           : null;
+        const charged = Boolean(charge?.charged);
         return {
           studentId: a.studentId,
           name: a.student.user.fullName,
           attended: a.attended,
           joinedAt: a.joinedAt,
-          minutes,
+          status: a.status,
+          charged,
+          free: charge && !charge.charged ? charge.reason : null,
+          minutes: charged ? minutes : 0,
           rate: rate?.amount ?? null,
-          rateBasis: rate?.basis ?? null,
           rateSource: rate ? rateSource(rate) : null,
-          feeCents: rate ? studentFeeCents(rate, minutes) : 0,
+          feeCents: rate && charged ? studentFeeCents(rate) : 0,
         };
       });
       const sessionFees = sum(all.map((l) => l.feeCents));
@@ -457,13 +396,14 @@ export class BillingService {
         billable && viewer !== 'student'
           ? resolveRate(rates, { kind: 'TEACHER_PAY', teacherId: s.teacherId, courseId: s.courseId, at: s.startAt })
           : null;
+      const paid = teacherIsPaid(s.attendees.map((a) => a.status));
 
       let lines = studentId ? all.filter((l) => l.studentId === studentId) : all;
       if (q.attendance) {
         lines = lines.filter((l) => l.attended === (q.attendance === 'attended'));
         if (lines.length === 0) continue;
       }
-      if (q.missingRate && !(billable && lines.some((l) => l.rate === null))) continue;
+      if (q.missingRate && !(billable && lines.some((l) => l.charged && l.rate === null))) continue;
 
       rows.push({
         id: s.id,
@@ -485,7 +425,7 @@ export class BillingService {
         sessionFeesCents: sessionFees,
         pay: payRate
           ? {
-              cents: teacherPayCents(payRate, minutes, sessionFees),
+              cents: paid ? teacherPayCents(payRate, sessionFees) : 0,
               basis: payRate.basis,
               rate: payRate.amount,
               source: rateSource(payRate),
@@ -505,21 +445,6 @@ export class BillingService {
       rows,
     };
   }
-
-  private async getRate(user: JwtUser, id: string) {
-    const rate = await this.prisma.billingRate.findFirst({ where: { id, tenantId: user.tenantId! } });
-    if (!rate) throw new NotFoundException(msg('billing.rateNotFound'));
-    return rate;
-  }
-
-  /** Two prices for the same people starting the same moment would make the report ambiguous. */
-  private async assertNoTwin(scope: Prisma.BillingRateWhereInput, effectiveFrom: Date, exceptId?: string) {
-    const twin = await this.prisma.billingRate.findFirst({
-      where: { ...scope, effectiveFrom, ...(exceptId ? { id: { not: exceptId } } : {}) },
-      select: { id: true },
-    });
-    if (twin) throw new ConflictException(msg('billing.rateExists'));
-  }
 }
 
 function parseRange(q: { from: string; to: string }) {
@@ -532,50 +457,8 @@ function parseRange(q: { from: string; to: string }) {
   return { from, to };
 }
 
-function assertRateShape(kind: RateKind, basis: RateBasis, amount: number, teacherId: string | null | undefined, studentId: string | null | undefined) {
-  if (kind === 'TEACHER_PAY' && !teacherId) throw new BadRequestException(msg('billing.teacherPayNeedsTeacher'));
-  if (kind === 'TEACHER_PAY' && studentId) throw new BadRequestException(msg('billing.teacherPayNoStudent'));
-  if (basis === 'PERCENT' && kind !== 'TEACHER_PAY') throw new BadRequestException(msg('billing.percentOnlyTeacherPay'));
-  if (basis === 'PERCENT' && amount > 100) throw new BadRequestException(msg('billing.percentMax'));
-}
-
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
 const round2 = (n: number) => Math.round(n * 100) / 100;
-
-function toRate(r: {
-  id: string;
-  kind: Rate['kind'];
-  basis: RateBasis;
-  teacherId: string | null;
-  courseId: string | null;
-  studentId: string | null;
-  amount: Prisma.Decimal;
-  effectiveFrom: Date;
-}): Rate {
-  return { ...r, amount: Number(r.amount) };
-}
-
-function serializeRate<
-  T extends {
-    amount: Prisma.Decimal;
-    teacherId: string | null;
-    courseId: string | null;
-    studentId: string | null;
-    teacher: { id: string; user: { fullName: string } } | null;
-    course: { id: string; title: string } | null;
-    student: { id: string; user: { fullName: string } } | null;
-  },
->(r: T) {
-  const { teacher, course, student, ...rest } = r;
-  return {
-    ...rest,
-    amount: Number(r.amount),
-    source: rateSource(r),
-    teacher: teacher ? { id: teacher.id, name: teacher.user.fullName } : null,
-    course,
-    student: student ? { id: student.id, name: student.user.fullName } : null,
-  };
-}
 
 function sortRows(rows: Row[], sort: BillingSort) {
   const byDate = (a: Row, b: Row) => b.startAt.getTime() - a.startAt.getTime();
@@ -604,7 +487,9 @@ function totals(rows: Row[], viewer: Viewer, partial: boolean) {
     fees: fromCents(fees),
     ...(viewer !== 'student' ? { teacherPay: fromCents(pay) } : {}),
     ...(viewer === 'admin' && !partial ? { platformFee: fromCents(platformFee), net: fromCents(fees - pay - platformFee) } : {}),
-    missingRates: rows.filter((r) => r.billable).flatMap((r) => r.lines).filter((l) => l.rate === null).length,
+    missingRates: rows.filter((r) => r.billable).flatMap((r) => r.lines).filter((l) => l.charged && l.rate === null).length,
+    /** Students on charged sessions who paid nothing (excused, or absent when absences are free). */
+    freeSeats: lines.filter((l) => l.free !== null).length,
     unconfirmed: rows.filter((r) => r.billable && !r.confirmed).length,
   };
 }
@@ -630,9 +515,11 @@ function serializeRow(r: Row, viewer: Viewer, partial: boolean) {
       name: l.name,
       attended: l.attended,
       joinedAt: l.joinedAt,
+      status: l.status,
+      charged: l.charged,
+      free: l.free,
       minutes: l.minutes,
       rate: l.rate,
-      rateBasis: l.rateBasis,
       rateSource: l.rateSource,
       fee: fromCents(l.feeCents),
     })),
