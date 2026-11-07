@@ -1,6 +1,7 @@
 import {
   ArrayMaxSize,
   IsArray,
+  IsBoolean,
   IsDateString,
   IsEmail,
   IsEnum,
@@ -43,6 +44,11 @@ export class UpdateTenantDto {
   @IsString()
   @Length(3, 3)
   currency?: string;
+
+  /** Whether a student absent without an excuse still pays for the session. */
+  @IsOptional()
+  @IsBoolean()
+  chargeAbsent?: boolean;
 }
 
 /** Super admin: change a center's package, status or period (manual renewals until payments exist). */
@@ -61,7 +67,7 @@ export class UpdateSubscriptionDto {
   currentPeriodEnd?: string | null;
 }
 
-/** Super admin: the platform's commission on one center's student fees. null removes it. */
+/** Super admin: the platform's fee on one center's sessions, overriding its package's. null = the package's; 0 = none. */
 export class SetPlatformFeeDto {
   @ValidateIf((o) => o.percent !== null)
   @IsNumber({ maxDecimalPlaces: 2 })

@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { JwtUser } from '../common/decorators/current-user.decorator.js';
 import type { CreateExamDto, GradeDto, GradeManyDto, UpdateExamDto } from './dto/exam.dto.js';
@@ -67,9 +67,7 @@ export class ExamsService {
 
   async create(user: JwtUser, dto: CreateExamDto) {
     const tenantId = user.tenantId!;
-    const course = await this.prisma.course.findFirst({ where: { id: dto.courseId, tenantId } });
-    if (!course) throw new NotFoundException(msg('courses.notFound'));
-    if (user.role === 'TEACHER' && course.teacherId !== user.teacherId) throw new ForbiddenException();
+    const course = await this.courseFor(user, dto.courseId);
 
     return this.prisma.exam.create({
       data: {
@@ -87,9 +85,17 @@ export class ExamsService {
 
   async update(user: JwtUser, id: string, dto: UpdateExamDto) {
     const before = await this.getOwned(user, id);
+    const { courseId, ...data } = dto;
+    // Marks are given to the course's students, so an exam with any stays in its course.
+    let move: { courseId: string; teacherId: string } | undefined;
+    if (courseId && courseId !== before.courseId) {
+      if (await this.prisma.examResult.count({ where: { examId: id } })) throw new ConflictException(msg('exams.courseLocked'));
+      const course = await this.courseFor(user, courseId);
+      move = { courseId: course.id, teacherId: course.teacherId };
+    }
     const exam = await this.prisma.exam.update({
       where: { id },
-      data: { ...dto, month: dto.month ? startOfMonth(dto.month) : undefined },
+      data: { ...data, ...move, month: dto.month ? startOfMonth(dto.month) : undefined },
       include: examInclude,
     });
     // Students hear about an exam once it is published for them (not when a draft is edited).
@@ -184,6 +190,14 @@ export class ExamsService {
         return !was || Number(was.score) !== r.score || (was.feedback ?? null) !== (r.feedback ?? null);
       })
       .map((r) => r.studentId);
+  }
+
+  /** A course of this center the caller may set exams in (a teacher: their own). */
+  private async courseFor(user: JwtUser, courseId: string) {
+    const course = await this.prisma.course.findFirst({ where: { id: courseId, tenantId: user.tenantId! } });
+    if (!course) throw new NotFoundException(msg('courses.notFound'));
+    if (user.role === 'TEACHER' && course.teacherId !== user.teacherId) throw new ForbiddenException();
+    return course;
   }
 
   private async getOwned(user: JwtUser, id: string) {

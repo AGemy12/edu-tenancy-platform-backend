@@ -80,7 +80,7 @@ async function main() {
   const course =
     (await prisma.course.findFirst({ where: { tenantId: tenant.id, title: 'رياضيات - الفصل الأول' } })) ??
     (await prisma.course.create({
-      data: { tenantId: tenant.id, teacherId: teacher.id, title: 'رياضيات - الفصل الأول', subject: 'رياضيات', level: 'ثانوي', price: 500 },
+      data: { tenantId: tenant.id, teacherId: teacher.id, title: 'رياضيات - الفصل الأول', subject: 'رياضيات', level: 'ثانوي' },
     }));
 
   await prisma.enrollment.upsert({
@@ -89,13 +89,13 @@ async function main() {
     create: { tenantId: tenant.id, courseId: course.id, studentId: student.id },
   });
 
-  // Demo rate card: the center charges 150/h (its default price), and this teacher keeps 60% of what their students pay.
+  // Demo prices: the course costs 150 a session, and this teacher keeps 60% of what their students pay.
   const hasRates = await prisma.billingRate.count({ where: { tenantId: tenant.id } });
   if (!hasRates) {
-    const effectiveFrom = new Date(Date.UTC(2026, 0, 1));
+    const effectiveFrom = new Date(0);
     await prisma.billingRate.createMany({
       data: [
-        { tenantId: tenant.id, kind: 'STUDENT_FEE', amount: 150, effectiveFrom },
+        { tenantId: tenant.id, kind: 'STUDENT_FEE', courseId: course.id, amount: 150, effectiveFrom },
         { tenantId: tenant.id, kind: 'TEACHER_PAY', basis: 'PERCENT', teacherId: teacher.id, amount: 60, effectiveFrom },
       ],
     });

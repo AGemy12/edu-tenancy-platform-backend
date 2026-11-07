@@ -11,20 +11,35 @@ const admin: JwtUser = {
 const noRecord = { enrollments: 0, attendances: 0, examResults: 0, schedules: 0, billingRates: 0 };
 
 function setup(count = noRecord, otherCenters = 0) {
+  const row = {
+    id: 's1',
+    userId: 'u-s1',
+    membershipId: 'ms1',
+    user: { id: 'u-s1', email: 'sara@x.test', fullName: 'Sara', phone: null, isPlatformAdmin: false, _count: { memberships: 1 + otherCenters } },
+    membership: { role: 'STUDENT', status: 'ACTIVE' },
+    teachers: [{ teacher: { id: 'tc1' } }],
+    _count: count,
+  };
   const prisma = {
     student: {
-      findFirst: vi.fn().mockResolvedValue({ id: 's1', userId: 'u-s1', membershipId: 'ms1', membership: { status: 'ACTIVE' }, teachers: [{ teacher: { id: 'tc1' } }], _count: count }),
+      findFirst: vi.fn().mockResolvedValue(row),
+      update: vi.fn().mockResolvedValue(row),
     },
+    teacher: { count: vi.fn().mockImplementation(({ where }) => Promise.resolve(where.id.in.filter((id: string) => id.startsWith('tc')).length)) },
+    teacherStudent: { createMany: vi.fn(), deleteMany: vi.fn() },
+    passwordResetToken: { updateMany: vi.fn() },
+    $transaction: vi.fn(),
     membership: {
       update: vi.fn(),
       delete: vi.fn(),
       findUniqueOrThrow: vi.fn().mockResolvedValue({ userId: 'u-s1', user: { isPlatformAdmin: false, _count: { memberships: 1 + otherCenters } } }),
     },
-    user: { delete: vi.fn() },
-    refreshToken: { updateMany: vi.fn() },
+    user: { delete: vi.fn(), findUnique: vi.fn().mockResolvedValue(null) },
+    refreshToken: { updateMany: vi.fn(), count: vi.fn().mockResolvedValue(1) },
   };
+  prisma.$transaction.mockImplementation((fn: (tx: typeof prisma) => unknown) => fn(prisma));
   const events = { accountStatus: vi.fn(), memberRemoved: vi.fn(), teacherLinked: vi.fn(), memberAdded: vi.fn() };
-  return { prisma, events, service: new StudentsService(prisma as unknown as PrismaService, {} as AuthService, events as never) };
+  return { prisma, events, service: new StudentsService(prisma as unknown as PrismaService, { sendWelcome: vi.fn() } as unknown as AuthService, events as never) };
 }
 
 describe('hasStudyRecord', () => {
@@ -70,5 +85,45 @@ describe('StudentsService.remove', () => {
     await expect(service.remove(admin, 's1')).rejects.toBeInstanceOf(ConflictException);
     expect(prisma.membership.delete).not.toHaveBeenCalled();
     expect(prisma.user.delete).not.toHaveBeenCalled();
+  });
+});
+
+describe('StudentsService.update', () => {
+  const teacher: JwtUser = { ...admin, id: 'u-tc', role: 'TEACHER', teacherId: 'tc1' };
+
+  it("replaces the student's teachers with the ones the admin chose, and tells the new ones", async () => {
+    const { prisma, events, service } = setup();
+    await service.update(admin, 's1', { teacherIds: ['tc2', 'tc3'] });
+    expect(prisma.teacherStudent.deleteMany).toHaveBeenCalledWith({ where: { studentId: 's1', teacherId: { in: ['tc1'] } } });
+    expect(prisma.teacherStudent.createMany).toHaveBeenCalledWith({
+      data: [{ teacherId: 'tc2', studentId: 's1' }, { teacherId: 'tc3', studentId: 's1' }],
+      skipDuplicates: true,
+    });
+    expect(events.teacherLinked).toHaveBeenCalledTimes(2);
+  });
+
+  it('refuses a teacher from outside the center', async () => {
+    const { prisma, service } = setup();
+    await expect(service.update(admin, 's1', { teacherIds: ['elsewhere'] })).rejects.toThrow();
+    expect(prisma.student.update).not.toHaveBeenCalled();
+  });
+
+  it("leaves the teachers alone when a teacher edits (that is the center's call)", async () => {
+    const { prisma, service } = setup();
+    await service.update(teacher, 's1', { teacherIds: [], grade: '5' });
+    expect(prisma.teacherStudent.deleteMany).not.toHaveBeenCalled();
+    expect(prisma.student.update).toHaveBeenCalled();
+  });
+
+  it("lets the student's teacher fix the email of an account that is only in this center", async () => {
+    const { prisma, service } = setup();
+    await service.update(teacher, 's1', { email: 'sara2@x.test' });
+    expect(prisma.student.update.mock.calls[0][0].data.user.update.email).toBe('sara2@x.test');
+  });
+
+  it('refuses a new password for an account that is in another center too', async () => {
+    const { prisma, service } = setup(noRecord, 1);
+    await expect(service.update(admin, 's1', { password: 'Strong#Pass1' })).rejects.toBeInstanceOf(ForbiddenException);
+    expect(prisma.student.update).not.toHaveBeenCalled();
   });
 });

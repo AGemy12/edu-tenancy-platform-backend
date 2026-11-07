@@ -119,7 +119,6 @@ export type RateKind = (typeof RateKind)[keyof typeof RateKind]
 
 
 export const RateBasis = {
-  PER_HOUR: 'PER_HOUR',
   PER_SESSION: 'PER_SESSION',
   PERCENT: 'PERCENT'
 } as const

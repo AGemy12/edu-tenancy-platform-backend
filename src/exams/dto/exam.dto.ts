@@ -45,6 +45,11 @@ export class UpdateExamDto {
   @IsNotEmpty()
   title?: string;
 
+  /** Moves the exam to another course (and its teacher) while no marks are recorded. */
+  @IsOptional()
+  @IsUUID()
+  courseId?: string;
+
   @IsOptional()
   @IsString()
   description?: string;

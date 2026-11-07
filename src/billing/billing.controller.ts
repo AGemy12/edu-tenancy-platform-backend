@@ -1,26 +1,30 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { BillingService } from './billing.service.js';
+import { PricesService } from './prices.service.js';
 import {
   BillingSessionsQueryDto,
   BillingSummaryQueryDto,
-  CreateRateDto,
   PlatformBillingQueryDto,
-  RatesQueryDto,
-  UpdateRateDto,
+  SetPriceDto,
+  SetSpecialPriceDto,
+  SetTeacherPayDto,
 } from './dto/billing.dto.js';
 import { CurrentUser, type JwtUser } from '../common/decorators/current-user.decorator.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
 
 /**
- * Session billing: time and money per session, computed from the rate card. Admins see the
- * whole center, teachers their own sessions and pay, students only their own charges.
+ * Session billing: money per session, computed from the center's prices. Admins see the whole
+ * center, teachers their own sessions and pay, students only their own charges.
  */
 @ApiTags('billing')
 @ApiBearerAuth()
 @Controller('billing')
 export class BillingController {
-  constructor(private readonly billing: BillingService) {}
+  constructor(
+    private readonly billing: BillingService,
+    private readonly prices: PricesService,
+  ) {}
 
   @Get('sessions')
   @Roles('TENANT_ADMIN', 'TEACHER', 'STUDENT')
@@ -41,35 +45,45 @@ export class BillingController {
     return this.billing.options(user);
   }
 
-  /** Super admin: subscription prices and session commissions per center over a period. */
+  /** Super admin: subscription prices and session fees per center over a period. */
   @Get('platform')
   @Roles('SUPER_ADMIN')
   platform(@Query() q: PlatformBillingQueryDto) {
     return this.billing.platform(q);
   }
 
-  @Get('rates')
+  /** The center's prices: default, per course, special, and teachers' pay (a teacher sees theirs). */
+  @Get('prices')
   @Roles('TENANT_ADMIN', 'TEACHER')
-  rates(@CurrentUser() user: JwtUser, @Query() q: RatesQueryDto) {
-    return this.billing.listRates(user, q);
+  listPrices(@CurrentUser() user: JwtUser) {
+    return this.prices.list(user);
   }
 
-  @Post('rates')
+  @Put('prices/default')
   @Roles('TENANT_ADMIN')
-  createRate(@CurrentUser() user: JwtUser, @Body() dto: CreateRateDto) {
-    return this.billing.createRate(user, dto);
+  async setDefaultPrice(@CurrentUser() user: JwtUser, @Body() dto: SetPriceDto) {
+    await this.prices.setDefaultPrice(user.tenantId!, dto.amount);
+    return this.prices.list(user);
   }
 
-  @Patch('rates/:id')
+  @Put('prices/courses/:courseId')
   @Roles('TENANT_ADMIN')
-  updateRate(@CurrentUser() user: JwtUser, @Param('id') id: string, @Body() dto: UpdateRateDto) {
-    return this.billing.updateRate(user, id, dto);
+  async setCoursePrice(@CurrentUser() user: JwtUser, @Param('courseId', ParseUUIDPipe) courseId: string, @Body() dto: SetPriceDto) {
+    await this.prices.setCoursePrice(user.tenantId!, courseId, dto.amount);
+    return this.prices.list(user);
   }
 
-  @Delete('rates/:id')
+  @Put('prices/special')
   @Roles('TENANT_ADMIN')
-  @HttpCode(204)
-  removeRate(@CurrentUser() user: JwtUser, @Param('id') id: string) {
-    return this.billing.removeRate(user, id);
+  async setSpecialPrice(@CurrentUser() user: JwtUser, @Body() dto: SetSpecialPriceDto) {
+    await this.prices.setSpecialPrice(user.tenantId!, dto.courseId, dto.studentId, dto.amount);
+    return this.prices.list(user);
+  }
+
+  @Put('pay/:teacherId')
+  @Roles('TENANT_ADMIN')
+  async setTeacherPay(@CurrentUser() user: JwtUser, @Param('teacherId', ParseUUIDPipe) teacherId: string, @Body() dto: SetTeacherPayDto) {
+    await this.prices.setTeacherPay(user.tenantId!, teacherId, dto.amount === null ? null : { basis: dto.basis ?? 'PER_SESSION', amount: dto.amount });
+    return this.prices.list(user);
   }
 }

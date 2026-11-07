@@ -470,6 +470,19 @@ export class MessagingService {
     }
   }
 
+  /** A course handed to another teacher: they join its class groups. */
+  async courseTeacherChanged(courseId: string, teacherMembershipId: string) {
+    try {
+      const groups = await this.prisma.conversation.findMany({ where: { courseId, kind: 'GROUP' }, select: { id: true } });
+      for (const g of groups) {
+        const added = await this.addParticipants(g.id, [teacherMembershipId], false);
+        if (added.length) await this.pushUpdated(g.id);
+      }
+    } catch (err) {
+      this.logger.warn(`Adding the new teacher to course ${courseId} groups failed: ${String(err)}`);
+    }
+  }
+
   /* ── Helpers ── */
 
   /** Inbox rows for these conversations, in the given order, as the caller sees them. */

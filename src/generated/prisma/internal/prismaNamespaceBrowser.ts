@@ -113,6 +113,7 @@ export const TenantScalarFieldEnum = {
   currency: 'currency',
   logoKey: 'logoKey',
   platformFeePercent: 'platformFeePercent',
+  chargeAbsent: 'chargeAbsent',
   expiryNotice: 'expiryNotice',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -130,6 +131,7 @@ export const PlanScalarFieldEnum = {
   descriptionEn: 'descriptionEn',
   priceMonthly: 'priceMonthly',
   currency: 'currency',
+  platformFeePercent: 'platformFeePercent',
   isPublic: 'isPublic',
   isActive: 'isActive',
   sortOrder: 'sortOrder',
@@ -333,7 +335,6 @@ export const CourseScalarFieldEnum = {
   description: 'description',
   subject: 'subject',
   level: 'level',
-  price: 'price',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -434,6 +435,7 @@ export const BillingRateScalarFieldEnum = {
   courseId: 'courseId',
   studentId: 'studentId',
   amount: 'amount',
+  cleared: 'cleared',
   effectiveFrom: 'effectiveFrom',
   note: 'note',
   createdAt: 'createdAt',

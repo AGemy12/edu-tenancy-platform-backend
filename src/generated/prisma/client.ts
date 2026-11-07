@@ -155,14 +155,15 @@ export type ScheduleSlot = Prisma.ScheduleSlotModel
 export type SessionAttendee = Prisma.SessionAttendeeModel
 /**
  * Model BillingRate
- * One price on the rate card. Rates are tiered: a teacher's default, overridden for a course,
- * overridden for one student; the most specific rate in effect when the session starts wins.
- * Changing a price adds a row with a later `effectiveFrom`, so past sessions keep their price.
- * Amounts are computed from these rows when read (see billing/billing.ts), never stored.
- * One line of the rate card. STUDENT_FEE is the center's price list: a center-wide default
- * (no teacher, course or student), or a price for a course, a student, or a student in a course;
- * optionally narrowed to one teacher's sessions. TEACHER_PAY always names the teacher and may be
- * narrowed to one course. The most specific line in effect at a session's start wins.
+ * The history of every price, one row per change (see billing/prices.ts). The center sees only
+ * the current value of four things:
+ * - STUDENT_FEE, no course or student: the center's default session price (sessions with no course);
+ * - STUDENT_FEE + courseId: the course's session price;
+ * - STUDENT_FEE + courseId + studentId: one student's special price in that course;
+ * - TEACHER_PAY + teacherId: the teacher's pay per session (an amount, or a % of its fees).
+ * Changing a price adds a row from now on (or corrects the current one if no session used it yet),
+ * so past sessions keep the price they were held at. `cleared` rows end a price: the scope stops
+ * applying from then. Amounts are computed from these rows when read (billing/billing.ts), never stored.
  */
 export type BillingRate = Prisma.BillingRateModel
 /**

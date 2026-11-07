@@ -1,15 +1,17 @@
 import {
   actualMinutes,
   bookedMinutes,
-  chargeCents,
+  chargeOf,
+  currentRates,
+  effectivePlatformFee,
   isBillable,
   monthKey,
   platformFeeCents,
   rateSource,
-  rateStatuses,
   resolveRate,
   sessionFeesCents,
   studentFeeCents,
+  teacherIsPaid,
   teacherPayCents,
   type Rate,
 } from './billing.js';
@@ -20,11 +22,12 @@ function rate(over: Partial<Rate>): Rate {
   return {
     id: Math.random().toString(36).slice(2),
     kind: 'STUDENT_FEE',
-    basis: 'PER_HOUR',
-    teacherId: 't1',
+    basis: 'PER_SESSION',
+    teacherId: null,
     courseId: null,
     studentId: null,
     amount: 100,
+    cleared: false,
     effectiveFrom: day('2026-01-01'),
     ...over,
   };
@@ -43,6 +46,23 @@ describe('isBillable', () => {
   });
 });
 
+describe('chargeOf', () => {
+  it('charges present, late and not-yet-evaluated students', () => {
+    expect(chargeOf('PRESENT', true)).toEqual({ charged: true });
+    expect(chargeOf('LATE', false)).toEqual({ charged: true });
+    expect(chargeOf(null, false)).toEqual({ charged: true });
+  });
+
+  it('never charges an excused student', () => {
+    expect(chargeOf('EXCUSED', true)).toEqual({ charged: false, reason: 'EXCUSED' });
+  });
+
+  it('charges an unexcused absence only when the center says so', () => {
+    expect(chargeOf('ABSENT', true)).toEqual({ charged: true });
+    expect(chargeOf('ABSENT', false)).toEqual({ charged: false, reason: 'ABSENT' });
+  });
+});
+
 describe('durations', () => {
   it('uses the booked slot', () => {
     expect(bookedMinutes({ startAt: new Date('2026-10-01T10:00:00Z'), endAt: new Date('2026-10-01T11:30:00Z') })).toBe(90);
@@ -58,115 +78,136 @@ describe('resolveRate', () => {
   const at = day('2026-10-10');
   const target = { kind: 'STUDENT_FEE' as const, teacherId: 't1', courseId: 'c1', studentId: 's1', at };
 
-  it('prefers student over course over teacher over the center default', () => {
-    const center = rate({ teacherId: null, amount: 90 });
-    const base = rate({ amount: 100 });
-    const course = rate({ courseId: 'c1', teacherId: null, amount: 120 });
-    const student = rate({ studentId: 's1', teacherId: null, amount: 80 });
-    expect(resolveRate([center, base, course, student], target)).toBe(student);
-    expect(resolveRate([center, base, course], target)).toBe(course);
-    expect(resolveRate([center, base], target)).toBe(base);
+  it("prefers the student's special price, then the course's, then the center's default", () => {
+    const center = rate({ amount: 90 });
+    const course = rate({ courseId: 'c1', amount: 120 });
+    const special = rate({ courseId: 'c1', studentId: 's1', amount: 80 });
+    expect(resolveRate([center, course, special], target)).toBe(special);
+    expect(resolveRate([center, course], target)).toBe(course);
     expect(resolveRate([center], target)).toBe(center);
   });
 
-  it('a center-wide price applies to every teacher', () => {
-    const center = rate({ teacherId: null, amount: 90 });
-    expect(resolveRate([center], { ...target, teacherId: 't99' })).toBe(center);
+  it('prices sessions with no course at the default', () => {
+    const center = rate({ amount: 90 });
+    const course = rate({ courseId: 'c1', amount: 120 });
+    expect(resolveRate([center, course], { ...target, courseId: null })).toBe(center);
   });
 
-  it('ignores rates for someone else', () => {
-    const otherStudent = rate({ studentId: 's2', amount: 1 });
+  it('ignores prices for someone else', () => {
+    const otherStudent = rate({ courseId: 'c1', studentId: 's2', amount: 1 });
     const otherCourse = rate({ courseId: 'c2', amount: 2 });
-    const otherTeacher = rate({ teacherId: 't2', amount: 3 });
-    const pay = rate({ kind: 'TEACHER_PAY', amount: 4 });
-    expect(resolveRate([otherStudent, otherCourse, otherTeacher, pay], target)).toBeNull();
+    const pay = rate({ kind: 'TEACHER_PAY', teacherId: 't1', amount: 4 });
+    expect(resolveRate([otherStudent, otherCourse, pay], target)).toBeNull();
   });
 
-  it('names the tier a rate came from', () => {
-    expect(rateSource(rate({ teacherId: null }))).toBe('CENTER');
-    expect(rateSource(rate({}))).toBe('TEACHER');
+  it("finds the teacher's pay", () => {
+    const mine = rate({ kind: 'TEACHER_PAY', teacherId: 't1', basis: 'PERCENT', amount: 50 });
+    const theirs = rate({ kind: 'TEACHER_PAY', teacherId: 't2', amount: 70 });
+    expect(resolveRate([mine, theirs], { kind: 'TEACHER_PAY', teacherId: 't1', courseId: 'c1', at })).toBe(mine);
+  });
+
+  it('names where a price came from', () => {
+    expect(rateSource(rate({}))).toBe('CENTER');
     expect(rateSource(rate({ courseId: 'c1' }))).toBe('COURSE');
     expect(rateSource(rate({ courseId: 'c1', studentId: 's1' }))).toBe('STUDENT');
+    expect(rateSource(rate({ kind: 'TEACHER_PAY', teacherId: 't1' }))).toBe('TEACHER');
   });
 
   it('uses the price in effect when the session started', () => {
-    const old = rate({ amount: 100, effectiveFrom: day('2026-01-01') });
-    const raise = rate({ amount: 150, effectiveFrom: day('2026-10-01') });
-    const future = rate({ amount: 200, effectiveFrom: day('2026-11-01') });
+    const old = rate({ courseId: 'c1', amount: 100, effectiveFrom: day('2026-01-01') });
+    const raise = rate({ courseId: 'c1', amount: 150, effectiveFrom: day('2026-10-01') });
+    const future = rate({ courseId: 'c1', amount: 200, effectiveFrom: day('2026-11-01') });
     expect(resolveRate([old, raise, future], target)).toBe(raise);
     expect(resolveRate([old, raise, future], { ...target, at: day('2026-09-15') })).toBe(old);
     expect(resolveRate([future], target)).toBeNull();
   });
 
-  it('keeps an older specific rate over a newer default', () => {
-    const student = rate({ studentId: 's1', amount: 80, effectiveFrom: day('2026-01-01') });
-    const newDefault = rate({ amount: 150, effectiveFrom: day('2026-10-01') });
-    expect(resolveRate([student, newDefault], target)).toBe(student);
+  it('keeps an older special price over a newer course price', () => {
+    const special = rate({ courseId: 'c1', studentId: 's1', amount: 80, effectiveFrom: day('2026-01-01') });
+    const newCourse = rate({ courseId: 'c1', amount: 150, effectiveFrom: day('2026-10-01') });
+    expect(resolveRate([special, newCourse], target)).toBe(special);
   });
 
-  it('a course-and-student rate beats a student rate', () => {
-    const student = rate({ studentId: 's1', amount: 80 });
-    const both = rate({ studentId: 's1', courseId: 'c1', amount: 70 });
-    expect(resolveRate([student, both], target)).toBe(both);
+  it('a cleared special price hands back to the course price from then on', () => {
+    const course = rate({ courseId: 'c1', amount: 150 });
+    const special = rate({ courseId: 'c1', studentId: 's1', amount: 80, effectiveFrom: day('2026-02-01') });
+    const ended = rate({ courseId: 'c1', studentId: 's1', amount: 0, cleared: true, effectiveFrom: day('2026-10-01') });
+    expect(resolveRate([course, special, ended], target)).toBe(course);
+    expect(resolveRate([course, special, ended], { ...target, at: day('2026-09-01') })).toBe(special);
+  });
+
+  it('a cleared course price falls back to the default', () => {
+    const center = rate({ amount: 90 });
+    const course = rate({ courseId: 'c1', amount: 150 });
+    const ended = rate({ courseId: 'c1', amount: 0, cleared: true, effectiveFrom: day('2026-10-01') });
+    expect(resolveRate([center, course, ended], target)).toBe(center);
+  });
+});
+
+describe('currentRates', () => {
+  it('keeps the latest value of each price, without ended ones', () => {
+    const now = day('2026-10-10');
+    const old = rate({ courseId: 'c1', amount: 100, effectiveFrom: day('2026-01-01') });
+    const current = rate({ courseId: 'c1', amount: 150, effectiveFrom: day('2026-10-01') });
+    const special = rate({ courseId: 'c1', studentId: 's1', amount: 80 });
+    const ended = rate({ courseId: 'c1', studentId: 's1', cleared: true, effectiveFrom: day('2026-10-05') });
+    const center = rate({ amount: 90 });
+    expect(currentRates([old, current, special, ended, center], now)).toEqual([current, center]);
   });
 });
 
 describe('money', () => {
-  it('charges by the minute without float drift', () => {
-    expect(chargeCents(150, 60)).toBe(15_000);
-    expect(chargeCents(150, 90)).toBe(22_500);
-    expect(chargeCents(100, 45)).toBe(7_500);
-    expect(chargeCents(99.99, 20)).toBe(3_333);
+  it('charges a flat amount per session, whatever its length', () => {
+    expect(studentFeeCents({ amount: 250 })).toBe(25_000);
+    expect(studentFeeCents({ amount: 99.99 })).toBe(9_999);
   });
 
-  it('charges students by the hour or flat per session', () => {
-    expect(studentFeeCents({ basis: 'PER_HOUR', amount: 100 }, 90)).toBe(15_000);
-    expect(studentFeeCents({ basis: 'PER_SESSION', amount: 250 }, 90)).toBe(25_000);
-    expect(studentFeeCents({ basis: 'PER_SESSION', amount: 250 }, 15)).toBe(25_000);
+  it('pays teachers per session, or as a share of the fees', () => {
+    expect(teacherPayCents({ basis: 'PER_SESSION', amount: 200 }, 50_000)).toBe(20_000);
+    expect(teacherPayCents({ basis: 'PERCENT', amount: 60 }, 50_000)).toBe(30_000);
   });
 
-  it('pays teachers per hour, per session, or as a share of the fees', () => {
-    expect(teacherPayCents({ basis: 'PER_HOUR', amount: 80 }, 90, 50_000)).toBe(12_000);
-    expect(teacherPayCents({ basis: 'PER_SESSION', amount: 200 }, 90, 50_000)).toBe(20_000);
-    expect(teacherPayCents({ basis: 'PERCENT', amount: 60 }, 90, 50_000)).toBe(30_000);
+  it('owes a fixed pay unless every student was excused', () => {
+    expect(teacherIsPaid(['PRESENT', 'EXCUSED'])).toBe(true);
+    expect(teacherIsPaid(['ABSENT'])).toBe(true);
+    expect(teacherIsPaid([null])).toBe(true);
+    expect(teacherIsPaid([])).toBe(true);
+    expect(teacherIsPaid(['EXCUSED', 'EXCUSED'])).toBe(false);
   });
 
-  it('takes the platform commission only when one is set', () => {
+  it("takes the center's own fee, else its package's", () => {
+    expect(effectivePlatformFee(5, 10)).toBe(5);
+    expect(effectivePlatformFee(null, 10)).toBe(10);
+    expect(effectivePlatformFee(0, 10)).toBeNull();
+    expect(effectivePlatformFee(null, null)).toBeNull();
+  });
+
+  it('takes the platform fee only when one is set', () => {
     expect(platformFeeCents(50_000, 10)).toBe(5_000);
     expect(platformFeeCents(50_000, 12.5)).toBe(6_250);
     expect(platformFeeCents(50_000, 0)).toBe(0);
     expect(platformFeeCents(50_000, null)).toBe(0);
   });
 
-  it('prices a whole session from its attendees', () => {
-    const center = rate({ teacherId: null, amount: 100 });
-    const special = rate({ teacherId: null, studentId: 's2', basis: 'PER_SESSION', amount: 50 });
+  it('prices a whole session from its charged attendees', () => {
+    const center = rate({ amount: 100 });
+    const special = rate({ studentId: 's2', courseId: 'c1', amount: 50 });
     const session = {
       status: 'COMPLETED' as const,
       startAt: new Date('2026-10-01T10:00:00Z'),
-      endAt: new Date('2026-10-01T11:30:00Z'),
       teacherId: 't1',
-      courseId: null,
-      attendees: [{ studentId: 's1' }, { studentId: 's2' }, { studentId: 's3' }],
+      courseId: 'c1',
+      attendees: [
+        { studentId: 's1', status: 'PRESENT' as const },
+        { studentId: 's2', status: null },
+        { studentId: 's3', status: 'ABSENT' as const },
+        { studentId: 's4', status: 'EXCUSED' as const },
+      ],
     };
-    // s1 and s3: 100/h × 1.5h; s2: flat 50.
-    expect(sessionFeesCents(session, [center, special])).toBe(35_000);
-    expect(sessionFeesCents({ ...session, status: 'CANCELED' }, [center, special])).toBe(0);
-  });
-});
-
-describe('rateStatuses', () => {
-  it('marks the current, past and upcoming price for each scope', () => {
-    const now = day('2026-10-10');
-    const old = rate({ effectiveFrom: day('2026-01-01') });
-    const current = rate({ effectiveFrom: day('2026-10-01') });
-    const next = rate({ effectiveFrom: day('2026-11-01') });
-    const course = rate({ courseId: 'c1', effectiveFrom: day('2026-02-01') });
-    const s = rateStatuses([old, current, next, course], now);
-    expect(s.get(old.id)).toBe('SUPERSEDED');
-    expect(s.get(current.id)).toBe('ACTIVE');
-    expect(s.get(next.id)).toBe('SCHEDULED');
-    expect(s.get(course.id)).toBe('ACTIVE');
+    // s1 100, s2 their special 50, s3 100 while absences are charged, s4 excused.
+    expect(sessionFeesCents(session, [center, special], true)).toBe(25_000);
+    expect(sessionFeesCents(session, [center, special], false)).toBe(15_000);
+    expect(sessionFeesCents({ ...session, status: 'CANCELED' }, [center, special], true)).toBe(0);
   });
 });
 

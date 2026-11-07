@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { AuthService } from '../auth/auth.service.js';
 import { unusablePassword } from '../auth/passwords.js';
 import { removeMembership, setAccountStatus } from '../auth/account-status.js';
+import { accountChanges, accountFacts, afterAccountChange, presentMember } from '../auth/member-account.js';
 import type { SetAccountStatusDto } from '../auth/dto/account-status.dto.js';
 import type { JwtUser } from '../common/decorators/current-user.decorator.js';
 import type { CreateStudentDto, UpdateStudentDto } from './dto/student.dto.js';
@@ -12,7 +13,7 @@ import { NotificationEvents } from '../notifications/notification-events.js';
 import type { Locale } from '../i18n/locale.js';
 
 const studentInclude = {
-  user: { select: { id: true, fullName: true, email: true, phone: true } },
+  user: { select: { id: true, fullName: true, email: true, phone: true, ...accountFacts } },
   /** The student's place in this center. */
   membership: { select: { id: true, role: true, status: true, statusReason: true } },
   teachers: { select: { teacher: { select: { id: true, user: { select: { fullName: true } } } } } },
@@ -35,16 +36,22 @@ export class StudentsService {
     private readonly events: NotificationEvents,
   ) {}
 
-  list(user: JwtUser) {
+  async list(user: JwtUser) {
     const tenantId = user.tenantId!;
     const where =
       user.role === 'TEACHER' && user.teacherId
         ? { tenantId, teachers: { some: { teacherId: user.teacherId } } }
         : { tenantId };
-    return this.prisma.student.findMany({ where, include: studentInclude, orderBy: { createdAt: 'desc' } });
+    const rows = await this.prisma.student.findMany({ where, include: studentInclude, orderBy: { createdAt: 'desc' } });
+    return rows.map((r) => presentMember(r, user));
   }
 
   async get(user: JwtUser, id: string) {
+    return presentMember(await this.owned(user, id), user);
+  }
+
+  /** The student as stored, if the caller may see them (admins: any; teachers: their own). */
+  private async owned(user: JwtUser, id: string) {
     const student = await this.prisma.student.findFirst({
       where: { id, tenantId: user.tenantId! },
       include: studentInclude,
@@ -71,11 +78,9 @@ export class StudentsService {
     });
     if (existing?.memberships.length) throw new ConflictException(msg('users.alreadyMember'));
 
-    const teacherId = user.role === 'TEACHER' ? user.teacherId! : dto.teacherId;
-    if (teacherId) {
-      const teacher = await this.prisma.teacher.findFirst({ where: { id: teacherId, tenantId } });
-      if (!teacher) throw new NotFoundException(msg('teachers.notFound'));
-    }
+    const teacherIds =
+      user.role === 'TEACHER' ? [user.teacherId!] : [...new Set([...(dto.teacherId ? [dto.teacherId] : []), ...(dto.teacherIds ?? [])])];
+    await this.assertTeachers(tenantId, teacherIds);
 
     const passwordHash = existing ? null : await bcrypt.hash(dto.password ?? unusablePassword(), 10);
     const student = await this.prisma.$transaction(async (tx) => {
@@ -91,25 +96,54 @@ export class StudentsService {
           grade: dto.grade,
           parentPhone: dto.parentPhone,
           notes: dto.notes,
-          ...(teacherId ? { teachers: { create: { teacherId } } } : {}),
+          ...(teacherIds.length ? { teachers: { create: teacherIds.map((teacherId) => ({ teacherId })) } } : {}),
         },
         include: studentInclude,
       });
     });
     await this.auth.sendWelcome(student.membershipId, { existingAccount: Boolean(existing) }, locale);
     void this.events.memberAdded(student.membershipId, user.id);
-    if (teacherId) void this.events.teacherLinked(teacherId, student.id, user.id);
-    return student;
+    for (const teacherId of teacherIds) void this.events.teacherLinked(teacherId, student.id, user.id);
+    return presentMember(student, user);
   }
 
-  async update(user: JwtUser, id: string, dto: UpdateStudentDto) {
-    await this.get(user, id);
-    const { fullName, phone, ...studentData } = dto;
-    return this.prisma.student.update({
-      where: { id },
-      data: { ...studentData, user: { update: { fullName, phone } } },
-      include: studentInclude,
+  /**
+   * Everything the add form sets can change here: the sign-in email and password too, while the
+   * account is this center's alone (see auth/member-account), and, for admins, the teachers.
+   */
+  async update(user: JwtUser, id: string, dto: UpdateStudentDto, locale?: Locale) {
+    const student = await this.owned(user, id);
+    const { fullName, phone, email, password, teacherIds, ...studentData } = dto;
+    const account = await accountChanges(this.prisma, student, user, { email, password });
+
+    // Teachers manage their own students; which teachers a student has is the center's call.
+    const current = student.teachers.map((t) => t.teacher.id);
+    const links = teacherIds && user.role === 'TENANT_ADMIN'
+      ? { added: teacherIds.filter((t) => !current.includes(t)), removed: current.filter((t) => !teacherIds.includes(t)) }
+      : { added: [], removed: [] };
+    await this.assertTeachers(user.tenantId!, links.added);
+
+    const { row, after } = await this.prisma.$transaction(async (tx) => {
+      if (links.removed.length) await tx.teacherStudent.deleteMany({ where: { studentId: id, teacherId: { in: links.removed } } });
+      if (links.added.length) {
+        await tx.teacherStudent.createMany({ data: links.added.map((teacherId) => ({ teacherId, studentId: id })), skipDuplicates: true });
+      }
+      const row = await tx.student.update({
+        where: { id },
+        data: { ...studentData, user: { update: { fullName, phone, ...account } } },
+        include: studentInclude,
+      });
+      return { row, after: await afterAccountChange(tx, student.userId, account) };
     });
+    if (after.resendWelcome) await this.auth.sendWelcome(student.membershipId, { existingAccount: false }, locale);
+    for (const teacherId of links.added) void this.events.teacherLinked(teacherId, id, user.id);
+    return presentMember(row, user);
+  }
+
+  private async assertTeachers(tenantId: string, ids: string[]) {
+    if (!ids.length) return;
+    const found = await this.prisma.teacher.count({ where: { id: { in: ids }, tenantId } });
+    if (found !== ids.length) throw new NotFoundException(msg('teachers.notFound'));
   }
 
   /**
@@ -117,14 +151,14 @@ export class StudentsService {
    * for any student, teachers for their own (`get` scopes it). See auth/account-status.
    */
   async setStatus(user: JwtUser, id: string, dto: SetAccountStatusDto) {
-    const student = await this.get(user, id);
+    const student = await this.owned(user, id);
     await setAccountStatus(this.prisma, student.membershipId, dto, user.id);
     if (student.membership.status !== dto.status) void this.events.accountStatus(student.membershipId, dto.status, dto.reason, user.id);
     return this.get(user, id);
   }
 
   async linkTeacher(user: JwtUser, studentId: string, teacherId: string) {
-    const student = await this.get(user, studentId);
+    const student = await this.owned(user, studentId);
     const teacher = await this.prisma.teacher.findFirst({ where: { id: teacherId, tenantId: user.tenantId! } });
     if (!teacher) throw new NotFoundException(msg('teachers.notFound'));
     const linked = student.teachers.some((t) => t.teacher.id === teacherId);
@@ -138,12 +172,12 @@ export class StudentsService {
   }
 
   async unlinkTeacher(user: JwtUser, studentId: string, teacherId: string) {
-    await this.get(user, studentId);
+    await this.owned(user, studentId);
     await this.prisma.teacherStudent.deleteMany({ where: { teacherId, studentId } });
   }
 
   async remove(user: JwtUser, id: string) {
-    const student = await this.get(user, id);
+    const student = await this.owned(user, id);
     if (hasStudyRecord(student._count)) throw new ConflictException(msg('students.hasRecord'));
     await removeMembership(this.prisma, student.membershipId);
     this.events.memberRemoved(student.membershipId);

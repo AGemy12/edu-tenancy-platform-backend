@@ -65,11 +65,15 @@ describe('TenantsService (super admin)', () => {
     expect(d.platformFeePercent).toBe(12.5);
   });
 
-  it('sets or removes the commission on one center', async () => {
+  it("sets a center's own fee, or returns it to its package's", async () => {
     const { prisma, service } = setup();
-    expect(await service.setPlatformFee('t1', 15)).toEqual({ id: 't1', platformFeePercent: 15 });
-    expect(await service.setPlatformFee('t1', null)).toEqual({ id: 't1', platformFeePercent: null });
-    expect(prisma.tenant.update).toHaveBeenLastCalledWith(expect.objectContaining({ where: { id: 't1' }, data: { platformFeePercent: null } }));
+    prisma.tenant.update.mockImplementation(({ where, data }) =>
+      Promise.resolve({ id: where.id, platformFeePercent: data.platformFeePercent, subscription: { plan: { platformFeePercent: { toString: () => '8' } } } }),
+    );
+    expect(await service.setPlatformFee('t1', 15)).toEqual({ id: 't1', platformFeePercent: 15, platformFeeOverride: 15 });
+    expect(await service.setPlatformFee('t1', null)).toEqual({ id: 't1', platformFeePercent: 8, platformFeeOverride: null });
+    expect(await service.setPlatformFee('t1', 0)).toEqual({ id: 't1', platformFeePercent: null, platformFeeOverride: 0 });
+    expect(prisma.tenant.update).toHaveBeenLastCalledWith(expect.objectContaining({ where: { id: 't1' }, data: { platformFeePercent: 0 } }));
   });
 
   it('applies one commission to chosen centers, or to all but some', async () => {

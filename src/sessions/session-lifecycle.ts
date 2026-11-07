@@ -61,6 +61,14 @@ export function canReschedule(status: SessionStatus) {
   return status === 'SCHEDULED';
 }
 
+/**
+ * Who is in a session (teacher, course, students) and where it runs (the platform) can change
+ * only while nobody can be in it yet: scheduled, and before the entry window opens.
+ */
+export function canChangePeople(s: { status: SessionStatus; startAt: Date }, now = new Date()) {
+  return s.status === 'SCHEDULED' && entryWindow(s, now) === 'early';
+}
+
 /** Whether someone may enter the meeting now. A live session stays open even past its planned end. */
 export function entryWindow(s: { status: SessionStatus; startAt: Date }, now: Date): 'early' | 'open' | 'closed' {
   if (!isOpen(s.status)) return 'closed';

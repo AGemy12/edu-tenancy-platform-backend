@@ -43,6 +43,7 @@ export type TenantMinAggregateOutputType = {
   currency: string | null
   logoKey: string | null
   platformFeePercent: runtime.Decimal | null
+  chargeAbsent: boolean | null
   expiryNotice: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -57,6 +58,7 @@ export type TenantMaxAggregateOutputType = {
   currency: string | null
   logoKey: string | null
   platformFeePercent: runtime.Decimal | null
+  chargeAbsent: boolean | null
   expiryNotice: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -71,6 +73,7 @@ export type TenantCountAggregateOutputType = {
   currency: number
   logoKey: number
   platformFeePercent: number
+  chargeAbsent: number
   expiryNotice: number
   createdAt: number
   updatedAt: number
@@ -95,6 +98,7 @@ export type TenantMinAggregateInputType = {
   currency?: true
   logoKey?: true
   platformFeePercent?: true
+  chargeAbsent?: true
   expiryNotice?: true
   createdAt?: true
   updatedAt?: true
@@ -109,6 +113,7 @@ export type TenantMaxAggregateInputType = {
   currency?: true
   logoKey?: true
   platformFeePercent?: true
+  chargeAbsent?: true
   expiryNotice?: true
   createdAt?: true
   updatedAt?: true
@@ -123,6 +128,7 @@ export type TenantCountAggregateInputType = {
   currency?: true
   logoKey?: true
   platformFeePercent?: true
+  chargeAbsent?: true
   expiryNotice?: true
   createdAt?: true
   updatedAt?: true
@@ -224,6 +230,7 @@ export type TenantGroupByOutputType = {
   currency: string
   logoKey: string | null
   platformFeePercent: runtime.Decimal | null
+  chargeAbsent: boolean
   expiryNotice: string | null
   createdAt: Date
   updatedAt: Date
@@ -261,6 +268,7 @@ export type TenantWhereInput = {
   currency?: Prisma.StringFilter<"Tenant"> | string
   logoKey?: Prisma.StringNullableFilter<"Tenant"> | string | null
   platformFeePercent?: Prisma.DecimalNullableFilter<"Tenant"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFilter<"Tenant"> | boolean
   expiryNotice?: Prisma.StringNullableFilter<"Tenant"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
@@ -298,6 +306,7 @@ export type TenantOrderByWithRelationInput = {
   currency?: Prisma.SortOrder
   logoKey?: Prisma.SortOrderInput | Prisma.SortOrder
   platformFeePercent?: Prisma.SortOrderInput | Prisma.SortOrder
+  chargeAbsent?: Prisma.SortOrder
   expiryNotice?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -338,6 +347,7 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<{
   currency?: Prisma.StringFilter<"Tenant"> | string
   logoKey?: Prisma.StringNullableFilter<"Tenant"> | string | null
   platformFeePercent?: Prisma.DecimalNullableFilter<"Tenant"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFilter<"Tenant"> | boolean
   expiryNotice?: Prisma.StringNullableFilter<"Tenant"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
@@ -375,6 +385,7 @@ export type TenantOrderByWithAggregationInput = {
   currency?: Prisma.SortOrder
   logoKey?: Prisma.SortOrderInput | Prisma.SortOrder
   platformFeePercent?: Prisma.SortOrderInput | Prisma.SortOrder
+  chargeAbsent?: Prisma.SortOrder
   expiryNotice?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -397,6 +408,7 @@ export type TenantScalarWhereWithAggregatesInput = {
   currency?: Prisma.StringWithAggregatesFilter<"Tenant"> | string
   logoKey?: Prisma.StringNullableWithAggregatesFilter<"Tenant"> | string | null
   platformFeePercent?: Prisma.DecimalNullableWithAggregatesFilter<"Tenant"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolWithAggregatesFilter<"Tenant"> | boolean
   expiryNotice?: Prisma.StringNullableWithAggregatesFilter<"Tenant"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Tenant"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Tenant"> | Date | string
@@ -411,6 +423,7 @@ export type TenantCreateInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -448,6 +461,7 @@ export type TenantUncheckedCreateInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -485,6 +499,7 @@ export type TenantUpdateInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -522,6 +537,7 @@ export type TenantUncheckedUpdateInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -559,6 +575,7 @@ export type TenantCreateManyInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -573,6 +590,7 @@ export type TenantUpdateManyMutationInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -587,6 +605,7 @@ export type TenantUncheckedUpdateManyInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -601,6 +620,7 @@ export type TenantCountOrderByAggregateInput = {
   currency?: Prisma.SortOrder
   logoKey?: Prisma.SortOrder
   platformFeePercent?: Prisma.SortOrder
+  chargeAbsent?: Prisma.SortOrder
   expiryNotice?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -619,6 +639,7 @@ export type TenantMaxOrderByAggregateInput = {
   currency?: Prisma.SortOrder
   logoKey?: Prisma.SortOrder
   platformFeePercent?: Prisma.SortOrder
+  chargeAbsent?: Prisma.SortOrder
   expiryNotice?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -633,6 +654,7 @@ export type TenantMinOrderByAggregateInput = {
   currency?: Prisma.SortOrder
   logoKey?: Prisma.SortOrder
   platformFeePercent?: Prisma.SortOrder
+  chargeAbsent?: Prisma.SortOrder
   expiryNotice?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -670,6 +692,10 @@ export type NullableDecimalFieldUpdateOperationsInput = {
   decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
   multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
   divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -1011,6 +1037,7 @@ export type TenantCreateWithoutSubscriptionInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1047,6 +1074,7 @@ export type TenantUncheckedCreateWithoutSubscriptionInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1099,6 +1127,7 @@ export type TenantUpdateWithoutSubscriptionInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1135,6 +1164,7 @@ export type TenantUncheckedUpdateWithoutSubscriptionInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1171,6 +1201,7 @@ export type TenantCreateWithoutSubscriptionChangesInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1207,6 +1238,7 @@ export type TenantUncheckedCreateWithoutSubscriptionChangesInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1259,6 +1291,7 @@ export type TenantUpdateWithoutSubscriptionChangesInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1295,6 +1328,7 @@ export type TenantUncheckedUpdateWithoutSubscriptionChangesInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1331,6 +1365,7 @@ export type TenantCreateWithoutMembershipsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1367,6 +1402,7 @@ export type TenantUncheckedCreateWithoutMembershipsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1419,6 +1455,7 @@ export type TenantUpdateWithoutMembershipsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1455,6 +1492,7 @@ export type TenantUncheckedUpdateWithoutMembershipsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1491,6 +1529,7 @@ export type TenantCreateWithoutSupportRequestsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1527,6 +1566,7 @@ export type TenantUncheckedCreateWithoutSupportRequestsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1579,6 +1619,7 @@ export type TenantUpdateWithoutSupportRequestsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1615,6 +1656,7 @@ export type TenantUncheckedUpdateWithoutSupportRequestsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1651,6 +1693,7 @@ export type TenantCreateWithoutSupportSessionsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1687,6 +1730,7 @@ export type TenantUncheckedCreateWithoutSupportSessionsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1739,6 +1783,7 @@ export type TenantUpdateWithoutSupportSessionsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1775,6 +1820,7 @@ export type TenantUncheckedUpdateWithoutSupportSessionsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1811,6 +1857,7 @@ export type TenantCreateWithoutTeachersInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1847,6 +1894,7 @@ export type TenantUncheckedCreateWithoutTeachersInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1899,6 +1947,7 @@ export type TenantUpdateWithoutTeachersInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1935,6 +1984,7 @@ export type TenantUncheckedUpdateWithoutTeachersInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1971,6 +2021,7 @@ export type TenantCreateWithoutStudentsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2007,6 +2058,7 @@ export type TenantUncheckedCreateWithoutStudentsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2059,6 +2111,7 @@ export type TenantUpdateWithoutStudentsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2095,6 +2148,7 @@ export type TenantUncheckedUpdateWithoutStudentsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2131,6 +2185,7 @@ export type TenantCreateWithoutCoursesInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2167,6 +2222,7 @@ export type TenantUncheckedCreateWithoutCoursesInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2219,6 +2275,7 @@ export type TenantUpdateWithoutCoursesInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2255,6 +2312,7 @@ export type TenantUncheckedUpdateWithoutCoursesInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2291,6 +2349,7 @@ export type TenantCreateWithoutEnrollmentsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2327,6 +2386,7 @@ export type TenantUncheckedCreateWithoutEnrollmentsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2379,6 +2439,7 @@ export type TenantUpdateWithoutEnrollmentsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2415,6 +2476,7 @@ export type TenantUncheckedUpdateWithoutEnrollmentsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2451,6 +2513,7 @@ export type TenantCreateWithoutSessionsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2487,6 +2550,7 @@ export type TenantUncheckedCreateWithoutSessionsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2539,6 +2603,7 @@ export type TenantUpdateWithoutSessionsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2575,6 +2640,7 @@ export type TenantUncheckedUpdateWithoutSessionsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2611,6 +2677,7 @@ export type TenantCreateWithoutSchedulesInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2647,6 +2714,7 @@ export type TenantUncheckedCreateWithoutSchedulesInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2699,6 +2767,7 @@ export type TenantUpdateWithoutSchedulesInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2735,6 +2804,7 @@ export type TenantUncheckedUpdateWithoutSchedulesInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2771,6 +2841,7 @@ export type TenantCreateWithoutBillingRatesInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2807,6 +2878,7 @@ export type TenantUncheckedCreateWithoutBillingRatesInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2859,6 +2931,7 @@ export type TenantUpdateWithoutBillingRatesInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2895,6 +2968,7 @@ export type TenantUncheckedUpdateWithoutBillingRatesInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2931,6 +3005,7 @@ export type TenantCreateWithoutExamsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2967,6 +3042,7 @@ export type TenantUncheckedCreateWithoutExamsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3019,6 +3095,7 @@ export type TenantUpdateWithoutExamsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3055,6 +3132,7 @@ export type TenantUncheckedUpdateWithoutExamsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3091,6 +3169,7 @@ export type TenantCreateWithoutIntegrationsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3127,6 +3206,7 @@ export type TenantUncheckedCreateWithoutIntegrationsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3179,6 +3259,7 @@ export type TenantUpdateWithoutIntegrationsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3215,6 +3296,7 @@ export type TenantUncheckedUpdateWithoutIntegrationsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3251,6 +3333,7 @@ export type TenantCreateWithoutFoldersInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3287,6 +3370,7 @@ export type TenantUncheckedCreateWithoutFoldersInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3339,6 +3423,7 @@ export type TenantUpdateWithoutFoldersInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3375,6 +3460,7 @@ export type TenantUncheckedUpdateWithoutFoldersInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3411,6 +3497,7 @@ export type TenantCreateWithoutFilesInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3447,6 +3534,7 @@ export type TenantUncheckedCreateWithoutFilesInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3499,6 +3587,7 @@ export type TenantUpdateWithoutFilesInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3535,6 +3624,7 @@ export type TenantUncheckedUpdateWithoutFilesInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3571,6 +3661,7 @@ export type TenantCreateWithoutBlobsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3607,6 +3698,7 @@ export type TenantUncheckedCreateWithoutBlobsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3659,6 +3751,7 @@ export type TenantUpdateWithoutBlobsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3695,6 +3788,7 @@ export type TenantUncheckedUpdateWithoutBlobsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3731,6 +3825,7 @@ export type TenantCreateWithoutAddOnsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3767,6 +3862,7 @@ export type TenantUncheckedCreateWithoutAddOnsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3819,6 +3915,7 @@ export type TenantUpdateWithoutAddOnsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3855,6 +3952,7 @@ export type TenantUncheckedUpdateWithoutAddOnsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3891,6 +3989,7 @@ export type TenantCreateWithoutNotificationsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3927,6 +4026,7 @@ export type TenantUncheckedCreateWithoutNotificationsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -3979,6 +4079,7 @@ export type TenantUpdateWithoutNotificationsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4015,6 +4116,7 @@ export type TenantUncheckedUpdateWithoutNotificationsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4051,6 +4153,7 @@ export type TenantCreateWithoutAnnouncementsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4087,6 +4190,7 @@ export type TenantUncheckedCreateWithoutAnnouncementsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4139,6 +4243,7 @@ export type TenantUpdateWithoutAnnouncementsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4175,6 +4280,7 @@ export type TenantUncheckedUpdateWithoutAnnouncementsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4211,6 +4317,7 @@ export type TenantCreateWithoutConversationsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4247,6 +4354,7 @@ export type TenantUncheckedCreateWithoutConversationsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4299,6 +4407,7 @@ export type TenantUpdateWithoutConversationsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4335,6 +4444,7 @@ export type TenantUncheckedUpdateWithoutConversationsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4371,6 +4481,7 @@ export type TenantCreateWithoutMessagesInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4407,6 +4518,7 @@ export type TenantUncheckedCreateWithoutMessagesInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4459,6 +4571,7 @@ export type TenantUpdateWithoutMessagesInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4495,6 +4608,7 @@ export type TenantUncheckedUpdateWithoutMessagesInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4531,6 +4645,7 @@ export type TenantCreateWithoutCallsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4567,6 +4682,7 @@ export type TenantUncheckedCreateWithoutCallsInput = {
   currency?: string
   logoKey?: string | null
   platformFeePercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: boolean
   expiryNotice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -4619,6 +4735,7 @@ export type TenantUpdateWithoutCallsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4655,6 +4772,7 @@ export type TenantUncheckedUpdateWithoutCallsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   logoKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platformFeePercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  chargeAbsent?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiryNotice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4911,6 +5029,7 @@ export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   currency?: boolean
   logoKey?: boolean
   platformFeePercent?: boolean
+  chargeAbsent?: boolean
   expiryNotice?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -4949,6 +5068,7 @@ export type TenantSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   currency?: boolean
   logoKey?: boolean
   platformFeePercent?: boolean
+  chargeAbsent?: boolean
   expiryNotice?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -4963,6 +5083,7 @@ export type TenantSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   currency?: boolean
   logoKey?: boolean
   platformFeePercent?: boolean
+  chargeAbsent?: boolean
   expiryNotice?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -4977,12 +5098,13 @@ export type TenantSelectScalar = {
   currency?: boolean
   logoKey?: boolean
   platformFeePercent?: boolean
+  chargeAbsent?: boolean
   expiryNotice?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type TenantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "status" | "timezone" | "currency" | "logoKey" | "platformFeePercent" | "expiryNotice" | "createdAt" | "updatedAt", ExtArgs["result"]["tenant"]>
+export type TenantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "status" | "timezone" | "currency" | "logoKey" | "platformFeePercent" | "chargeAbsent" | "expiryNotice" | "createdAt" | "updatedAt", ExtArgs["result"]["tenant"]>
 export type TenantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   subscription?: boolean | Prisma.Tenant$subscriptionArgs<ExtArgs>
   subscriptionChanges?: boolean | Prisma.Tenant$subscriptionChangesArgs<ExtArgs>
@@ -5051,10 +5173,14 @@ export type $TenantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
      */
     logoKey: string | null
     /**
-     * The platform's commission on this center's student fees (0..100). null = none. Set by SUPER_ADMIN,
-     * per center or in bulk, so a package can be free-with-commission or paid-without.
+     * The platform's commission on this center's session fees (0..100), overriding its package's
+     * default. null = the package's. Set by SUPER_ADMIN, per center or in bulk; 0 = none.
      */
     platformFeePercent: runtime.Decimal | null
+    /**
+     * Whether a student absent without an excuse still pays for the session (the teacher kept the slot).
+     */
+    chargeAbsent: boolean
     /**
      * The last subscription notice sent to the admins ("EXPIRING:<period end>" / "EXPIRED:<period end>"),
      * claimed atomically so each notice goes out once per period.
@@ -5516,6 +5642,7 @@ export interface TenantFieldRefs {
   readonly currency: Prisma.FieldRef<"Tenant", 'String'>
   readonly logoKey: Prisma.FieldRef<"Tenant", 'String'>
   readonly platformFeePercent: Prisma.FieldRef<"Tenant", 'Decimal'>
+  readonly chargeAbsent: Prisma.FieldRef<"Tenant", 'Boolean'>
   readonly expiryNotice: Prisma.FieldRef<"Tenant", 'String'>
   readonly createdAt: Prisma.FieldRef<"Tenant", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Tenant", 'DateTime'>

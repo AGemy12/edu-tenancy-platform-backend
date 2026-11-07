@@ -20,6 +20,7 @@ import { RING_MS } from './call-rules.js';
 import {
   EARLY_ENTRY_MIN,
   afterMeetingEnded,
+  canChangePeople,
   canDelete,
   canReschedule,
   entryWindow,
@@ -39,6 +40,8 @@ const sessionInclude = {
   teacher: { select: { id: true, userId: true, user: { select: { fullName: true } } } },
   course: { select: { id: true, title: true } },
   _count: { select: { attendees: true } },
+  /** Who is in it, for the edit form (`forViewer` shows a student only themselves). */
+  attendees: { select: { studentId: true } },
 } as const;
 
 /** What starting or ending a meeting needs to know about its session. */
@@ -211,50 +214,184 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
 
     if (retimed && !canReschedule(session.status)) throw new BadRequestException(msg('sessions.notReschedulable'));
     if (endAt <= startAt) throw new BadRequestException(msg('sessions.endBeforeStart'));
+
+    const current = (await this.prisma.sessionAttendee.findMany({ where: { sessionId: id }, select: { studentId: true } })).map((a) => a.studentId);
+    const plan = await this.recast(user, session, current, dto);
+    const provider = plan?.provider ?? session.provider;
+
     if (dto.meetingUrl !== undefined && dto.meetingUrl !== session.meetingUrl) {
-      if (session.provider !== 'MANUAL') throw new BadRequestException(msg('sessions.urlOnlyManual'));
+      if (provider !== 'MANUAL') throw new BadRequestException(msg('sessions.urlOnlyManual'));
       if (!canReschedule(session.status)) throw new BadRequestException(msg('sessions.notReschedulable'));
     }
+    const manualUrl = provider === 'MANUAL' ? (dto.meetingUrl ?? (session.provider === 'MANUAL' ? session.meetingUrl : null)) : null;
+    if (plan?.providerChanged && provider === 'MANUAL' && !manualUrl) throw new BadRequestException(msg('sessions.manualNeedsUrl'));
 
-    // The new time must still be free for the teacher and every student in the session.
-    const people = retimed
-      ? {
-          teacherId: session.teacherId,
-          studentIds: (
-            await this.prisma.sessionAttendee.findMany({ where: { sessionId: id }, select: { studentId: true } })
-          ).map((a) => a.studentId),
-        }
-      : null;
+    // The new time, or the new people, must be free for the teacher and every student in the session.
+    const people = retimed || plan ? { teacherId: plan?.teacher.id ?? session.teacherId, studentIds: plan?.studentIds ?? current } : null;
     if (people) await assertFree(this.prisma, session.tenantId, people, { startAt, endAt }, id);
 
-    const renamed =
-      (dto.title !== undefined && dto.title !== session.title) ||
-      (dto.description !== undefined && dto.description !== session.description);
-    // Keep the provider's meeting (and the invitations it sent) in step with the platform.
-    if ((retimed || renamed) && isOpen(session.status) && session.externalMeetingId && session.provider !== 'MANUAL') {
+    const title = dto.title ?? session.title;
+    const description = dto.description ?? session.description;
+    const renamed = title !== session.title || description !== session.description;
+    // A new teacher or platform (or, on Meet, which invites them, new students) gets a new meeting;
+    // otherwise the provider's meeting (and the invitations it sent) is kept in step.
+    const meeting =
+      plan?.rebuild && provider !== 'MANUAL'
+        ? await this.providerFor(provider).createMeeting({
+            hostUserId: plan.teacher.userId,
+            title,
+            description: description ?? undefined,
+            startAt,
+            endAt,
+            timezone: session.tenant.timezone,
+            attendeeEmails: plan.emails,
+          })
+        : null;
+    if (!plan?.rebuild && (retimed || renamed) && isOpen(session.status) && session.externalMeetingId && session.provider !== 'MANUAL' && provider === session.provider) {
       await this.providerFor(session.provider).updateMeeting(session.teacher.userId, session.externalMeetingId, {
-        title: dto.title ?? session.title,
-        description: dto.description ?? session.description,
+        title,
+        description,
         startAt,
         endAt,
         timezone: session.tenant.timezone,
       });
     }
+    const replacesMeeting = Boolean(meeting) || Boolean(plan?.providerChanged);
 
-    const updated = await this.prisma.$transaction(async (tx) => {
-      if (people) {
-        await lockPeople(tx, people);
-        await assertFree(tx, session.tenantId, people, { startAt, endAt }, id);
-      }
-      return tx.session.update({
-        where: { id },
-        // A new time gets its own "starting soon" reminder.
-        data: { ...dto, startAt: retimed ? startAt : undefined, endAt: retimed ? endAt : undefined, ...(retimed && { reminderSentAt: null }) },
-        include: sessionInclude,
+    let updated;
+    try {
+      updated = await this.prisma.$transaction(async (tx) => {
+        if (people) {
+          await lockPeople(tx, people);
+          await assertFree(tx, session.tenantId, people, { startAt, endAt }, id);
+        }
+        if (plan?.removed.length) await tx.sessionAttendee.deleteMany({ where: { sessionId: id, studentId: { in: plan.removed } } });
+        if (plan?.added.length) await tx.sessionAttendee.createMany({ data: plan.added.map((studentId) => ({ sessionId: id, studentId })) });
+        return tx.session.update({
+          where: { id },
+          data: {
+            title: dto.title,
+            description: dto.description,
+            notes: dto.notes,
+            ...(provider === 'MANUAL' && dto.meetingUrl !== undefined && { meetingUrl: dto.meetingUrl }),
+            ...(retimed && { startAt, endAt }),
+            ...(plan && { teacherId: plan.teacher.id, courseId: plan.courseId, provider }),
+            ...(replacesMeeting && { meetingUrl: meeting?.joinUrl ?? manualUrl, externalMeetingId: meeting?.externalMeetingId ?? null }),
+            // A new time, or new people, get their own "starting soon" reminder.
+            ...((retimed || plan) && { reminderSentAt: null }),
+          },
+          include: sessionInclude,
+        });
       });
+    } catch (err) {
+      // Don't leave an orphan meeting on the teacher's account.
+      if (meeting?.externalMeetingId && provider !== 'MANUAL') await this.deleteExternal(provider, plan!.teacher.userId, meeting.externalMeetingId);
+      throw err;
+    }
+    // The old meeting goes once the session no longer points at it.
+    if (replacesMeeting && session.externalMeetingId && session.provider !== 'MANUAL') {
+      await this.deleteExternal(session.provider, session.teacher.userId, session.externalMeetingId);
+    }
+
+    if (plan) {
+      const kept = plan.studentIds.filter((s) => !plan.added.includes(s));
+      // Newcomers hear it was scheduled for them, whoever left that it was called off for them,
+      // and whoever stays about the new time.
+      if (plan.added.length || plan.teacherChanged) void this.events.sessionScheduled(id, user.id, { studentIds: plan.added, teacher: plan.teacherChanged });
+      if (plan.leaving.length) void this.events.sessionWithdrawn(id, plan.leaving, user.id);
+      if (retimed && (kept.length || !plan.teacherChanged)) void this.events.sessionRescheduled(id, user.id, { studentIds: kept, teacher: !plan.teacherChanged });
+    } else if (retimed) {
+      void this.events.sessionRescheduled(id, user.id);
+    }
+    return this.forViewer(user, updated);
+  }
+
+  /**
+   * What changes about who is in the session and where it runs, as on the create form; null when
+   * nothing does. Refused once someone may be in it, or when it follows a monthly schedule.
+   */
+  private async recast(
+    user: JwtUser,
+    session: {
+      tenantId: string;
+      teacherId: string;
+      courseId: string | null;
+      provider: SessionProvider;
+      status: SessionStatus;
+      startAt: Date;
+      scheduleId: string | null;
+      teacher: { userId: string };
+    },
+    current: string[],
+    dto: UpdateSessionDto,
+  ) {
+    const teacherId = dto.teacherId ?? session.teacherId;
+    const courseId = dto.courseId === undefined ? (session.courseId ?? null) : dto.courseId;
+    const provider = dto.provider ?? session.provider;
+    const explicit = dto.studentIds?.length ? dto.studentIds : undefined;
+    const teacherChanged = teacherId !== session.teacherId;
+    const courseChanged = courseId !== (session.courseId ?? null);
+    const providerChanged = provider !== session.provider;
+    const studentsSent = Boolean(explicit && !sameSet(explicit, current));
+    if (!teacherChanged && !courseChanged && !providerChanged && !studentsSent) return null;
+
+    if (session.scheduleId && (teacherChanged || courseChanged || studentsSent)) throw new BadRequestException(msg('sessions.fromSchedule'));
+    if (!canChangePeople(session)) throw new BadRequestException(msg('sessions.peopleLocked'));
+    if (teacherChanged && user.role !== 'TENANT_ADMIN') throw new ForbiddenException(msg('sessions.teacherByCenter'));
+
+    const tenantId = session.tenantId;
+    const teacher = teacherChanged
+      ? await this.prisma.teacher.findFirst({ where: { id: teacherId, tenantId }, select: { id: true, userId: true } })
+      : { id: session.teacherId, userId: session.teacher.userId };
+    if (!teacher) throw new NotFoundException(msg('teachers.notFound'));
+    if (courseId && (courseChanged || teacherChanged)) {
+      const course = await this.prisma.course.findFirst({ where: { id: courseId, tenantId, teacherId } });
+      if (!course) throw new NotFoundException(msg('sessions.courseNotFound'));
+    }
+
+    // As when creating: the students chosen, else everyone enrolled in the (new) course.
+    const studentIds =
+      explicit ??
+      (courseChanged && courseId
+        ? (await this.prisma.enrollment.findMany({ where: { courseId, status: 'ACTIVE' }, select: { studentId: true } })).map((e) => e.studentId)
+        : current);
+    const students = await this.prisma.student.findMany({
+      where: { id: { in: studentIds }, tenantId },
+      select: { id: true, user: { select: { email: true } } },
     });
-    if (retimed) void this.events.sessionRescheduled(id, user.id);
-    return updated;
+    if (students.length !== studentIds.length) throw new NotFoundException(msg('sessions.studentNotFound'));
+    const added = studentIds.filter((s) => !current.includes(s));
+    const removed = current.filter((s) => !studentIds.includes(s));
+
+    // Who was in it and no longer is: the students taken out, and the teacher it was taken from.
+    const leaving =
+      removed.length || teacherChanged
+        ? (
+            await this.prisma.membership.findMany({
+              where: {
+                OR: [
+                  ...(removed.length ? [{ student: { id: { in: removed } } }] : []),
+                  ...(teacherChanged ? [{ teacher: { id: session.teacherId } }] : []),
+                ],
+              },
+              select: { id: true },
+            })
+          ).map((m) => m.id)
+        : [];
+
+    return {
+      teacher,
+      teacherChanged,
+      courseId,
+      provider,
+      providerChanged,
+      studentIds,
+      emails: students.map((s) => s.user.email),
+      added,
+      removed,
+      leaving,
+      rebuild: provider !== 'MANUAL' && (teacherChanged || providerChanged || (provider === 'GOOGLE_MEET' && (added.length > 0 || removed.length > 0))),
+    };
   }
 
   /**
@@ -554,8 +691,9 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
    * A suspended member gets no link at all: `start` and `join` are refused for them, and the raw
    * link would let them into the meeting anyway.
    */
-  private forViewer<T extends { meetingUrl: string | null }>(user: JwtUser, session: T): T {
-    return user.role === 'STUDENT' || user.status === 'SUSPENDED' ? { ...session, meetingUrl: null } : session;
+  private forViewer<T extends { meetingUrl: string | null; attendees?: { studentId: string }[] }>(user: JwtUser, session: T): T {
+    if (user.role === 'STUDENT') return { ...session, meetingUrl: null, attendees: session.attendees?.filter((a) => a.studentId === user.studentId) };
+    return user.status === 'SUSPENDED' ? { ...session, meetingUrl: null } : session;
   }
 
   private findByMeeting(provider: SessionProvider, externalMeetingId: string) {
@@ -595,5 +733,7 @@ export class SessionsService implements OnModuleInit, OnModuleDestroy {
     return provider === 'ZOOM' ? this.zoom : this.google;
   }
 }
+
+const sameSet = (a: string[], b: string[]) => a.length === b.length && a.every((x) => b.includes(x));
 
 const sameMinute = (a: Date, b: Date) => Math.floor(a.getTime() / 60_000) === Math.floor(b.getTime() / 60_000);
