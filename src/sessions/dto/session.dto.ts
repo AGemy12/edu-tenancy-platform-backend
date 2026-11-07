@@ -60,12 +60,36 @@ export class CreateSessionDto {
   meetingUrl?: string;
 }
 
-/** Status changes go through the start / complete / cancel actions, never a PATCH. */
+/**
+ * Status changes go through the start / complete / cancel actions, never a PATCH. The teacher,
+ * course, students and platform change only before the session opens (`canChangePeople`).
+ */
 export class UpdateSessionDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   title?: string;
+
+  /** Admins only: hands the session to another teacher. */
+  @IsOptional()
+  @IsUUID()
+  teacherId?: string;
+
+  /** null takes the session out of its course. */
+  @IsOptional()
+  @IsUUID()
+  courseId?: string | null;
+
+  /** Replaces the students; omitted or empty with a new course = everyone enrolled in it. */
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @IsUUID(undefined, { each: true })
+  studentIds?: string[];
+
+  @IsOptional()
+  @IsEnum(SessionProvider)
+  provider?: SessionProvider;
 
   @IsOptional()
   @IsString()

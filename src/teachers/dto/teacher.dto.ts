@@ -49,6 +49,17 @@ export class UpdateTeacherDto {
   @IsNotEmpty()
   fullName?: string;
 
+  /** The sign-in email: changeable only while the account is this center's alone (see auth/member-account). */
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  /** A new password, under the same rule as the email; empty or omitted keeps the current one. */
+  @IsOptional()
+  @IsString()
+  @IsStrongPassword()
+  password?: string;
+
   @IsOptional()
   @IsString()
   phone?: string;

@@ -36,6 +36,11 @@ export class UpdateCourseDto {
   @IsNotEmpty()
   title?: string;
 
+  /** Admins: hands the course to another teacher, while nothing was taught in it yet (see `canChangeTeacher`). */
+  @IsOptional()
+  @IsUUID()
+  teacherId?: string;
+
   @IsOptional()
   @IsString()
   description?: string;

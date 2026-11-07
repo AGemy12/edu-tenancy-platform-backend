@@ -3,6 +3,7 @@ import {
   LIVE_GRACE_MIN,
   RECONNECT_GRACE_MIN,
   UNSTARTED_GRACE_MIN,
+  canChangePeople,
   afterMeetingEnded,
   canDelete,
   canReschedule,
@@ -115,5 +116,17 @@ describe('afterMeetingEnded', () => {
 
   it('never reopens a completed session', () => {
     expect(afterMeetingEnded({ status: 'COMPLETED', endAt }, new Date('2026-10-14T16:40:00Z'))).toBe('COMPLETED');
+  });
+});
+
+describe('canChangePeople', () => {
+  const now = new Date('2026-11-05T10:00:00Z');
+  const at = (min: number) => new Date(now.getTime() + min * 60_000);
+
+  it('allows a new teacher, students or platform only before the entry window opens', () => {
+    expect(canChangePeople({ status: 'SCHEDULED', startAt: at(EARLY_ENTRY_MIN + 1) }, now)).toBe(true);
+    expect(canChangePeople({ status: 'SCHEDULED', startAt: at(EARLY_ENTRY_MIN - 1) }, now)).toBe(false);
+    expect(canChangePeople({ status: 'LIVE', startAt: at(60) }, now)).toBe(false);
+    expect(canChangePeople({ status: 'CANCELED', startAt: at(60) }, now)).toBe(false);
   });
 });

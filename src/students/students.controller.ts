@@ -31,8 +31,8 @@ export class StudentsController {
   }
 
   @Patch(':id')
-  update(@CurrentUser() user: JwtUser, @Param('id') id: string, @Body() dto: UpdateStudentDto) {
-    return this.students.update(user, id, dto);
+  update(@CurrentUser() user: JwtUser, @Param('id') id: string, @Body() dto: UpdateStudentDto, @Lang() locale: Locale) {
+    return this.students.update(user, id, dto, locale);
   }
 
   /** Suspend (read-only), block (no sign-in) or reactivate the student's account. */

@@ -49,8 +49,8 @@ export class TeachersController {
 
   @Patch(':id')
   @Roles('TENANT_ADMIN')
-  update(@CurrentUser('tenantId') tenantId: string, @Param('id') id: string, @Body() dto: UpdateTeacherDto) {
-    return this.teachers.update(tenantId, id, dto);
+  update(@CurrentUser() user: JwtUser, @Param('id') id: string, @Body() dto: UpdateTeacherDto, @Lang() locale: Locale) {
+    return this.teachers.update(user, id, dto, locale);
   }
 
   /** Suspend (read-only), block (no sign-in) or reactivate the teacher's account. */

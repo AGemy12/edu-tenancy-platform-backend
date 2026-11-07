@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { JwtUser } from '../common/decorators/current-user.decorator.js';
 import type { CreateCourseDto, UpdateCourseDto } from './dto/course.dto.js';
@@ -8,8 +8,14 @@ import { PricesService } from '../billing/prices.service.js';
 
 const courseInclude = {
   teacher: { select: { id: true, user: { select: { fullName: true } } } },
-  _count: { select: { enrollments: true, sessions: true, exams: true } },
+  _count: { select: { enrollments: true, sessions: true, exams: true, schedules: true } },
 } as const;
+
+/**
+ * Sessions, exams and schedules are recorded under the course's teacher (attendance, marks, pay,
+ * reports), so a course keeps its teacher once it has any. Before that, it can go to another one.
+ */
+export const canChangeTeacher = (c: { sessions: number; exams: number; schedules: number }) => c.sessions + c.exams + c.schedules === 0;
 
 @Injectable()
 export class CoursesService {
@@ -68,12 +74,32 @@ export class CoursesService {
   }
 
   async update(user: JwtUser, id: string, dto: UpdateCourseDto) {
-    await this.getOwned(user, id);
-    const { sessionPrice, ...data } = dto;
+    const before = await this.getOwned(user, id);
+    const { sessionPrice, teacherId, ...data } = dto;
     assertCanPrice(user, sessionPrice);
-    const course = await this.prisma.course.update({ where: { id }, data, include: courseInclude });
+    const newTeacher = teacherId && teacherId !== before.teacherId ? await this.newTeacher(user, id, teacherId) : null;
+
+    const course = await this.prisma.$transaction(async (tx) => {
+      if (newTeacher) {
+        // As when enrolling: the course's students become the new teacher's students.
+        const enrolled = await tx.enrollment.findMany({ where: { courseId: id }, select: { studentId: true } });
+        await tx.teacherStudent.createMany({ data: enrolled.map((e) => ({ teacherId: newTeacher.id, studentId: e.studentId })), skipDuplicates: true });
+      }
+      return tx.course.update({ where: { id }, data: { ...data, ...(newTeacher && { teacherId: newTeacher.id }) }, include: courseInclude });
+    });
     await this.savePrice(user, id, sessionPrice);
+    if (newTeacher) void this.messaging.courseTeacherChanged(id, newTeacher.membershipId);
     return (await this.withPrices(user, [course]))[0];
+  }
+
+  /** The teacher a course may be handed to: the admin's call, and only before anything was taught in it. */
+  private async newTeacher(user: JwtUser, courseId: string, teacherId: string) {
+    if (user.role !== 'TENANT_ADMIN') throw new ForbiddenException(msg('courses.teacherByCenter'));
+    const counts = await this.prisma.course.findUniqueOrThrow({ where: { id: courseId }, select: { _count: { select: { sessions: true, exams: true, schedules: true } } } });
+    if (!canChangeTeacher(counts._count)) throw new ConflictException(msg('courses.teacherLocked'));
+    const teacher = await this.prisma.teacher.findFirst({ where: { id: teacherId, tenantId: user.tenantId! }, select: { id: true, membershipId: true } });
+    if (!teacher) throw new NotFoundException(msg('teachers.notFound'));
+    return teacher;
   }
 
   private async savePrice(user: JwtUser, courseId: string, price: number | null | undefined) {

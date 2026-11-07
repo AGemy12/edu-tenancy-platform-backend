@@ -475,3 +475,76 @@ describe('remove', () => {
     }
   });
 });
+
+describe('update: who is in it and where it runs', () => {
+  const later = () => makeSession({ startAt: inMinutes(120), endAt: inMinutes(180), courseId: null, scheduleId: null });
+
+  function people(session = later()) {
+    const ctx = setup(session);
+    ctx.prisma.session.findMany.mockResolvedValue([]);
+    ctx.prisma.sessionAttendee.findMany.mockResolvedValue([{ studentId: 's1' }]);
+    Object.assign(ctx.prisma.sessionAttendee, { deleteMany: vi.fn(), createMany: vi.fn() });
+    Object.assign(ctx.prisma, {
+      membership: { findMany: vi.fn().mockResolvedValue([{ id: 'm-left' }]) },
+      course: { findFirst: vi.fn().mockResolvedValue({ id: 'c1' }) },
+      enrollment: { findMany: vi.fn().mockResolvedValue([]) },
+    });
+    ctx.prisma.teacher.findFirst.mockResolvedValue({ id: 'tc2', userId: 'u-other' });
+    ctx.prisma.student.findMany.mockImplementation(({ where }) =>
+      Promise.resolve(where.id.in.map((id: string) => ({ id, user: { email: `${id}@x.test` } }))),
+    );
+    return ctx;
+  }
+  const data = (prisma: ReturnType<typeof setup>['prisma']) => prisma.session.update.mock.calls[0][0].data;
+
+  it("hands the session to another teacher with a new meeting on that teacher's account, and drops the old one", async () => {
+    const { prisma, zoom, service } = people();
+    await service.update(admin, 'ses1', { teacherId: 'tc2' });
+    expect(zoom.createMeeting).toHaveBeenCalledWith(expect.objectContaining({ hostUserId: 'u-other' }));
+    expect(data(prisma)).toMatchObject({ teacherId: 'tc2', externalMeetingId: '999', meetingUrl: 'https://zoom.us/j/999', reminderSentAt: null });
+    expect(zoom.deleteMeeting).toHaveBeenCalledWith('u-host', '111');
+  });
+
+  it('lets only the admin hand a session to another teacher', async () => {
+    const { prisma, service } = people();
+    await expect(service.update(host, 'ses1', { teacherId: 'tc2' })).rejects.toBeInstanceOf(ForbiddenException);
+    expect(prisma.session.update).not.toHaveBeenCalled();
+  });
+
+  it('swaps the students without a new Zoom meeting', async () => {
+    const { prisma, zoom, service } = people();
+    await service.update(host, 'ses1', { studentIds: ['s2'] });
+    const attendees = prisma.sessionAttendee as unknown as Record<'deleteMany' | 'createMany', ReturnType<typeof vi.fn>>;
+    expect(attendees.deleteMany).toHaveBeenCalledWith({ where: { sessionId: 'ses1', studentId: { in: ['s1'] } } });
+    expect(attendees.createMany).toHaveBeenCalledWith({
+      data: [{ sessionId: 'ses1', studentId: 's2' }],
+    });
+    expect(zoom.createMeeting).not.toHaveBeenCalled();
+  });
+
+  it('treats the same teacher, course and students sent back as no change', async () => {
+    const { prisma, zoom, service } = people();
+    await service.update(host, 'ses1', { teacherId: 'tc1', courseId: null, studentIds: ['s1'], provider: 'ZOOM', title: 'Algebra II' });
+    expect(data(prisma)).not.toHaveProperty('teacherId');
+    expect(zoom.createMeeting).not.toHaveBeenCalled();
+  });
+
+  it('moves to a pasted link only with one, dropping the Zoom meeting', async () => {
+    const refused = people();
+    await expect(refused.service.update(host, 'ses1', { provider: 'MANUAL' })).rejects.toBeInstanceOf(BadRequestException);
+
+    const { prisma, zoom, service } = people();
+    await service.update(host, 'ses1', { provider: 'MANUAL', meetingUrl: 'https://meet.example/x' });
+    expect(data(prisma)).toMatchObject({ provider: 'MANUAL', meetingUrl: 'https://meet.example/x', externalMeetingId: null });
+    expect(zoom.deleteMeeting).toHaveBeenCalledWith('u-host', '111');
+  });
+
+  it('refuses once the session can be entered, and for a session that follows a monthly schedule', async () => {
+    const soon = people(makeSession({ courseId: null, scheduleId: null }));
+    await expect(soon.service.update(admin, 'ses1', { studentIds: ['s2'] })).rejects.toBeInstanceOf(BadRequestException);
+
+    const scheduled = people(makeSession({ startAt: inMinutes(120), endAt: inMinutes(180), courseId: null, scheduleId: 'sch1' }));
+    await expect(scheduled.service.update(admin, 'ses1', { teacherId: 'tc2' })).rejects.toBeInstanceOf(BadRequestException);
+    expect(scheduled.zoom.createMeeting).not.toHaveBeenCalled();
+  });
+});

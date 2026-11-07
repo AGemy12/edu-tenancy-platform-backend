@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { AuthService } from '../auth/auth.service.js';
 import { unusablePassword } from '../auth/passwords.js';
 import { removeMembership, setAccountStatus } from '../auth/account-status.js';
+import { accountChanges, accountFacts, afterAccountChange, presentMember } from '../auth/member-account.js';
 import type { SetAccountStatusDto } from '../auth/dto/account-status.dto.js';
 import type { CreateTeacherDto, UpdateTeacherDto } from './dto/teacher.dto.js';
 import type { JwtUser } from '../common/decorators/current-user.decorator.js';
@@ -15,7 +16,7 @@ import { PricesService } from '../billing/prices.service.js';
 import type { RateBasis } from '../generated/prisma/enums.js';
 
 const teacherInclude = {
-  user: { select: { id: true, fullName: true, email: true, phone: true } },
+  user: { select: { id: true, fullName: true, email: true, phone: true, ...accountFacts } },
   /** The teacher's place in this center: TENANT_ADMIN when the admin teaches from their own account. */
   membership: { select: { id: true, role: true, status: true, statusReason: true } },
   _count: { select: { courses: true, students: true, sessions: true, exams: true, schedules: true, billingRates: true } },
@@ -45,7 +46,7 @@ export class TeachersService {
       include: teacherInclude,
       orderBy: { createdAt: 'desc' },
     });
-    return this.withMeetingAccounts(viewer, teachers);
+    return this.withMeetingAccounts(viewer, teachers.map((t) => presentMember(t, viewer)));
   }
 
   async get(tenantId: string, id: string) {
@@ -55,7 +56,7 @@ export class TeachersService {
   }
 
   async getFor(viewer: JwtUser, id: string) {
-    const [teacher] = await this.withMeetingAccounts(viewer, [await this.get(viewer.tenantId!, id)]);
+    const [teacher] = await this.withMeetingAccounts(viewer, [presentMember(await this.get(viewer.tenantId!, id), viewer)]);
     return teacher;
   }
 
@@ -124,7 +125,7 @@ export class TeachersService {
     await this.savePay(tenantId, teacher.id, dto.payBasis, dto.payAmount);
     await this.auth.sendWelcome(teacher.membershipId, { existingAccount: Boolean(existing) }, locale);
     void this.events.memberAdded(teacher.membershipId, user.id);
-    return teacher;
+    return presentMember(teacher, user);
   }
 
   /**
@@ -135,24 +136,32 @@ export class TeachersService {
     if (user.role !== 'TENANT_ADMIN' || !user.tenantId || !user.membershipId) throw new ForbiddenException();
     if (user.teacherId) throw new ConflictException(msg('teachers.alreadyTeacher'));
     await this.assertQuota(user.tenantId);
-    return this.prisma.teacher.create({
+    const teacher = await this.prisma.teacher.create({
       data: { tenantId: user.tenantId, userId: user.id, membershipId: user.membershipId },
       include: teacherInclude,
     });
+    return presentMember(teacher, user);
   }
 
-  async update(tenantId: string, id: string, dto: UpdateTeacherDto) {
-    await this.get(tenantId, id);
-    const { fullName, phone, payBasis, payAmount, ...teacherData } = dto;
+  /** Everything the add form sets can change here, the sign-in email and password too (see auth/member-account). */
+  async update(user: JwtUser, id: string, dto: UpdateTeacherDto, locale?: Locale) {
+    const tenantId = user.tenantId!;
+    const teacher = await this.get(tenantId, id);
+    const { fullName, phone, email, password, payBasis, payAmount, ...teacherData } = dto;
+    if (payBasis === 'PERCENT' && (payAmount ?? 0) > 100) throw new BadRequestException(msg('billing.percentMax'));
+    const account = await accountChanges(this.prisma, teacher, user, { email, password });
     await this.savePay(tenantId, id, payBasis, payAmount);
-    return this.prisma.teacher.update({
-      where: { id },
-      data: {
-        ...teacherData,
-        user: { update: { fullName, phone } },
-      },
-      include: teacherInclude,
+    const { row, after } = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.teacher.update({
+        where: { id },
+        data: { ...teacherData, user: { update: { fullName, phone, ...account } } },
+        include: teacherInclude,
+      });
+      return { row, after: await afterAccountChange(tx, teacher.userId, account) };
     });
+    if (after.resendWelcome) await this.auth.sendWelcome(teacher.membershipId, { existingAccount: false }, locale);
+    const [presented] = await this.withMeetingAccounts(user, [presentMember(row, user)]);
+    return presented;
   }
 
   /** Suspends (read-only), blocks (no sign-in) or reactivates the teacher in this center. See auth/account-status. */
@@ -164,7 +173,7 @@ export class TeachersService {
     }
     await setAccountStatus(this.prisma, teacher.membershipId, dto, user.id);
     if (teacher.membership.status !== dto.status) void this.events.accountStatus(teacher.membershipId, dto.status, dto.reason, user.id);
-    return this.get(user.tenantId!, id);
+    return this.getFor(user, id);
   }
 
   async remove(tenantId: string, id: string) {

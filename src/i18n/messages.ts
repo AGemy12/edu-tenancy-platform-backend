@@ -32,6 +32,9 @@ const ar = {
   // Users shared by teachers / students
   'users.emailInUse': 'البريد الإلكتروني مستخدم بالفعل',
   'users.alreadyMember': 'صاحب هذا البريد عضو في المركز بالفعل',
+  'users.accountOwnSettings': 'هذا حسابك: غيّر بريدك وكلمة مرورك من الإعدادات',
+  'users.accountOfAdmin': 'بريد مدير المركز وكلمة مروره يغيّرهما صاحبهما من إعداداته',
+  'users.accountShared': 'هذا الحساب مسجّل في مراكز أخرى أيضاً، فيغيّر صاحبه بريده وكلمة مروره من إعداداته',
 
   'teachers.notFound': 'المدرس غير موجود',
   'teachers.required': 'يجب تحديد المدرس',
@@ -48,8 +51,11 @@ const ar = {
     'لا يمكن حذف طالب له حصص أو تقييمات أو درجات أو جداول أو كورسات مسجلة، فهي جزء من سجل الحضور والحسابات. أوقف حسابه بدلاً من ذلك',
 
   'courses.notFound': 'الكورس غير موجود',
+  'courses.teacherLocked': 'لا يمكن تغيير مدرس كورس له حصص أو امتحانات أو جداول، فهي مسجلة باسم مدرسه',
+  'courses.teacherByCenter': 'نقل الكورس إلى مدرس آخر لمدير المركز فقط',
 
   'exams.notFound': 'الامتحان غير موجود',
+  'exams.courseLocked': 'لا يمكن نقل امتحان رُصدت فيه درجات إلى كورس آخر',
   'exams.markExceedsTotal': 'الدرجة لا يمكن أن تتجاوز {total}',
   'exams.studentNotEnrolled': 'الطالب غير مسجل في كورس هذا الامتحان',
   'exams.duplicateStudent': 'الطالب مكرر في قائمة الدرجات',
@@ -88,6 +94,9 @@ const ar = {
   'plans.inUse': 'لا يمكن حذف باقة مشترك فيها {count} مركز؛ أوقفها بدلاً من ذلك',
 
   'sessions.notFound': 'الحصة غير موجودة',
+  'sessions.peopleLocked': 'يمكن تغيير مدرس الحصة وطلابها وكورسها ومنصتها قبل موعدها فقط',
+  'sessions.fromSchedule': 'هذه الحصة من جدول شهري: مدرسها وطالبها وكورسها يتبعون الجدول',
+  'sessions.teacherByCenter': 'نقل الحصة إلى مدرس آخر لمدير المركز فقط',
   'sessions.endBeforeStart': 'وقت النهاية يجب أن يكون بعد وقت البداية',
   'sessions.courseNotFound': 'الكورس غير موجود أو لا يخص هذا المدرس',
   'sessions.studentNotFound': 'أحد الطلاب غير موجود',
@@ -512,6 +521,9 @@ const en: Record<MessageKey, string> = {
 
   'users.emailInUse': 'This email is already in use',
   'users.alreadyMember': 'The owner of this email is already a member of the center',
+  'users.accountOwnSettings': 'This is your account: change your email and password in your settings',
+  'users.accountOfAdmin': 'A center admin changes their own email and password in their settings',
+  'users.accountShared': 'This account is also in other centers, so its owner changes the email and password in their settings',
 
   'teachers.notFound': 'Teacher not found',
   'teachers.required': 'Please select a teacher',
@@ -528,8 +540,11 @@ const en: Record<MessageKey, string> = {
     "A student with sessions, evaluations, grades, schedules or courses on record can't be deleted: they're part of the attendance and billing record. Suspend the account instead",
 
   'courses.notFound': 'Course not found',
+  'courses.teacherLocked': "A course with sessions, exams or schedules keeps its teacher: they're recorded under that teacher's name",
+  'courses.teacherByCenter': 'Only the center admin can hand a course to another teacher',
 
   'exams.notFound': 'Exam not found',
+  'exams.courseLocked': "An exam with marks can't move to another course",
   'exams.markExceedsTotal': 'The mark cannot exceed {total}',
   'exams.studentNotEnrolled': "The student isn't enrolled in this exam's course",
   'exams.duplicateStudent': 'A student appears twice in the marks list',
@@ -567,6 +582,9 @@ const en: Record<MessageKey, string> = {
   'plans.inUse': "A package {count} centers are on can't be deleted; retire it instead",
 
   'sessions.notFound': 'Session not found',
+  'sessions.peopleLocked': "A session's teacher, students, course and platform can only change before it starts",
+  'sessions.fromSchedule': "This session comes from a monthly schedule: its teacher, student and course follow the schedule",
+  'sessions.teacherByCenter': 'Only the center admin can hand a session to another teacher',
   'sessions.endBeforeStart': 'End time must be after start time',
   'sessions.courseNotFound': "Course not found or it doesn't belong to this teacher",
   'sessions.studentNotFound': 'One of the students was not found',

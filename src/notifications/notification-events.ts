@@ -24,12 +24,27 @@ export class NotificationEvents {
   /* ── Sessions ── */
 
   /** A session was booked: its students, and its teacher when someone else booked it. */
-  sessionScheduled(sessionId: string, actorId: string) {
-    return this.session('SESSION_SCHEDULED', sessionId, actorId, { teacher: true });
+  /** `only`: tell just these students (and the teacher or not), e.g. those an edit added. */
+  sessionScheduled(sessionId: string, actorId: string, only?: { studentIds: string[]; teacher: boolean }) {
+    return this.session('SESSION_SCHEDULED', sessionId, actorId, { teacher: only?.teacher ?? true, studentIds: only?.studentIds });
   }
 
-  sessionRescheduled(sessionId: string, actorId: string) {
-    return this.session('SESSION_RESCHEDULED', sessionId, actorId, { teacher: true });
+  sessionRescheduled(sessionId: string, actorId: string, only?: { studentIds: string[]; teacher: boolean }) {
+    return this.session('SESSION_RESCHEDULED', sessionId, actorId, { teacher: only?.teacher ?? true, studentIds: only?.studentIds });
+  }
+
+  /** An edit took these members (students, or the teacher) out of the session: for them it is called off. */
+  async sessionWithdrawn(sessionId: string, memberships: string[], actorId: string) {
+    if (!memberships.length) return;
+    await this.safely('SESSION_CANCELED', async () => {
+      const s = await this.prisma.session.findUnique({
+        where: { id: sessionId },
+        select: { title: true, startAt: true, teacher: { select: { user: { select: { fullName: true } } } } },
+      });
+      if (!s) return;
+      const params = { title: s.title, at: s.startAt.toISOString(), teacher: s.teacher.user.fullName };
+      await this.notifications.send({ type: 'SESSION_CANCELED', memberships, params, link: SESSIONS, actorId });
+    });
   }
 
   sessionCanceled(sessionId: string, actorId: string | null) {
